@@ -161,7 +161,7 @@ export default function PastSales() {
             <div className="chart-card">
               <div className="chart-title">מעורבות לפי מכירה</div>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={<LineChart data={engagementBysale}>}>
+                <LineChart data={engagementBysale}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
                   <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
