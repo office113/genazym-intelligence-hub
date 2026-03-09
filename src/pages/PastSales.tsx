@@ -104,7 +104,7 @@ export default function PastSales() {
         {activeTab === "overview" && (
           <>
             <div className="grid grid-cols-4 gap-4 mb-8">
-              <KPICard label="מחיר ממוצע לפריט" value={kpis.avgPrice} subtitle="ממוצע מחיר סגירה בכל המכירות" />
+              <KPICard label="מחיר פתיחה ממוצע לפריט" value={kpis.avgOpeningPrice} subtitle="ממוצע מחיר פתיחה בכל המכירות" />
               <KPICard label="פער ממוצע מפתיחה לסגירה" value={kpis.avgUplift} subtitle="עליית מחיר ממוצעת באחוזים" />
               <KPICard label="מעורבים ייחודיים במותג" value={kpis.uniqueInvolved} subtitle="לקוחות שהציעו לפחות פעם אחת" />
               <KPICard label="ממוצע מעורבים למכירה" value={kpis.avgInvolvedPerSale} subtitle="ממוצע מציעים ייחודיים למכירה" />
