@@ -261,32 +261,31 @@ const renderBarLabel = (props: any) => {
 };
 
 // Premium drawer component
-function PremiumDrawer({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+function PremiumDrawer({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
   if (!open) return null;
 
   return (
     <>
-      {/* Overlay */}
       <div
-        className="fixed inset-0 z-40 bg-foreground/30 backdrop-blur-[2px] transition-opacity duration-300"
+        className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[3px] transition-opacity duration-300"
         onClick={onClose}
       />
-      {/* Drawer panel */}
       <div
-        className="fixed top-0 right-0 h-screen w-[520px] bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
+        className="fixed top-0 right-0 h-screen w-[700px] max-w-[90vw] bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
         dir="rtl"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
-          <h3 className="font-display font-bold text-base leading-relaxed">{title}</h3>
+        <div className="flex items-start justify-between px-8 py-6 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
+          <div className="space-y-1">
+            <h3 className="font-display font-bold text-lg leading-tight">{title}</h3>
+            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+          </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors"
+            className="p-2 rounded-lg hover:bg-secondary transition-colors mt-0.5"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        {/* Body */}
         <div className="flex-1 overflow-hidden">
           {children}
         </div>
