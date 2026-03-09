@@ -322,9 +322,9 @@ export default function PastSales() {
     setChurnDrawerOpen(true);
   };
 
-  const handleInvolvedBarClick = (data: InvolvedBarData, type: "involved" | "winners") => {
+  const handleInvolvedBarClick = (data: InvolvedBarData) => {
     setInvolvedDrawerData(data);
-    setInvolvedDrawerType(type);
+    setInvolvedDrawerType("involved");
     setInvolvedDrawerOpen(true);
   };
 
