@@ -442,10 +442,10 @@ export default function PastSales() {
                 <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
                 <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות שהיו מעורבים במכירה הקודמת ולא חזרו</p>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={churnData} margin={{ top: 20, right: 16, left: 30, bottom: 0 }}>
+                  <BarChart data={churnData} margin={{ top: 20, right: 20, left: 45, bottom: 0 }} barCategoryGap="25%">
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={40} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={45} tickMargin={8} />
                     <Tooltip
                       contentStyle={{
                         background: "hsl(var(--card))",
