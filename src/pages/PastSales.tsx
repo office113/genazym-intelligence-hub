@@ -407,7 +407,7 @@ export default function PastSales() {
                       dataKey="involved"
                       fill="hsl(var(--primary))"
                       radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "involved")}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
                       style={{ cursor: "pointer" }}
                       name="מעורבים"
                     >
@@ -417,7 +417,7 @@ export default function PastSales() {
                       dataKey="winners"
                       fill="hsl(38, 65%, 52%)"
                       radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "winners")}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
                       style={{ cursor: "pointer" }}
                       name="זוכים"
                     >
