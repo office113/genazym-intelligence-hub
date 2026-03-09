@@ -29,15 +29,30 @@ const engagementBysale = [
   { sale: "#47", avgBids: 4.8, uniqueBidders: 195, returnRate: 65 },
 ];
 
+type Brand = "genazym" | "zaidy";
+
+const brandKPIs: Record<Brand, { avgPrice: string; avgUplift: string; uniqueInvolved: string; avgInvolvedPerSale: string }> = {
+  genazym: {
+    avgPrice: "$9,450",
+    avgUplift: "87%",
+    uniqueInvolved: "482",
+    avgInvolvedPerSale: "289",
+  },
+  zaidy: {
+    avgPrice: "$3,820",
+    avgUplift: "62%",
+    uniqueInvolved: "214",
+    avgInvolvedPerSale: "134",
+  },
+};
+
 export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<any>(null);
+  const [brand, setBrand] = useState<Brand>("genazym");
 
-  const totalLots = pastSalesData.reduce((a, b) => a + b.lots, 0);
-  const totalSold = pastSalesData.reduce((a, b) => a + b.sold, 0);
-  const totalRevenue = pastSalesData.reduce((a, b) => a + b.revenue, 0);
-  const totalBidders = pastSalesData.reduce((a, b) => a + b.bidders, 0);
+  const kpis = brandKPIs[brand];
 
   const openSaleDrawer = (sale: any) => {
     setDrawerData(sale);
@@ -46,16 +61,56 @@ export default function PastSales() {
 
   return (
     <div className="min-h-screen">
-      <SubNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} title="מכירות עבר" />
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-8 pt-6 pb-0">
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <h2 className="section-title mb-1">מכירות עבר</h2>
+            <p className="text-sm text-muted-foreground">ניתוח ביצועי עבר והשוואת מכירות</p>
+          </div>
+          <div className="flex items-center bg-card border border-border rounded-lg p-0.5 shadow-sm">
+            <button
+              onClick={() => setBrand("genazym")}
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                brand === "genazym"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              גנזים
+            </button>
+            <button
+              onClick={() => setBrand("zaidy")}
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                brand === "zaidy"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              זיידי
+            </button>
+          </div>
+        </div>
+        <div className="sub-nav mb-0 inline-flex mt-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`sub-nav-item ${activeTab === tab.key ? "sub-nav-item-active" : ""}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="p-8 animate-fade-in">
         {activeTab === "overview" && (
           <>
             <div className="grid grid-cols-4 gap-4 mb-8">
-              <KPICard label="סה״כ פריטים" value={totalLots.toLocaleString()} trend="up" trendValue="+5%" />
-              <KPICard label="נמכרו" value={totalSold.toLocaleString()} subtitle={`${Math.round(totalSold/totalLots*100)}% מהפריטים`} trend="up" trendValue="+3%" />
-              <KPICard label="הכנסות כוללות" value={`$${(totalRevenue/1000000).toFixed(1)}M`} trend="up" trendValue="+12%" />
-              <KPICard label="מציעים ייחודיים" value={totalBidders.toLocaleString()} trend="neutral" trendValue="יציב" />
+              <KPICard label="מחיר ממוצע לפריט" value={kpis.avgPrice} subtitle="ממוצע מחיר סגירה בכל המכירות" />
+              <KPICard label="פער ממוצע מפתיחה לסגירה" value={kpis.avgUplift} subtitle="עליית מחיר ממוצעת באחוזים" />
+              <KPICard label="מעורבים ייחודיים במותג" value={kpis.uniqueInvolved} subtitle="לקוחות שהציעו לפחות פעם אחת" />
+              <KPICard label="ממוצע מעורבים למכירה" value={kpis.avgInvolvedPerSale} subtitle="ממוצע מציעים ייחודיים למכירה" />
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8">
