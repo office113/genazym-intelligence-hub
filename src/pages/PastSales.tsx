@@ -33,7 +33,7 @@ type Brand = "genazym" | "zaidy";
 
 const brandKPIs: Record<Brand, { avgPrice: string; avgUplift: string; uniqueInvolved: string; avgInvolvedPerSale: string }> = {
   genazym: {
-    avgPrice: "$9,450",
+    avgOpeningPrice: "$5,200",
     avgUplift: "87%",
     uniqueInvolved: "482",
     avgInvolvedPerSale: "289",
