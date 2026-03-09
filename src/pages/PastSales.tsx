@@ -78,6 +78,8 @@ interface InvolvedCustomer {
   lotsInvolved: number;
   maxBidAmount: string;
   firstBidEver: string;
+  lotsWon?: number;
+  totalWinAmount?: string;
 }
 
 interface InvolvedBarData {
