@@ -3,10 +3,10 @@ import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { pastSalesData, saleComparisonChart } from "@/data/mockData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell } from "recharts";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell, LabelList } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { X } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -67,6 +67,25 @@ interface ChurnBarData {
   prevSale: string;
   prevInvolved: number;
   customers: ChurnCustomer[];
+}
+
+interface InvolvedCustomer {
+  name: string;
+  email: string;
+  status: "מעורב" | "זוכה";
+  bids: number;
+  involvementType: "מוקדם" | "לייב" | "גם וגם";
+  lotsInvolved: number;
+  maxBidAmount: string;
+  firstBidEver: string;
+}
+
+interface InvolvedBarData {
+  sale: string;
+  saleNumber: number;
+  involved: number;
+  winners: number;
+  customers: InvolvedCustomer[];
 }
 
 const genazymChurnData: ChurnBarData[] = [
@@ -135,10 +154,144 @@ const zaidiChurnData: ChurnBarData[] = [
   },
 ];
 
+const genazymInvolvedData: InvolvedBarData[] = [
+  {
+    sale: "#43", saleNumber: 43, involved: 180, winners: 62,
+    customers: [
+      { name: "אברהם כהן", email: "a.cohen@email.com", status: "זוכה", bids: 12, involvementType: "גם וגם", lotsInvolved: 8, maxBidAmount: "$4,200", firstBidEver: "2021-03-15" },
+      { name: "יצחק לוי", email: "y.levi@email.com", status: "מעורב", bids: 5, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,800", firstBidEver: "2022-07-20" },
+      { name: "משה גולדברג", email: "m.goldberg@email.com", status: "זוכה", bids: 8, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$3,500", firstBidEver: "2020-11-02" },
+      { name: "דוד שוורץ", email: "d.schwartz@email.com", status: "מעורב", bids: 3, involvementType: "לייב", lotsInvolved: 2, maxBidAmount: "$950", firstBidEver: "2023-01-10" },
+    ],
+  },
+  {
+    sale: "#44", saleNumber: 44, involved: 165, winners: 54,
+    customers: [
+      { name: "שמואל פרידמן", email: "s.friedman@email.com", status: "זוכה", bids: 15, involvementType: "גם וגם", lotsInvolved: 10, maxBidAmount: "$7,800", firstBidEver: "2019-06-22" },
+      { name: "יעקב רוזנברג", email: "y.rosenberg@email.com", status: "מעורב", bids: 7, involvementType: "מוקדם", lotsInvolved: 5, maxBidAmount: "$2,600", firstBidEver: "2021-09-14" },
+      { name: "חיים ויסברג", email: "c.weisberg@email.com", status: "זוכה", bids: 10, involvementType: "גם וגם", lotsInvolved: 7, maxBidAmount: "$5,100", firstBidEver: "2020-02-28" },
+    ],
+  },
+  {
+    sale: "#45", saleNumber: 45, involved: 210, winners: 78,
+    customers: [
+      { name: "נחום שטיין", email: "n.stein@email.com", status: "מעורב", bids: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,200", firstBidEver: "2022-12-05" },
+      { name: "אליהו קליין", email: "e.klein@email.com", status: "זוכה", bids: 6, involvementType: "גם וגם", lotsInvolved: 4, maxBidAmount: "$3,200", firstBidEver: "2021-05-18" },
+      { name: "ברוך הלפרין", email: "b.halperin@email.com", status: "מעורב", bids: 9, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$4,800", firstBidEver: "2020-08-11" },
+    ],
+  },
+  {
+    sale: "#46", saleNumber: 46, involved: 155, winners: 48,
+    customers: [
+      { name: "מנחם פלדמן", email: "m.feldman@email.com", status: "זוכה", bids: 11, involvementType: "לייב", lotsInvolved: 8, maxBidAmount: "$6,400", firstBidEver: "2019-12-30" },
+      { name: "צבי הורוביץ", email: "z.horowitz@email.com", status: "מעורב", bids: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$800", firstBidEver: "2023-04-07" },
+    ],
+  },
+  {
+    sale: "#47", saleNumber: 47, involved: 195, winners: 71,
+    customers: [
+      { name: "שלמה גרינפלד", email: "s.greenfeld@email.com", status: "זוכה", bids: 7, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$3,900", firstBidEver: "2021-01-25" },
+      { name: "יוסף ברגר", email: "y.berger@email.com", status: "מעורב", bids: 2, involvementType: "לייב", lotsInvolved: 1, maxBidAmount: "$550", firstBidEver: "2023-08-19" },
+    ],
+  },
+];
+
+const zaidiInvolvedData: InvolvedBarData[] = [
+  {
+    sale: "#43", saleNumber: 43, involved: 95, winners: 32,
+    customers: [
+      { name: "רפאל מזרחי", email: "r.mizrachi@email.com", status: "מעורב", bids: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,100", firstBidEver: "2022-04-12" },
+      { name: "עמוס בן דוד", email: "a.bendavid@email.com", status: "זוכה", bids: 8, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$2,800", firstBidEver: "2021-10-03" },
+    ],
+  },
+  {
+    sale: "#44", saleNumber: 44, involved: 88, winners: 28,
+    customers: [
+      { name: "נתן אזולאי", email: "n.azoulay@email.com", status: "מעורב", bids: 6, involvementType: "מוקדם", lotsInvolved: 4, maxBidAmount: "$1,900", firstBidEver: "2022-01-17" },
+    ],
+  },
+  {
+    sale: "#45", saleNumber: 45, involved: 102, winners: 38,
+    customers: [
+      { name: "גד שמעוני", email: "g.shimoni@email.com", status: "זוכה", bids: 5, involvementType: "גם וגם", lotsInvolved: 3, maxBidAmount: "$1,500", firstBidEver: "2021-07-29" },
+    ],
+  },
+  {
+    sale: "#46", saleNumber: 46, involved: 78, winners: 24,
+    customers: [
+      { name: "אריה כץ", email: "a.katz@email.com", status: "זוכה", bids: 9, involvementType: "לייב", lotsInvolved: 6, maxBidAmount: "$3,400", firstBidEver: "2020-05-14" },
+      { name: "פנחס נחמן", email: "p.nachman@email.com", status: "מעורב", bids: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$720", firstBidEver: "2023-03-21" },
+    ],
+  },
+  {
+    sale: "#47", saleNumber: 47, involved: 91, winners: 30,
+    customers: [
+      { name: "רפאל מזרחי", email: "r.mizrachi@email.com", status: "זוכה", bids: 7, involvementType: "לייב", lotsInvolved: 4, maxBidAmount: "$2,200", firstBidEver: "2022-04-12" },
+    ],
+  },
+];
+
 const brandChurnData: Record<Brand, ChurnBarData[]> = {
   genazym: genazymChurnData,
   zaidy: zaidiChurnData,
 };
+
+const brandInvolvedData: Record<Brand, InvolvedBarData[]> = {
+  genazym: genazymInvolvedData,
+  zaidy: zaidiInvolvedData,
+};
+
+// Custom label renderer for bar values
+const renderBarLabel = (props: any) => {
+  const { x, y, width, value } = props;
+  return (
+    <text
+      x={x + width / 2}
+      y={y - 6}
+      fill="hsl(var(--muted-foreground))"
+      textAnchor="middle"
+      fontSize={11}
+      fontWeight={600}
+    >
+      {value}
+    </text>
+  );
+};
+
+// Premium drawer component
+function PremiumDrawer({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+  if (!open) return null;
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 z-40 bg-foreground/30 backdrop-blur-[2px] transition-opacity duration-300"
+        onClick={onClose}
+      />
+      {/* Drawer panel */}
+      <div
+        className="fixed top-0 right-0 h-screen w-[520px] bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
+        dir="rtl"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-7 py-5 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
+          <h3 className="font-display font-bold text-base leading-relaxed">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-hidden">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -147,10 +300,14 @@ export default function PastSales() {
   const [brand, setBrand] = useState<Brand>("genazym");
   const [churnDrawerOpen, setChurnDrawerOpen] = useState(false);
   const [churnDrawerData, setChurnDrawerData] = useState<ChurnBarData | null>(null);
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [involvedDrawerOpen, setInvolvedDrawerOpen] = useState(false);
+  const [involvedDrawerData, setInvolvedDrawerData] = useState<InvolvedBarData | null>(null);
+  const [hoveredChurnBar, setHoveredChurnBar] = useState<number | null>(null);
+  const [hoveredInvolvedBar, setHoveredInvolvedBar] = useState<number | null>(null);
 
   const kpis = brandKPIs[brand];
   const churnData = brandChurnData[brand];
+  const involvedData = brandInvolvedData[brand];
 
   const openSaleDrawer = (sale: any) => {
     setDrawerData(sale);
@@ -160,6 +317,11 @@ export default function PastSales() {
   const handleChurnBarClick = (data: ChurnBarData) => {
     setChurnDrawerData(data);
     setChurnDrawerOpen(true);
+  };
+
+  const handleInvolvedBarClick = (data: InvolvedBarData) => {
+    setInvolvedDrawerData(data);
+    setInvolvedDrawerOpen(true);
   };
 
   return (
@@ -214,24 +376,12 @@ export default function PastSales() {
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8">
-              <div className="chart-card">
-                <div className="chart-title">הכנסות לפי מכירה (אלפי $)</div>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={saleComparisonChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
+              {/* LEFT CHART: Churn */}
               <div className="chart-card">
                 <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
                 <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות שהיו מעורבים במכירה הקודמת ולא חזרו</p>
-                <ResponsiveContainer width="100%" height={230}>
-                  <BarChart data={churnData}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={churnData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
@@ -250,19 +400,78 @@ export default function PastSales() {
                       dataKey="notReturned"
                       radius={[6, 6, 0, 0]}
                       onClick={(_, index) => handleChurnBarClick(churnData[index])}
-                      onMouseEnter={(_, index) => setHoveredBar(index)}
-                      onMouseLeave={() => setHoveredBar(null)}
+                      onMouseEnter={(_, index) => setHoveredChurnBar(index)}
+                      onMouseLeave={() => setHoveredChurnBar(null)}
                     >
+                      <LabelList dataKey="notReturned" content={renderBarLabel} />
                       {churnData.map((_, index) => (
                         <Cell
                           key={index}
-                          fill={hoveredBar === index ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.7)"}
+                          fill={hoveredChurnBar === index ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.75)"}
                           style={{ cursor: "pointer", transition: "fill 0.2s ease" }}
                         />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+
+              {/* RIGHT CHART: Involved & Winners */}
+              <div className="chart-card">
+                <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
+                <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות מעורבים וזוכים ייחודיים בכל מכירה</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={involvedData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        direction: "rtl",
+                      }}
+                      formatter={(value: number, name: string) => [
+                        `${value} לקוחות`,
+                        name === "involved" ? "מעורבים" : "זוכים",
+                      ]}
+                      labelFormatter={(label) => `מכירה ${label}`}
+                    />
+                    <Bar
+                      dataKey="involved"
+                      fill="hsl(var(--primary))"
+                      radius={[6, 6, 0, 0]}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
+                      style={{ cursor: "pointer" }}
+                      name="מעורבים"
+                    >
+                      <LabelList dataKey="involved" content={renderBarLabel} />
+                    </Bar>
+                    <Bar
+                      dataKey="winners"
+                      fill="hsl(38, 65%, 52%)"
+                      radius={[6, 6, 0, 0]}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
+                      style={{ cursor: "pointer" }}
+                      name="זוכים"
+                    >
+                      <LabelList dataKey="winners" content={renderBarLabel} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                {/* Legend */}
+                <div className="flex items-center justify-center gap-6 mt-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-primary inline-block" />
+                    <span>מעורבים</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: "hsl(38, 65%, 52%)" }} />
+                    <span>זוכים</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -423,86 +632,156 @@ export default function PastSales() {
       </DrillDownDrawer>
 
       {/* Churn drill-down drawer */}
-      <Sheet open={churnDrawerOpen} onOpenChange={setChurnDrawerOpen}>
-        <SheetContent side="right" className="w-[640px] sm:max-w-[640px] p-0 gap-0" dir="rtl">
-          {churnDrawerData && (
-            <>
-              <SheetHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-5">
-                <SheetTitle className="text-base font-bold leading-relaxed">
-                  לקוחות שלא חזרו מהמכירה הקודמת — מכירה {churnDrawerData.saleNumber}
-                </SheetTitle>
-              </SheetHeader>
-
-              <div className="px-6 py-5 border-b border-border">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
-                    <div className="text-xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">לקוחות שלא חזרו</div>
-                  </div>
-                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
-                    <div className="text-xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">מעורבים במכירה הקודמת</div>
-                  </div>
-                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
-                    <div className="text-xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">מכירה קודמת</div>
-                  </div>
+      <PremiumDrawer
+        open={churnDrawerOpen}
+        onClose={() => setChurnDrawerOpen(false)}
+        title={churnDrawerData ? `לקוחות שלא חזרו מהמכירה הקודמת — מכירה ${churnDrawerData.saleNumber}` : ""}
+      >
+        {churnDrawerData && (
+          <>
+            <div className="px-7 py-5 border-b border-border">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl bg-secondary/60 p-4 text-center">
+                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
+                  <div className="text-xs text-muted-foreground mt-1">מכירה קודמת</div>
+                </div>
+                <div className="rounded-xl bg-secondary/60 p-4 text-center">
+                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
+                  <div className="text-xs text-muted-foreground mt-1">מעורבים במכירה הקודמת</div>
+                </div>
+                <div className="rounded-xl bg-secondary/60 p-4 text-center">
+                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
+                  <div className="text-xs text-muted-foreground mt-1">לקוחות שלא חזרו</div>
                 </div>
               </div>
+            </div>
 
-              <ScrollArea className="flex-1 h-[calc(100vh-220px)]">
-                <div className="px-6 py-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים במכירה הקודמת</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">זכה?</TableHead>
-                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
+            <ScrollArea className="h-[calc(100vh-240px)]">
+              <div className="px-7 py-5">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">זכה?</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {churnDrawerData.customers.map((customer, idx) => (
+                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/50 transition-colors">
+                        <TableCell className="font-medium text-sm">{customer.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
+                        <TableCell className="text-sm tabular-nums">{customer.bidsInPrev}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            customer.involvementType === "גם וגם"
+                              ? "bg-primary/10 text-primary"
+                              : customer.involvementType === "לייב"
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-secondary text-secondary-foreground"
+                          }`}>
+                            {customer.involvementType}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
+                        <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
+                        <TableCell>
+                          <span className={`text-xs font-medium ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
+                            {customer.wonInPrev ? "כן" : "לא"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {churnDrawerData.customers.map((customer, idx) => (
-                        <TableRow
-                          key={idx}
-                          className="cursor-pointer hover:bg-accent/50 transition-colors"
-                        >
-                          <TableCell className="font-medium text-sm">{customer.name}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
-                          <TableCell className="text-sm tabular-nums">{customer.bidsInPrev}</TableCell>
-                          <TableCell>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                              customer.involvementType === "גם וגם"
-                                ? "bg-primary/10 text-primary"
-                                : customer.involvementType === "לייב"
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-secondary text-secondary-foreground"
-                            }`}>
-                              {customer.involvementType}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
-                          <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
-                          <TableCell>
-                            <span className={`text-xs font-medium ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
-                              {customer.wonInPrev ? "כן" : "לא"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </>
+        )}
+      </PremiumDrawer>
+
+      {/* Involved & Winners drill-down drawer */}
+      <PremiumDrawer
+        open={involvedDrawerOpen}
+        onClose={() => setInvolvedDrawerOpen(false)}
+        title={involvedDrawerData ? `מעורבים וזוכים — מכירה ${involvedDrawerData.saleNumber}` : ""}
+      >
+        {involvedDrawerData && (
+          <>
+            <div className="px-7 py-5 border-b border-border">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-secondary/60 p-4 text-center">
+                  <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved}</div>
+                  <div className="text-xs text-muted-foreground mt-1">מעורבים במכירה</div>
                 </div>
-              </ScrollArea>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+                <div className="rounded-xl bg-secondary/60 p-4 text-center">
+                  <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                  <div className="text-xs text-muted-foreground mt-1">זוכים במכירה</div>
+                </div>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-240px)]">
+              <div className="px-7 py-5">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סטטוס</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {involvedDrawerData.customers.map((customer, idx) => (
+                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/50 transition-colors">
+                        <TableCell className="font-medium text-sm">{customer.name}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            customer.status === "זוכה"
+                              ? "text-foreground"
+                              : "bg-secondary text-secondary-foreground"
+                          }`}
+                          style={customer.status === "זוכה" ? { backgroundColor: "hsl(38, 65%, 52%, 0.15)", color: "hsl(38, 65%, 40%)" } : {}}
+                          >
+                            {customer.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm tabular-nums">{customer.bids}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                            customer.involvementType === "גם וגם"
+                              ? "bg-primary/10 text-primary"
+                              : customer.involvementType === "לייב"
+                              ? "bg-accent text-accent-foreground"
+                              : "bg-secondary text-secondary-foreground"
+                          }`}>
+                            {customer.involvementType}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
+                        <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+          </>
+        )}
+      </PremiumDrawer>
     </div>
   );
 }
