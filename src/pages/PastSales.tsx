@@ -637,50 +637,51 @@ export default function PastSales() {
       <PremiumDrawer
         open={churnDrawerOpen}
         onClose={() => setChurnDrawerOpen(false)}
-        title={churnDrawerData ? `לקוחות שלא חזרו מהמכירה הקודמת — מכירה ${churnDrawerData.saleNumber}` : ""}
+        title={churnDrawerData ? `לא חזרו מהמכירה הקודמת` : ""}
+        subtitle={churnDrawerData ? `מכירה נוכחית: ${churnDrawerData.saleNumber} | מכירה קודמת: ${churnDrawerData.saleNumber - 1} | מותג: ${brandLabel}` : ""}
       >
         {churnDrawerData && (
           <>
-            <div className="px-7 py-5 border-b border-border">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-xl bg-secondary/60 p-4 text-center">
-                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
-                  <div className="text-xs text-muted-foreground mt-1">מכירה קודמת</div>
+            <div className="px-8 py-6 border-b border-border">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                  <div className="text-xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">מכירה קודמת</div>
                 </div>
-                <div className="rounded-xl bg-secondary/60 p-4 text-center">
-                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
-                  <div className="text-xs text-muted-foreground mt-1">מעורבים במכירה הקודמת</div>
+                <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                  <div className="text-xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה הקודמת</div>
                 </div>
-                <div className="rounded-xl bg-secondary/60 p-4 text-center">
-                  <div className="text-2xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
-                  <div className="text-xs text-muted-foreground mt-1">לקוחות שלא חזרו</div>
+                <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                  <div className="text-xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">לקוחות שלא חזרו</div>
                 </div>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-240px)]">
-              <div className="px-7 py-5">
+            <ScrollArea className="h-[calc(100vh-260px)]">
+              <div className="px-8 py-6 overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">זכה?</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
+                    <TableRow className="hover:bg-transparent border-b-2 border-border">
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה?</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {churnDrawerData.customers.map((customer, idx) => (
-                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/50 transition-colors">
-                        <TableCell className="font-medium text-sm">{customer.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
-                        <TableCell className="text-sm tabular-nums">{customer.bidsInPrev}</TableCell>
+                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
+                        <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
+                        <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
+                        <TableCell className="text-[13px] tabular-nums">{customer.bidsInPrev}</TableCell>
                         <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
                             customer.involvementType === "גם וגם"
                               ? "bg-primary/10 text-primary"
                               : customer.involvementType === "לייב"
@@ -690,14 +691,14 @@ export default function PastSales() {
                             {customer.involvementType}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
-                        <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
+                        <TableCell className="text-[13px] tabular-nums">{customer.lotsInvolved}</TableCell>
+                        <TableCell className="text-[13px] tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
                         <TableCell>
-                          <span className={`text-xs font-medium ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
+                          <span className={`text-[11px] font-semibold ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
                             {customer.wonInPrev ? "כן" : "לא"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
+                        <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -712,73 +713,107 @@ export default function PastSales() {
       <PremiumDrawer
         open={involvedDrawerOpen}
         onClose={() => setInvolvedDrawerOpen(false)}
-        title={involvedDrawerData ? `מעורבים וזוכים — מכירה ${involvedDrawerData.saleNumber}` : ""}
+        title={involvedDrawerData ? (involvedDrawerType === "winners" ? `זוכים במכירה ${involvedDrawerData.saleNumber}` : `מעורבים במכירה ${involvedDrawerData.saleNumber}`) : ""}
+        subtitle={involvedDrawerData ? `מותג: ${brandLabel} | סוג: ${involvedDrawerType === "winners" ? "זוכים" : "מעורבים"}` : ""}
       >
         {involvedDrawerData && (
           <>
-            <div className="px-7 py-5 border-b border-border">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-secondary/60 p-4 text-center">
-                  <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved}</div>
-                  <div className="text-xs text-muted-foreground mt-1">מעורבים במכירה</div>
+            <div className="px-8 py-6 border-b border-border">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                  <div className="text-xl font-bold text-foreground">{involvedDrawerData.involved}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
                 </div>
-                <div className="rounded-xl bg-secondary/60 p-4 text-center">
-                  <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
-                  <div className="text-xs text-muted-foreground mt-1">זוכים במכירה</div>
+                <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                  <div className="text-xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
                 </div>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-240px)]">
-              <div className="px-7 py-5">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סטטוס</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
-                      <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {involvedDrawerData.customers.map((customer, idx) => (
-                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/50 transition-colors">
-                        <TableCell className="font-medium text-sm">{customer.name}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            customer.status === "זוכה"
-                              ? "text-foreground"
-                              : "bg-secondary text-secondary-foreground"
-                          }`}
-                          style={customer.status === "זוכה" ? { backgroundColor: "hsl(38, 65%, 52%, 0.15)", color: "hsl(38, 65%, 40%)" } : {}}
-                          >
-                            {customer.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm tabular-nums">{customer.bids}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                            customer.involvementType === "גם וגם"
-                              ? "bg-primary/10 text-primary"
-                              : customer.involvementType === "לייב"
-                              ? "bg-accent text-accent-foreground"
-                              : "bg-secondary text-secondary-foreground"
-                          }`}>
-                            {customer.involvementType}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
-                        <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
+            <ScrollArea className="h-[calc(100vh-260px)]">
+              <div className="px-8 py-6 overflow-x-auto">
+                {involvedDrawerType === "winners" ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-b-2 border-border">
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים שזכה</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סכום זכייה כולל</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {involvedDrawerData.customers.filter(c => c.status === "זוכה").map((customer, idx) => (
+                        <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
+                          <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
+                          <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
+                          <TableCell className="text-[13px] tabular-nums">{customer.lotsWon ?? "—"}</TableCell>
+                          <TableCell className="text-[13px] tabular-nums font-medium">{customer.totalWinAmount ?? "—"}</TableCell>
+                          <TableCell className="text-[13px] tabular-nums">{customer.bids}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                              customer.involvementType === "גם וגם"
+                                ? "bg-primary/10 text-primary"
+                                : customer.involvementType === "לייב"
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}>
+                              {customer.involvementType}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent border-b-2 border-border">
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה?</TableHead>
+                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {involvedDrawerData.customers.map((customer, idx) => (
+                        <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
+                          <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
+                          <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
+                          <TableCell className="text-[13px] tabular-nums">{customer.bids}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                              customer.involvementType === "גם וגם"
+                                ? "bg-primary/10 text-primary"
+                                : customer.involvementType === "לייב"
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}>
+                              {customer.involvementType}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-[13px] tabular-nums">{customer.lotsInvolved}</TableCell>
+                          <TableCell className="text-[13px] tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
+                          <TableCell>
+                            <span className={`text-[11px] font-semibold ${customer.status === "זוכה" ? "text-green-600" : "text-muted-foreground"}`}>
+                              {customer.status === "זוכה" ? "כן" : "לא"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </ScrollArea>
           </>
