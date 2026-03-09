@@ -314,6 +314,10 @@ export default function PastSales() {
   const [involvedDrawerData, setInvolvedDrawerData] = useState<InvolvedBarData | null>(null);
   const [involvedDrawerType, setInvolvedDrawerType] = useState<"involved" | "winners">("involved");
   const [hoveredChurnBar, setHoveredChurnBar] = useState<number | null>(null);
+  const [churnSearch, setChurnSearch] = useState("");
+  const [churnFilter, setChurnFilter] = useState<string>("all");
+  const [involvedSearch, setInvolvedSearch] = useState("");
+  const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
   const kpis = brandKPIs[brand];
   const churnData = brandChurnData[brand];
