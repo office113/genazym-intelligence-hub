@@ -3,7 +3,10 @@ import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { pastSalesData, saleComparisonChart } from "@/data/mockData";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell } from "recharts";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -46,17 +49,117 @@ const brandKPIs: Record<Brand, { avgOpeningPrice: string; avgUplift: string; uni
   },
 };
 
+interface ChurnCustomer {
+  name: string;
+  email: string;
+  bidsInPrev: number;
+  involvementType: "מוקדם" | "לייב" | "גם וגם";
+  lotsInvolved: number;
+  maxBidAmount: string;
+  wonInPrev: boolean;
+  firstBidEver: string;
+}
+
+interface ChurnBarData {
+  sale: string;
+  saleNumber: number;
+  notReturned: number;
+  prevSale: string;
+  prevInvolved: number;
+  customers: ChurnCustomer[];
+}
+
+const genazymChurnData: ChurnBarData[] = [
+  {
+    sale: "#44", saleNumber: 44, notReturned: 38, prevSale: "מכירה #43", prevInvolved: 180,
+    customers: [
+      { name: "אברהם כהן", email: "a.cohen@email.com", bidsInPrev: 12, involvementType: "גם וגם", lotsInvolved: 8, maxBidAmount: "$4,200", wonInPrev: true, firstBidEver: "2021-03-15" },
+      { name: "יצחק לוי", email: "y.levi@email.com", bidsInPrev: 5, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,800", wonInPrev: false, firstBidEver: "2022-07-20" },
+      { name: "משה גולדברג", email: "m.goldberg@email.com", bidsInPrev: 8, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$3,500", wonInPrev: true, firstBidEver: "2020-11-02" },
+      { name: "דוד שוורץ", email: "d.schwartz@email.com", bidsInPrev: 3, involvementType: "לייב", lotsInvolved: 2, maxBidAmount: "$950", wonInPrev: false, firstBidEver: "2023-01-10" },
+      { name: "שמואל פרידמן", email: "s.friedman@email.com", bidsInPrev: 15, involvementType: "גם וגם", lotsInvolved: 10, maxBidAmount: "$7,800", wonInPrev: true, firstBidEver: "2019-06-22" },
+    ],
+  },
+  {
+    sale: "#45", saleNumber: 45, notReturned: 52, prevSale: "מכירה #44", prevInvolved: 165,
+    customers: [
+      { name: "יעקב רוזנברג", email: "y.rosenberg@email.com", bidsInPrev: 7, involvementType: "מוקדם", lotsInvolved: 5, maxBidAmount: "$2,600", wonInPrev: false, firstBidEver: "2021-09-14" },
+      { name: "חיים ויסברג", email: "c.weisberg@email.com", bidsInPrev: 10, involvementType: "גם וגם", lotsInvolved: 7, maxBidAmount: "$5,100", wonInPrev: true, firstBidEver: "2020-02-28" },
+      { name: "נחום שטיין", email: "n.stein@email.com", bidsInPrev: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,200", wonInPrev: false, firstBidEver: "2022-12-05" },
+    ],
+  },
+  {
+    sale: "#46", saleNumber: 46, notReturned: 29, prevSale: "מכירה #45", prevInvolved: 210,
+    customers: [
+      { name: "אליהו קליין", email: "e.klein@email.com", bidsInPrev: 6, involvementType: "גם וגם", lotsInvolved: 4, maxBidAmount: "$3,200", wonInPrev: true, firstBidEver: "2021-05-18" },
+      { name: "ברוך הלפרין", email: "b.halperin@email.com", bidsInPrev: 9, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$4,800", wonInPrev: false, firstBidEver: "2020-08-11" },
+    ],
+  },
+  {
+    sale: "#47", saleNumber: 47, notReturned: 45, prevSale: "מכירה #46", prevInvolved: 155,
+    customers: [
+      { name: "מנחם פלדמן", email: "m.feldman@email.com", bidsInPrev: 11, involvementType: "לייב", lotsInvolved: 8, maxBidAmount: "$6,400", wonInPrev: true, firstBidEver: "2019-12-30" },
+      { name: "צבי הורוביץ", email: "z.horowitz@email.com", bidsInPrev: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$800", wonInPrev: false, firstBidEver: "2023-04-07" },
+      { name: "שלמה גרינפלד", email: "s.greenfeld@email.com", bidsInPrev: 7, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$3,900", wonInPrev: true, firstBidEver: "2021-01-25" },
+      { name: "יוסף ברגר", email: "y.berger@email.com", bidsInPrev: 2, involvementType: "לייב", lotsInvolved: 1, maxBidAmount: "$550", wonInPrev: false, firstBidEver: "2023-08-19" },
+    ],
+  },
+];
+
+const zaidiChurnData: ChurnBarData[] = [
+  {
+    sale: "#44", saleNumber: 44, notReturned: 22, prevSale: "מכירה #43", prevInvolved: 95,
+    customers: [
+      { name: "רפאל מזרחי", email: "r.mizrachi@email.com", bidsInPrev: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,100", wonInPrev: false, firstBidEver: "2022-04-12" },
+      { name: "עמוס בן דוד", email: "a.bendavid@email.com", bidsInPrev: 8, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$2,800", wonInPrev: true, firstBidEver: "2021-10-03" },
+    ],
+  },
+  {
+    sale: "#45", saleNumber: 45, notReturned: 31, prevSale: "מכירה #44", prevInvolved: 88,
+    customers: [
+      { name: "נתן אזולאי", email: "n.azoulay@email.com", bidsInPrev: 6, involvementType: "מוקדם", lotsInvolved: 4, maxBidAmount: "$1,900", wonInPrev: false, firstBidEver: "2022-01-17" },
+    ],
+  },
+  {
+    sale: "#46", saleNumber: 46, notReturned: 18, prevSale: "מכירה #45", prevInvolved: 102,
+    customers: [
+      { name: "גד שמעוני", email: "g.shimoni@email.com", bidsInPrev: 5, involvementType: "גם וגם", lotsInvolved: 3, maxBidAmount: "$1,500", wonInPrev: true, firstBidEver: "2021-07-29" },
+    ],
+  },
+  {
+    sale: "#47", saleNumber: 47, notReturned: 27, prevSale: "מכירה #46", prevInvolved: 78,
+    customers: [
+      { name: "אריה כץ", email: "a.katz@email.com", bidsInPrev: 9, involvementType: "לייב", lotsInvolved: 6, maxBidAmount: "$3,400", wonInPrev: true, firstBidEver: "2020-05-14" },
+      { name: "פנחס נחמן", email: "p.nachman@email.com", bidsInPrev: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$720", wonInPrev: false, firstBidEver: "2023-03-21" },
+    ],
+  },
+];
+
+const brandChurnData: Record<Brand, ChurnBarData[]> = {
+  genazym: genazymChurnData,
+  zaidy: zaidiChurnData,
+};
+
 export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerData, setDrawerData] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
+  const [churnDrawerOpen, setChurnDrawerOpen] = useState(false);
+  const [churnDrawerData, setChurnDrawerData] = useState<ChurnBarData | null>(null);
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   const kpis = brandKPIs[brand];
+  const churnData = brandChurnData[brand];
 
   const openSaleDrawer = (sale: any) => {
     setDrawerData(sale);
     setDrawerOpen(true);
+  };
+
+  const handleChurnBarClick = (data: ChurnBarData) => {
+    setChurnDrawerData(data);
+    setChurnDrawerOpen(true);
   };
 
   return (
@@ -115,25 +218,49 @@ export default function PastSales() {
                 <div className="chart-title">הכנסות לפי מכירה (אלפי $)</div>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={saleComparisonChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
-                    <Bar dataKey="revenue" fill="hsl(220,35%,18%)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
 
               <div className="chart-card">
-                <div className="chart-title">פריטים שנמכרו מול סה״כ</div>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={saleComparisonChart}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                    <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="lots" fill="hsl(40,8%,80%)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="sold" fill="hsl(38,65%,52%)" radius={[4, 4, 0, 0]} />
+                <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
+                <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות שהיו מעורבים במכירה הקודמת ולא חזרו</p>
+                <ResponsiveContainer width="100%" height={230}>
+                  <BarChart data={churnData} cursor="pointer">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        direction: "rtl",
+                      }}
+                      formatter={(value: number) => [`${value} לקוחות`, "לא חזרו"]}
+                      labelFormatter={(label) => `מכירה ${label}`}
+                    />
+                    <Bar
+                      dataKey="notReturned"
+                      radius={[6, 6, 0, 0]}
+                      onClick={(_, index) => handleChurnBarClick(churnData[index])}
+                      onMouseEnter={(_, index) => setHoveredBar(index)}
+                      onMouseLeave={() => setHoveredBar(null)}
+                    >
+                      {churnData.map((_, index) => (
+                        <Cell
+                          key={index}
+                          fill={hoveredBar === index ? "hsl(var(--primary))" : "hsl(var(--primary) / 0.7)"}
+                          style={{ cursor: "pointer", transition: "fill 0.2s ease" }}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -294,6 +421,88 @@ export default function PastSales() {
           </div>
         )}
       </DrillDownDrawer>
+
+      {/* Churn drill-down drawer */}
+      <Sheet open={churnDrawerOpen} onOpenChange={setChurnDrawerOpen}>
+        <SheetContent side="right" className="w-[640px] sm:max-w-[640px] p-0 gap-0" dir="rtl">
+          {churnDrawerData && (
+            <>
+              <SheetHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border px-6 py-5">
+                <SheetTitle className="text-base font-bold leading-relaxed">
+                  לקוחות שלא חזרו מהמכירה הקודמת — מכירה {churnDrawerData.saleNumber}
+                </SheetTitle>
+              </SheetHeader>
+
+              <div className="px-6 py-5 border-b border-border">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                    <div className="text-xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">לקוחות שלא חזרו</div>
+                  </div>
+                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                    <div className="text-xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">מעורבים במכירה הקודמת</div>
+                  </div>
+                  <div className="rounded-lg bg-secondary/50 p-3 text-center">
+                    <div className="text-xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">מכירה קודמת</div>
+                  </div>
+                </div>
+              </div>
+
+              <ScrollArea className="flex-1 h-[calc(100vh-220px)]">
+                <div className="px-6 py-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">שם לקוח</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">אימייל</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">בידים במכירה הקודמת</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">סוג מעורבות</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">לוטים</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד מקסימלי</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">זכה?</TableHead>
+                        <TableHead className="text-right text-xs font-semibold text-muted-foreground">ביד ראשון במותג</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {churnDrawerData.customers.map((customer, idx) => (
+                        <TableRow
+                          key={idx}
+                          className="cursor-pointer hover:bg-accent/50 transition-colors"
+                        >
+                          <TableCell className="font-medium text-sm">{customer.name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{customer.email}</TableCell>
+                          <TableCell className="text-sm tabular-nums">{customer.bidsInPrev}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              customer.involvementType === "גם וגם"
+                                ? "bg-primary/10 text-primary"
+                                : customer.involvementType === "לייב"
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}>
+                              {customer.involvementType}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm tabular-nums">{customer.lotsInvolved}</TableCell>
+                          <TableCell className="text-sm tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
+                          <TableCell>
+                            <span className={`text-xs font-medium ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
+                              {customer.wonInPrev ? "כן" : "לא"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground tabular-nums">{customer.firstBidEver}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
