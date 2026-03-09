@@ -665,14 +665,14 @@ export default function PastSales() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b-2 border-border">
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">מס׳ בידים במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">מס׳ לוטים שבהם היה מעורב במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[80px]">שם לקוח</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[120px]">אימייל</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[90px]">מס׳ בידים<br />במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[100px]">סוג מעורבות<br />במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[110px]">מס׳ לוטים שבהם<br />היה מעורב במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[100px]">ביד מקסימלי<br />במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[80px]">זכה במכירה<br />הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[90px]">ביד ראשון<br />במותג</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
