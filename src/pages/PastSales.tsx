@@ -379,15 +379,72 @@ export default function PastSales() {
             </div>
 
             <div className="grid grid-cols-2 gap-6 mb-8">
-              {/* LEFT CHART: Churn */}
+              {/* RIGHT in RTL (first in DOM) = Involved & Winners */}
+              <div className="chart-card">
+                <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
+                <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות מעורבים וזוכים ייחודיים בכל מכירה</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={involvedData} margin={{ top: 20, right: 16, left: 30, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={40} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "13px",
+                        direction: "rtl",
+                      }}
+                      formatter={(value: number, name: string) => [
+                        `${value} לקוחות`,
+                        name === "מעורבים" ? "מעורבים" : "זוכים",
+                      ]}
+                      labelFormatter={(label) => `מכירה ${label}`}
+                    />
+                    <Bar
+                      dataKey="involved"
+                      fill="hsl(var(--primary))"
+                      radius={[6, 6, 0, 0]}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "involved")}
+                      style={{ cursor: "pointer" }}
+                      name="מעורבים"
+                    >
+                      <LabelList dataKey="involved" content={renderBarLabel} />
+                    </Bar>
+                    <Bar
+                      dataKey="winners"
+                      fill="hsl(38, 65%, 52%)"
+                      radius={[6, 6, 0, 0]}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "winners")}
+                      style={{ cursor: "pointer" }}
+                      name="זוכים"
+                    >
+                      <LabelList dataKey="winners" content={renderBarLabel} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <div className="flex items-center justify-center gap-6 mt-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-primary inline-block" />
+                    <span>מעורבים</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: "hsl(38, 65%, 52%)" }} />
+                    <span>זוכים</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* LEFT in RTL (second in DOM) = Churn */}
               <div className="chart-card">
                 <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
                 <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות שהיו מעורבים במכירה הקודמת ולא חזרו</p>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={churnData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                  <BarChart data={churnData} margin={{ top: 20, right: 16, left: 30, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={40} />
                     <Tooltip
                       contentStyle={{
                         background: "hsl(var(--card))",
@@ -417,64 +474,6 @@ export default function PastSales() {
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-
-              {/* RIGHT CHART: Involved & Winners */}
-              <div className="chart-card">
-                <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
-                <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות מעורבים וזוכים ייחודיים בכל מכירה</p>
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={involvedData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                        direction: "rtl",
-                      }}
-                      formatter={(value: number, name: string) => [
-                        `${value} לקוחות`,
-                        name === "involved" ? "מעורבים" : "זוכים",
-                      ]}
-                      labelFormatter={(label) => `מכירה ${label}`}
-                    />
-                    <Bar
-                      dataKey="involved"
-                      fill="hsl(var(--primary))"
-                      radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
-                      style={{ cursor: "pointer" }}
-                      name="מעורבים"
-                    >
-                      <LabelList dataKey="involved" content={renderBarLabel} />
-                    </Bar>
-                    <Bar
-                      dataKey="winners"
-                      fill="hsl(38, 65%, 52%)"
-                      radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
-                      style={{ cursor: "pointer" }}
-                      name="זוכים"
-                    >
-                      <LabelList dataKey="winners" content={renderBarLabel} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                {/* Legend */}
-                <div className="flex items-center justify-center gap-6 mt-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm bg-primary inline-block" />
-                    <span>מעורבים</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: "hsl(38, 65%, 52%)" }} />
-                    <span>זוכים</span>
-                  </div>
-                </div>
               </div>
             </div>
 
