@@ -260,30 +260,31 @@ const renderBarLabel = (props: any) => {
   );
 };
 
-// Premium drawer component
+// Premium side panel component
 function PremiumDrawer({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
   if (!open) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[3px] transition-opacity duration-300"
+        className="fixed inset-0 z-40 bg-foreground/50 backdrop-blur-[4px] transition-opacity duration-300"
         onClick={onClose}
       />
       <div
-        className="fixed top-0 right-0 h-screen w-[700px] max-w-[90vw] bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
+        className="fixed top-0 right-0 h-screen bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
+        style={{ width: "min(72vw, 1100px)" }}
         dir="rtl"
       >
-        <div className="flex items-start justify-between px-8 py-6 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
-          <div className="space-y-1">
-            <h3 className="font-display font-bold text-lg leading-tight">{title}</h3>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        <div className="flex items-start justify-between px-10 py-7 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
+          <div className="space-y-1.5">
+            <h3 className="font-display font-bold text-xl leading-tight">{title}</h3>
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-secondary transition-colors mt-0.5"
+            className="p-2.5 rounded-lg hover:bg-secondary transition-colors mt-0.5"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
         <div className="flex-1 overflow-hidden">
@@ -321,9 +322,9 @@ export default function PastSales() {
     setChurnDrawerOpen(true);
   };
 
-  const handleInvolvedBarClick = (data: InvolvedBarData, type: "involved" | "winners") => {
+  const handleInvolvedBarClick = (data: InvolvedBarData) => {
     setInvolvedDrawerData(data);
-    setInvolvedDrawerType(type);
+    setInvolvedDrawerType("involved");
     setInvolvedDrawerOpen(true);
   };
 
@@ -384,10 +385,10 @@ export default function PastSales() {
                 <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
                 <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות מעורבים וזוכים ייחודיים בכל מכירה</p>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={involvedData} margin={{ top: 20, right: 16, left: 30, bottom: 0 }}>
+                  <BarChart data={involvedData} margin={{ top: 20, right: 20, left: 45, bottom: 0 }} barCategoryGap="25%">
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={40} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={45} tickMargin={8} />
                     <Tooltip
                       contentStyle={{
                         background: "hsl(var(--card))",
@@ -406,7 +407,7 @@ export default function PastSales() {
                       dataKey="involved"
                       fill="hsl(var(--primary))"
                       radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "involved")}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
                       style={{ cursor: "pointer" }}
                       name="מעורבים"
                     >
@@ -416,7 +417,7 @@ export default function PastSales() {
                       dataKey="winners"
                       fill="hsl(38, 65%, 52%)"
                       radius={[6, 6, 0, 0]}
-                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index], "winners")}
+                      onClick={(_, index) => handleInvolvedBarClick(involvedData[index])}
                       style={{ cursor: "pointer" }}
                       name="זוכים"
                     >
@@ -441,10 +442,10 @@ export default function PastSales() {
                 <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
                 <p className="text-xs text-muted-foreground mb-3 px-1">מספר לקוחות שהיו מעורבים במכירה הקודמת ולא חזרו</p>
                 <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={churnData} margin={{ top: 20, right: 16, left: 30, bottom: 0 }}>
+                  <BarChart data={churnData} margin={{ top: 20, right: 20, left: 45, bottom: 0 }} barCategoryGap="25%">
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="sale" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={40} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} allowDecimals={false} width={45} tickMargin={8} />
                     <Tooltip
                       contentStyle={{
                         background: "hsl(var(--card))",
@@ -709,30 +710,75 @@ export default function PastSales() {
         )}
       </PremiumDrawer>
 
-      {/* Involved & Winners drill-down drawer */}
+      {/* Involved & Winners drill-down panel */}
       <PremiumDrawer
         open={involvedDrawerOpen}
         onClose={() => setInvolvedDrawerOpen(false)}
-        title={involvedDrawerData ? (involvedDrawerType === "winners" ? `זוכים במכירה ${involvedDrawerData.saleNumber}` : `מעורבים במכירה ${involvedDrawerData.saleNumber}`) : ""}
-        subtitle={involvedDrawerData ? `מותג: ${brandLabel} | סוג: ${involvedDrawerType === "winners" ? "זוכים" : "מעורבים"}` : ""}
+        title={involvedDrawerData ? `מעורבים וזוכים — מכירה ${involvedDrawerData.saleNumber}` : ""}
+        subtitle={involvedDrawerData ? `מותג: ${brandLabel}` : ""}
       >
         {involvedDrawerData && (
           <>
-            <div className="px-8 py-6 border-b border-border">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold text-foreground">{involvedDrawerData.involved}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
-                </div>
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
-                </div>
+            {/* Segmented toggle */}
+            <div className="px-10 pt-6 pb-0">
+              <div className="inline-flex items-center bg-secondary/60 rounded-lg p-1">
+                <button
+                  onClick={() => setInvolvedDrawerType("involved")}
+                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                    involvedDrawerType === "involved"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  מעורבים
+                </button>
+                <button
+                  onClick={() => setInvolvedDrawerType("winners")}
+                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                    involvedDrawerType === "winners"
+                      ? "shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  style={involvedDrawerType === "winners" ? { backgroundColor: "hsl(38, 65%, 52%)", color: "white" } : {}}
+                >
+                  זוכים
+                </button>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-260px)]">
-              <div className="px-8 py-6 overflow-x-auto">
+            {/* Summary cards */}
+            <div className="px-10 py-5 border-b border-border">
+              {involvedDrawerType === "involved" ? (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved - involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">לא זכו</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.customers.filter(c => c.status === "זוכה").reduce((sum, c) => sum + (c.lotsWon ?? 0), 0)}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">לוטים שנזכו</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-320px)]">
+              <div className="px-10 py-6 overflow-x-auto">
                 {involvedDrawerType === "winners" ? (
                   <Table>
                     <TableHeader>
