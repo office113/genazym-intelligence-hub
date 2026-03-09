@@ -710,30 +710,75 @@ export default function PastSales() {
         )}
       </PremiumDrawer>
 
-      {/* Involved & Winners drill-down drawer */}
+      {/* Involved & Winners drill-down panel */}
       <PremiumDrawer
         open={involvedDrawerOpen}
         onClose={() => setInvolvedDrawerOpen(false)}
-        title={involvedDrawerData ? (involvedDrawerType === "winners" ? `זוכים במכירה ${involvedDrawerData.saleNumber}` : `מעורבים במכירה ${involvedDrawerData.saleNumber}`) : ""}
-        subtitle={involvedDrawerData ? `מותג: ${brandLabel} | סוג: ${involvedDrawerType === "winners" ? "זוכים" : "מעורבים"}` : ""}
+        title={involvedDrawerData ? `מעורבים וזוכים — מכירה ${involvedDrawerData.saleNumber}` : ""}
+        subtitle={involvedDrawerData ? `מותג: ${brandLabel}` : ""}
       >
         {involvedDrawerData && (
           <>
-            <div className="px-8 py-6 border-b border-border">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold text-foreground">{involvedDrawerData.involved}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
-                </div>
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
-                </div>
+            {/* Segmented toggle */}
+            <div className="px-10 pt-6 pb-0">
+              <div className="inline-flex items-center bg-secondary/60 rounded-lg p-1">
+                <button
+                  onClick={() => setInvolvedDrawerType("involved")}
+                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                    involvedDrawerType === "involved"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  מעורבים
+                </button>
+                <button
+                  onClick={() => setInvolvedDrawerType("winners")}
+                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                    involvedDrawerType === "winners"
+                      ? "shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  style={involvedDrawerType === "winners" ? { backgroundColor: "hsl(38, 65%, 52%)", color: "white" } : {}}
+                >
+                  זוכים
+                </button>
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-260px)]">
-              <div className="px-8 py-6 overflow-x-auto">
+            {/* Summary cards */}
+            <div className="px-10 py-5 border-b border-border">
+              {involvedDrawerType === "involved" ? (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved - involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">לא זכו</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.customers.filter(c => c.status === "זוכה").reduce((sum, c) => sum + (c.lotsWon ?? 0), 0)}</div>
+                    <div className="text-[11px] text-muted-foreground mt-1.5">לוטים שנזכו</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <ScrollArea className="h-[calc(100vh-320px)]">
+              <div className="px-10 py-6 overflow-x-auto">
                 {involvedDrawerType === "winners" ? (
                   <Table>
                     <TableHeader>
