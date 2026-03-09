@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
@@ -6,7 +6,7 @@ import { pastSalesData, saleComparisonChart } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell, LabelList } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -260,34 +260,42 @@ const renderBarLabel = (props: any) => {
   );
 };
 
-// Premium side panel component
-function PremiumDrawer({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
+// Investigation bottom-sheet panel
+function InvestigationPanel({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
   if (!open) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-foreground/50 backdrop-blur-[4px] transition-opacity duration-300"
+        className="fixed inset-0 z-40 bg-foreground/60 backdrop-blur-[5px] animate-fade-in"
         onClick={onClose}
       />
       <div
-        className="fixed top-0 right-0 h-screen bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
-        style={{ width: "min(72vw, 1100px)" }}
+        className="fixed z-50 flex flex-col bg-card rounded-t-2xl shadow-2xl border border-border/60 animate-in slide-in-from-bottom duration-500"
+        style={{
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "min(90vw, 1400px)",
+          height: "85vh",
+        }}
         dir="rtl"
       >
-        <div className="flex items-start justify-between px-10 py-7 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
-          <div className="space-y-1.5">
-            <h3 className="font-display font-bold text-xl leading-tight">{title}</h3>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+        {/* Header */}
+        <div className="flex items-center justify-between px-10 py-6 border-b border-border/60 shrink-0 rounded-t-2xl" style={{ background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.3) 100%)" }}>
+          <div className="space-y-1">
+            <h2 className="font-display font-bold text-xl tracking-tight">{title}</h2>
+            {subtitle && <p className="text-[13px] text-muted-foreground tracking-wide">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-lg hover:bg-secondary transition-colors mt-0.5"
+            className="p-2.5 rounded-xl bg-secondary/60 hover:bg-secondary transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
+        {/* Body */}
+        <div className="flex-1 overflow-hidden flex flex-col">
           {children}
         </div>
       </div>
@@ -306,6 +314,10 @@ export default function PastSales() {
   const [involvedDrawerData, setInvolvedDrawerData] = useState<InvolvedBarData | null>(null);
   const [involvedDrawerType, setInvolvedDrawerType] = useState<"involved" | "winners">("involved");
   const [hoveredChurnBar, setHoveredChurnBar] = useState<number | null>(null);
+  const [churnSearch, setChurnSearch] = useState("");
+  const [churnFilter, setChurnFilter] = useState<string>("all");
+  const [involvedSearch, setInvolvedSearch] = useState("");
+  const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
   const kpis = brandKPIs[brand];
   const churnData = brandChurnData[brand];
@@ -634,55 +646,92 @@ export default function PastSales() {
         )}
       </DrillDownDrawer>
 
-      {/* Churn drill-down drawer */}
-      <PremiumDrawer
+      {/* Churn investigation panel */}
+      <InvestigationPanel
         open={churnDrawerOpen}
-        onClose={() => setChurnDrawerOpen(false)}
-        title={churnDrawerData ? `לא חזרו מהמכירה הקודמת` : ""}
+        onClose={() => { setChurnDrawerOpen(false); setChurnSearch(""); setChurnFilter("all"); }}
+        title="לא חזרו מהמכירה הקודמת"
         subtitle={churnDrawerData ? `מכירה נוכחית: ${churnDrawerData.saleNumber} | מכירה קודמת: ${churnDrawerData.saleNumber - 1} | מותג: ${brandLabel}` : ""}
       >
-        {churnDrawerData && (
-          <>
-            <div className="px-8 py-6 border-b border-border">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold text-foreground">{churnDrawerData.prevSale}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">מכירה קודמת</div>
-                </div>
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold text-foreground">{churnDrawerData.prevInvolved}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה הקודמת</div>
-                </div>
-                <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                  <div className="text-xl font-bold text-foreground">{churnDrawerData.notReturned}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1.5">לקוחות שלא חזרו</div>
+        {churnDrawerData && (() => {
+          const filtered = churnDrawerData.customers.filter(c => {
+            const matchSearch = !churnSearch || c.name.includes(churnSearch) || c.email.toLowerCase().includes(churnSearch.toLowerCase());
+            const matchFilter = churnFilter === "all" || c.involvementType === churnFilter;
+            return matchSearch && matchFilter;
+          });
+          return (
+            <>
+              {/* Summary cards */}
+              <div className="px-10 py-6 border-b border-border/40 shrink-0">
+                <div className="grid grid-cols-3 gap-5">
+                  <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground tracking-tight">{churnDrawerData.prevSale}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2 font-medium">מכירה קודמת</div>
+                  </div>
+                  <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                    <div className="text-2xl font-bold text-foreground tracking-tight">{churnDrawerData.prevInvolved}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2 font-medium">מעורבים במכירה הקודמת</div>
+                  </div>
+                  <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                    <div className="text-2xl font-bold text-primary tracking-tight">{churnDrawerData.notReturned}</div>
+                    <div className="text-[11px] text-muted-foreground mt-2 font-medium">לקוחות שלא חזרו</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <ScrollArea className="h-[calc(100vh-260px)]">
-              <div className="px-8 py-6 overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b-2 border-border">
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[80px]">שם לקוח</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[120px]">אימייל</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[90px]">מס׳ בידים<br />במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[100px]">סוג מעורבות<br />במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[110px]">מס׳ לוטים שבהם<br />היה מעורב במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[100px]">ביד מקסימלי<br />במכירה הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[80px]">זכה במכירה<br />הקודמת</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground leading-[1.4] min-w-[90px]">ביד ראשון<br />במותג</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {churnDrawerData.customers.map((customer, idx) => (
-                      <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
-                        <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
-                        <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
-                        <TableCell className="text-[13px] tabular-nums">{customer.bidsInPrev}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              {/* Search + filter bar */}
+              <div className="px-10 py-4 flex items-center gap-4 border-b border-border/30 shrink-0">
+                <div className="relative flex-1 max-w-xs">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="חיפוש לפי שם או אימייל..."
+                    value={churnSearch}
+                    onChange={e => setChurnSearch(e.target.value)}
+                    className="w-full pr-10 pl-4 py-2 rounded-lg bg-secondary/40 border border-border/50 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+                  {["all", "מוקדם", "לייב", "גם וגם"].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setChurnFilter(f)}
+                      className={`px-3.5 py-1.5 text-[12px] font-medium rounded-md transition-all ${
+                        churnFilter === f
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {f === "all" ? "הכל" : f}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[12px] text-muted-foreground mr-auto">{filtered.length} לקוחות</span>
+              </div>
+
+              {/* Table */}
+              <div className="flex-1 overflow-auto">
+                <table className="w-full text-sm" dir="rtl">
+                  <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
+                    <tr>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ בידים<br />במכירה הקודמת</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">סוג מעורבות<br />במכירה הקודמת</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ לוטים שבהם היה<br />מעורב במכירה הקודמת</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">ביד מקסימלי<br />במכירה הקודמת</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">זכה במכירה<br />הקודמת</th>
+                      <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">ביד ראשון<br />במותג</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((customer, idx) => (
+                      <tr key={idx} className={`cursor-pointer transition-colors hover:bg-accent/30 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
+                        <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{customer.name}</td>
+                        <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</td>
+                        <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.bidsInPrev}</td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                             customer.involvementType === "גם וגם"
                               ? "bg-primary/10 text-primary"
                               : customer.involvementType === "לייב"
@@ -691,180 +740,216 @@ export default function PastSales() {
                           }`}>
                             {customer.involvementType}
                           </span>
-                        </TableCell>
-                        <TableCell className="text-[13px] tabular-nums">{customer.lotsInvolved}</TableCell>
-                        <TableCell className="text-[13px] tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
-                        <TableCell>
-                          <span className={`text-[11px] font-semibold ${customer.wonInPrev ? "text-green-600" : "text-muted-foreground"}`}>
+                        </td>
+                        <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.lotsInvolved}</td>
+                        <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">{customer.maxBidAmount}</td>
+                        <td className="px-5 py-3 text-center">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${customer.wonInPrev ? "bg-green-100 text-green-700" : "bg-secondary text-muted-foreground"}`}>
                             {customer.wonInPrev ? "כן" : "לא"}
                           </span>
-                        </TableCell>
-                        <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
-                      </TableRow>
+                        </td>
+                        <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
-            </ScrollArea>
-          </>
-        )}
-      </PremiumDrawer>
+            </>
+          );
+        })()}
+      </InvestigationPanel>
 
-      {/* Involved & Winners drill-down panel */}
-      <PremiumDrawer
+      {/* Involved & Winners investigation panel */}
+      <InvestigationPanel
         open={involvedDrawerOpen}
-        onClose={() => setInvolvedDrawerOpen(false)}
+        onClose={() => { setInvolvedDrawerOpen(false); setInvolvedSearch(""); setInvolvedFilter("all"); }}
         title={involvedDrawerData ? `מעורבים וזוכים — מכירה ${involvedDrawerData.saleNumber}` : ""}
         subtitle={involvedDrawerData ? `מותג: ${brandLabel}` : ""}
       >
-        {involvedDrawerData && (
-          <>
-            {/* Segmented toggle */}
-            <div className="px-10 pt-6 pb-0">
-              <div className="inline-flex items-center bg-secondary/60 rounded-lg p-1">
-                <button
-                  onClick={() => setInvolvedDrawerType("involved")}
-                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
-                    involvedDrawerType === "involved"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  מעורבים
-                </button>
-                <button
-                  onClick={() => setInvolvedDrawerType("winners")}
-                  className={`px-6 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
-                    involvedDrawerType === "winners"
-                      ? "shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  style={involvedDrawerType === "winners" ? { backgroundColor: "hsl(38, 65%, 52%)", color: "white" } : {}}
-                >
-                  זוכים
-                </button>
-              </div>
-            </div>
-
-            {/* Summary cards */}
-            <div className="px-10 py-5 border-b border-border">
-              {involvedDrawerType === "involved" ? (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5">מעורבים במכירה</div>
-                  </div>
-                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
-                  </div>
-                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.involved - involvedDrawerData.winners}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5">לא זכו</div>
-                  </div>
+        {involvedDrawerData && (() => {
+          const baseCustomers = involvedDrawerType === "winners"
+            ? involvedDrawerData.customers.filter(c => c.status === "זוכה")
+            : involvedDrawerData.customers;
+          const filtered = baseCustomers.filter(c => {
+            const matchSearch = !involvedSearch || c.name.includes(involvedSearch) || c.email.toLowerCase().includes(involvedSearch.toLowerCase());
+            const matchFilter = involvedFilter === "all" || c.involvementType === involvedFilter;
+            return matchSearch && matchFilter;
+          });
+          return (
+            <>
+              {/* Segmented toggle + summary */}
+              <div className="px-10 py-6 border-b border-border/40 shrink-0 space-y-5">
+                <div className="inline-flex items-center bg-secondary/50 rounded-lg p-1 border border-border/40">
+                  <button
+                    onClick={() => setInvolvedDrawerType("involved")}
+                    className={`px-7 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                      involvedDrawerType === "involved"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    מעורבים
+                  </button>
+                  <button
+                    onClick={() => setInvolvedDrawerType("winners")}
+                    className={`px-7 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                      involvedDrawerType === "winners"
+                        ? "shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                    style={involvedDrawerType === "winners" ? { backgroundColor: "hsl(38, 65%, 52%)", color: "white" } : {}}
+                  >
+                    זוכים
+                  </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                    <div className="text-2xl font-bold" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5">זוכים במכירה</div>
-                  </div>
-                  <div className="rounded-xl bg-secondary/50 p-5 text-center">
-                    <div className="text-2xl font-bold text-foreground">{involvedDrawerData.customers.filter(c => c.status === "זוכה").reduce((sum, c) => sum + (c.lotsWon ?? 0), 0)}</div>
-                    <div className="text-[11px] text-muted-foreground mt-1.5">לוטים שנזכו</div>
-                  </div>
-                </div>
-              )}
-            </div>
 
-            <ScrollArea className="h-[calc(100vh-320px)]">
-              <div className="px-10 py-6 overflow-x-auto">
-                {involvedDrawerType === "winners" ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent border-b-2 border-border">
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים שזכה</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סכום זכייה כולל</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {involvedDrawerData.customers.filter(c => c.status === "זוכה").map((customer, idx) => (
-                        <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
-                          <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
-                          <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
-                          <TableCell className="text-[13px] tabular-nums">{customer.lotsWon ?? "—"}</TableCell>
-                          <TableCell className="text-[13px] tabular-nums font-medium">{customer.totalWinAmount ?? "—"}</TableCell>
-                          <TableCell className="text-[13px] tabular-nums">{customer.bids}</TableCell>
-                          <TableCell>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                              customer.involvementType === "גם וגם"
-                                ? "bg-primary/10 text-primary"
-                                : customer.involvementType === "לייב"
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-secondary text-secondary-foreground"
-                            }`}>
-                              {customer.involvementType}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                {involvedDrawerType === "involved" ? (
+                  <div className="grid grid-cols-3 gap-5">
+                    <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                      <div className="text-2xl font-bold text-foreground tracking-tight">{involvedDrawerData.involved}</div>
+                      <div className="text-[11px] text-muted-foreground mt-2 font-medium">מעורבים במכירה</div>
+                    </div>
+                    <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                      <div className="text-2xl font-bold tracking-tight" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                      <div className="text-[11px] text-muted-foreground mt-2 font-medium">זוכים במכירה</div>
+                    </div>
+                    <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                      <div className="text-2xl font-bold text-foreground tracking-tight">{involvedDrawerData.involved - involvedDrawerData.winners}</div>
+                      <div className="text-[11px] text-muted-foreground mt-2 font-medium">לא זכו</div>
+                    </div>
+                  </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent border-b-2 border-border">
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה?</TableHead>
-                        <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {involvedDrawerData.customers.map((customer, idx) => (
-                        <TableRow key={idx} className="cursor-pointer hover:bg-accent/40 transition-colors">
-                          <TableCell className="font-medium text-[13px] whitespace-nowrap">{customer.name}</TableCell>
-                          <TableCell className="text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</TableCell>
-                          <TableCell className="text-[13px] tabular-nums">{customer.bids}</TableCell>
-                          <TableCell>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                              customer.involvementType === "גם וגם"
-                                ? "bg-primary/10 text-primary"
-                                : customer.involvementType === "לייב"
-                                ? "bg-accent text-accent-foreground"
-                                : "bg-secondary text-secondary-foreground"
-                            }`}>
-                              {customer.involvementType}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-[13px] tabular-nums">{customer.lotsInvolved}</TableCell>
-                          <TableCell className="text-[13px] tabular-nums font-medium">{customer.maxBidAmount}</TableCell>
-                          <TableCell>
-                            <span className={`text-[11px] font-semibold ${customer.status === "זוכה" ? "text-green-600" : "text-muted-foreground"}`}>
-                              {customer.status === "זוכה" ? "כן" : "לא"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="grid grid-cols-2 gap-5 max-w-md">
+                    <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                      <div className="text-2xl font-bold tracking-tight" style={{ color: "hsl(38, 65%, 52%)" }}>{involvedDrawerData.winners}</div>
+                      <div className="text-[11px] text-muted-foreground mt-2 font-medium">זוכים במכירה</div>
+                    </div>
+                    <div className="rounded-xl border border-border/50 bg-secondary/30 p-5 text-center">
+                      <div className="text-2xl font-bold text-foreground tracking-tight">{involvedDrawerData.customers.filter(c => c.status === "זוכה").reduce((sum, c) => sum + (c.lotsWon ?? 0), 0)}</div>
+                      <div className="text-[11px] text-muted-foreground mt-2 font-medium">לוטים שנזכו</div>
+                    </div>
+                  </div>
                 )}
               </div>
-            </ScrollArea>
-          </>
-        )}
-      </PremiumDrawer>
+
+              {/* Search + filter bar */}
+              <div className="px-10 py-4 flex items-center gap-4 border-b border-border/30 shrink-0">
+                <div className="relative flex-1 max-w-xs">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="חיפוש לפי שם או אימייל..."
+                    value={involvedSearch}
+                    onChange={e => setInvolvedSearch(e.target.value)}
+                    className="w-full pr-10 pl-4 py-2 rounded-lg bg-secondary/40 border border-border/50 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+                  {["all", "מוקדם", "לייב", "גם וגם"].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setInvolvedFilter(f)}
+                      className={`px-3.5 py-1.5 text-[12px] font-medium rounded-md transition-all ${
+                        involvedFilter === f
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {f === "all" ? "הכל" : f}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[12px] text-muted-foreground mr-auto">{filtered.length} לקוחות</span>
+              </div>
+
+              {/* Table */}
+              <div className="flex-1 overflow-auto">
+                {involvedDrawerType === "winners" ? (
+                  <table className="w-full text-sm" dir="rtl">
+                    <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
+                      <tr>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">לוטים<br />שזכה</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">סכום זכייה<br />כולל</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ בידים<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">סוג מעורבות<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">ביד ראשון<br />במותג</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((customer, idx) => (
+                        <tr key={idx} className={`cursor-pointer transition-colors hover:bg-accent/30 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
+                          <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{customer.name}</td>
+                          <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.lotsWon ?? "—"}</td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">{customer.totalWinAmount ?? "—"}</td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.bids}</td>
+                          <td className="px-5 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                              customer.involvementType === "גם וגם"
+                                ? "bg-primary/10 text-primary"
+                                : customer.involvementType === "לייב"
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}>
+                              {customer.involvementType}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table className="w-full text-sm" dir="rtl">
+                    <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
+                      <tr>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ בידים<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">סוג מעורבות<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ לוטים שבהם<br />היה מעורב במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">ביד מקסימלי<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">זכה<br />במכירה זו</th>
+                        <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">ביד ראשון<br />במותג</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((customer, idx) => (
+                        <tr key={idx} className={`cursor-pointer transition-colors hover:bg-accent/30 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
+                          <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{customer.name}</td>
+                          <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.bids}</td>
+                          <td className="px-5 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                              customer.involvementType === "גם וגם"
+                                ? "bg-primary/10 text-primary"
+                                : customer.involvementType === "לייב"
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}>
+                              {customer.involvementType}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.lotsInvolved}</td>
+                          <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">{customer.maxBidAmount}</td>
+                          <td className="px-5 py-3 text-center">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${customer.status === "זוכה" ? "bg-green-100 text-green-700" : "bg-secondary text-muted-foreground"}`}>
+                              {customer.status === "זוכה" ? "כן" : "לא"}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{customer.firstBidEver}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </>
+          );
+        })()}
+      </InvestigationPanel>
     </div>
   );
 }
