@@ -160,39 +160,39 @@ const genazymInvolvedData: InvolvedBarData[] = [
   {
     sale: "#43", saleNumber: 43, involved: 180, winners: 62,
     customers: [
-      { name: "אברהם כהן", email: "a.cohen@email.com", status: "זוכה", bids: 12, involvementType: "גם וגם", lotsInvolved: 8, maxBidAmount: "$4,200", firstBidEver: "2021-03-15" },
+      { name: "אברהם כהן", email: "a.cohen@email.com", status: "זוכה", bids: 12, involvementType: "גם וגם", lotsInvolved: 8, maxBidAmount: "$4,200", firstBidEver: "2021-03-15", lotsWon: 3, totalWinAmount: "$9,800" },
       { name: "יצחק לוי", email: "y.levi@email.com", status: "מעורב", bids: 5, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,800", firstBidEver: "2022-07-20" },
-      { name: "משה גולדברג", email: "m.goldberg@email.com", status: "זוכה", bids: 8, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$3,500", firstBidEver: "2020-11-02" },
+      { name: "משה גולדברג", email: "m.goldberg@email.com", status: "זוכה", bids: 8, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$3,500", firstBidEver: "2020-11-02", lotsWon: 2, totalWinAmount: "$5,600" },
       { name: "דוד שוורץ", email: "d.schwartz@email.com", status: "מעורב", bids: 3, involvementType: "לייב", lotsInvolved: 2, maxBidAmount: "$950", firstBidEver: "2023-01-10" },
     ],
   },
   {
     sale: "#44", saleNumber: 44, involved: 165, winners: 54,
     customers: [
-      { name: "שמואל פרידמן", email: "s.friedman@email.com", status: "זוכה", bids: 15, involvementType: "גם וגם", lotsInvolved: 10, maxBidAmount: "$7,800", firstBidEver: "2019-06-22" },
+      { name: "שמואל פרידמן", email: "s.friedman@email.com", status: "זוכה", bids: 15, involvementType: "גם וגם", lotsInvolved: 10, maxBidAmount: "$7,800", firstBidEver: "2019-06-22", lotsWon: 5, totalWinAmount: "$18,200" },
       { name: "יעקב רוזנברג", email: "y.rosenberg@email.com", status: "מעורב", bids: 7, involvementType: "מוקדם", lotsInvolved: 5, maxBidAmount: "$2,600", firstBidEver: "2021-09-14" },
-      { name: "חיים ויסברג", email: "c.weisberg@email.com", status: "זוכה", bids: 10, involvementType: "גם וגם", lotsInvolved: 7, maxBidAmount: "$5,100", firstBidEver: "2020-02-28" },
+      { name: "חיים ויסברג", email: "c.weisberg@email.com", status: "זוכה", bids: 10, involvementType: "גם וגם", lotsInvolved: 7, maxBidAmount: "$5,100", firstBidEver: "2020-02-28", lotsWon: 3, totalWinAmount: "$11,400" },
     ],
   },
   {
     sale: "#45", saleNumber: 45, involved: 210, winners: 78,
     customers: [
       { name: "נחום שטיין", email: "n.stein@email.com", status: "מעורב", bids: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,200", firstBidEver: "2022-12-05" },
-      { name: "אליהו קליין", email: "e.klein@email.com", status: "זוכה", bids: 6, involvementType: "גם וגם", lotsInvolved: 4, maxBidAmount: "$3,200", firstBidEver: "2021-05-18" },
+      { name: "אליהו קליין", email: "e.klein@email.com", status: "זוכה", bids: 6, involvementType: "גם וגם", lotsInvolved: 4, maxBidAmount: "$3,200", firstBidEver: "2021-05-18", lotsWon: 2, totalWinAmount: "$6,100" },
       { name: "ברוך הלפרין", email: "b.halperin@email.com", status: "מעורב", bids: 9, involvementType: "מוקדם", lotsInvolved: 6, maxBidAmount: "$4,800", firstBidEver: "2020-08-11" },
     ],
   },
   {
     sale: "#46", saleNumber: 46, involved: 155, winners: 48,
     customers: [
-      { name: "מנחם פלדמן", email: "m.feldman@email.com", status: "זוכה", bids: 11, involvementType: "לייב", lotsInvolved: 8, maxBidAmount: "$6,400", firstBidEver: "2019-12-30" },
+      { name: "מנחם פלדמן", email: "m.feldman@email.com", status: "זוכה", bids: 11, involvementType: "לייב", lotsInvolved: 8, maxBidAmount: "$6,400", firstBidEver: "2019-12-30", lotsWon: 4, totalWinAmount: "$15,800" },
       { name: "צבי הורוביץ", email: "z.horowitz@email.com", status: "מעורב", bids: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$800", firstBidEver: "2023-04-07" },
     ],
   },
   {
     sale: "#47", saleNumber: 47, involved: 195, winners: 71,
     customers: [
-      { name: "שלמה גרינפלד", email: "s.greenfeld@email.com", status: "זוכה", bids: 7, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$3,900", firstBidEver: "2021-01-25" },
+      { name: "שלמה גרינפלד", email: "s.greenfeld@email.com", status: "זוכה", bids: 7, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$3,900", firstBidEver: "2021-01-25", lotsWon: 2, totalWinAmount: "$7,200" },
       { name: "יוסף ברגר", email: "y.berger@email.com", status: "מעורב", bids: 2, involvementType: "לייב", lotsInvolved: 1, maxBidAmount: "$550", firstBidEver: "2023-08-19" },
     ],
   },
@@ -203,7 +203,7 @@ const zaidiInvolvedData: InvolvedBarData[] = [
     sale: "#43", saleNumber: 43, involved: 95, winners: 32,
     customers: [
       { name: "רפאל מזרחי", email: "r.mizrachi@email.com", status: "מעורב", bids: 4, involvementType: "לייב", lotsInvolved: 3, maxBidAmount: "$1,100", firstBidEver: "2022-04-12" },
-      { name: "עמוס בן דוד", email: "a.bendavid@email.com", status: "זוכה", bids: 8, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$2,800", firstBidEver: "2021-10-03" },
+      { name: "עמוס בן דוד", email: "a.bendavid@email.com", status: "זוכה", bids: 8, involvementType: "גם וגם", lotsInvolved: 5, maxBidAmount: "$2,800", firstBidEver: "2021-10-03", lotsWon: 2, totalWinAmount: "$4,600" },
     ],
   },
   {
@@ -215,20 +215,20 @@ const zaidiInvolvedData: InvolvedBarData[] = [
   {
     sale: "#45", saleNumber: 45, involved: 102, winners: 38,
     customers: [
-      { name: "גד שמעוני", email: "g.shimoni@email.com", status: "זוכה", bids: 5, involvementType: "גם וגם", lotsInvolved: 3, maxBidAmount: "$1,500", firstBidEver: "2021-07-29" },
+      { name: "גד שמעוני", email: "g.shimoni@email.com", status: "זוכה", bids: 5, involvementType: "גם וגם", lotsInvolved: 3, maxBidAmount: "$1,500", firstBidEver: "2021-07-29", lotsWon: 1, totalWinAmount: "$1,500" },
     ],
   },
   {
     sale: "#46", saleNumber: 46, involved: 78, winners: 24,
     customers: [
-      { name: "אריה כץ", email: "a.katz@email.com", status: "זוכה", bids: 9, involvementType: "לייב", lotsInvolved: 6, maxBidAmount: "$3,400", firstBidEver: "2020-05-14" },
+      { name: "אריה כץ", email: "a.katz@email.com", status: "זוכה", bids: 9, involvementType: "לייב", lotsInvolved: 6, maxBidAmount: "$3,400", firstBidEver: "2020-05-14", lotsWon: 3, totalWinAmount: "$8,100" },
       { name: "פנחס נחמן", email: "p.nachman@email.com", status: "מעורב", bids: 3, involvementType: "מוקדם", lotsInvolved: 2, maxBidAmount: "$720", firstBidEver: "2023-03-21" },
     ],
   },
   {
     sale: "#47", saleNumber: 47, involved: 91, winners: 30,
     customers: [
-      { name: "רפאל מזרחי", email: "r.mizrachi@email.com", status: "זוכה", bids: 7, involvementType: "לייב", lotsInvolved: 4, maxBidAmount: "$2,200", firstBidEver: "2022-04-12" },
+      { name: "רפאל מזרחי", email: "r.mizrachi@email.com", status: "זוכה", bids: 7, involvementType: "לייב", lotsInvolved: 4, maxBidAmount: "$2,200", firstBidEver: "2022-04-12", lotsWon: 2, totalWinAmount: "$3,800" },
     ],
   },
 ];
