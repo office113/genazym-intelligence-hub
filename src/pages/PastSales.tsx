@@ -260,34 +260,42 @@ const renderBarLabel = (props: any) => {
   );
 };
 
-// Premium side panel component
-function PremiumDrawer({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
+// Investigation bottom-sheet panel
+function InvestigationPanel({ open, onClose, title, subtitle, children }: { open: boolean; onClose: () => void; title: string; subtitle?: string; children: React.ReactNode }) {
   if (!open) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-foreground/50 backdrop-blur-[4px] transition-opacity duration-300"
+        className="fixed inset-0 z-40 bg-foreground/60 backdrop-blur-[5px] animate-fade-in"
         onClick={onClose}
       />
       <div
-        className="fixed top-0 right-0 h-screen bg-card z-50 shadow-2xl border-l border-border animate-in slide-in-from-right duration-300 flex flex-col"
-        style={{ width: "min(72vw, 1100px)" }}
+        className="fixed z-50 flex flex-col bg-card rounded-t-2xl shadow-2xl border border-border/60 animate-in slide-in-from-bottom duration-500"
+        style={{
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "min(90vw, 1400px)",
+          height: "85vh",
+        }}
         dir="rtl"
       >
-        <div className="flex items-start justify-between px-10 py-7 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
-          <div className="space-y-1.5">
-            <h3 className="font-display font-bold text-xl leading-tight">{title}</h3>
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+        {/* Header */}
+        <div className="flex items-center justify-between px-10 py-6 border-b border-border/60 shrink-0 rounded-t-2xl" style={{ background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--secondary) / 0.3) 100%)" }}>
+          <div className="space-y-1">
+            <h2 className="font-display font-bold text-xl tracking-tight">{title}</h2>
+            {subtitle && <p className="text-[13px] text-muted-foreground tracking-wide">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-lg hover:bg-secondary transition-colors mt-0.5"
+            className="p-2.5 rounded-xl bg-secondary/60 hover:bg-secondary transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
+        {/* Body */}
+        <div className="flex-1 overflow-hidden flex flex-col">
           {children}
         </div>
       </div>
