@@ -31,7 +31,7 @@ const engagementBysale = [
 
 type Brand = "genazym" | "zaidy";
 
-const brandKPIs: Record<Brand, { avgPrice: string; avgUplift: string; uniqueInvolved: string; avgInvolvedPerSale: string }> = {
+const brandKPIs: Record<Brand, { avgOpeningPrice: string; avgUplift: string; uniqueInvolved: string; avgInvolvedPerSale: string }> = {
   genazym: {
     avgOpeningPrice: "$5,200",
     avgUplift: "87%",
