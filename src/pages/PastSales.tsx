@@ -667,11 +667,11 @@ export default function PastSales() {
                     <TableRow className="hover:bg-transparent border-b-2 border-border">
                       <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">שם לקוח</TableHead>
                       <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">אימייל</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">בידים</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">לוטים</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי</TableHead>
-                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה?</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">מס׳ בידים במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">סוג מעורבות במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">מס׳ לוטים שבהם היה מעורב במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד מקסימלי במכירה הקודמת</TableHead>
+                      <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">זכה במכירה הקודמת</TableHead>
                       <TableHead className="text-right text-[11px] font-bold text-muted-foreground whitespace-nowrap">ביד ראשון במותג</TableHead>
                     </TableRow>
                   </TableHeader>
