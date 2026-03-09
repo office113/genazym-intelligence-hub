@@ -303,12 +303,13 @@ export default function PastSales() {
   const [churnDrawerData, setChurnDrawerData] = useState<ChurnBarData | null>(null);
   const [involvedDrawerOpen, setInvolvedDrawerOpen] = useState(false);
   const [involvedDrawerData, setInvolvedDrawerData] = useState<InvolvedBarData | null>(null);
+  const [involvedDrawerType, setInvolvedDrawerType] = useState<"involved" | "winners">("involved");
   const [hoveredChurnBar, setHoveredChurnBar] = useState<number | null>(null);
-  const [hoveredInvolvedBar, setHoveredInvolvedBar] = useState<number | null>(null);
 
   const kpis = brandKPIs[brand];
   const churnData = brandChurnData[brand];
   const involvedData = brandInvolvedData[brand];
+  const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
     setDrawerData(sale);
@@ -320,8 +321,9 @@ export default function PastSales() {
     setChurnDrawerOpen(true);
   };
 
-  const handleInvolvedBarClick = (data: InvolvedBarData) => {
+  const handleInvolvedBarClick = (data: InvolvedBarData, type: "involved" | "winners") => {
     setInvolvedDrawerData(data);
+    setInvolvedDrawerType(type);
     setInvolvedDrawerOpen(true);
   };
 
