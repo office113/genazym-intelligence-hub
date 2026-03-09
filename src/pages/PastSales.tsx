@@ -39,7 +39,7 @@ const brandKPIs: Record<Brand, { avgOpeningPrice: string; avgUplift: string; uni
     avgInvolvedPerSale: "289",
   },
   zaidy: {
-    avgPrice: "$3,820",
+    avgOpeningPrice: "$2,150",
     avgUplift: "62%",
     uniqueInvolved: "214",
     avgInvolvedPerSale: "134",
