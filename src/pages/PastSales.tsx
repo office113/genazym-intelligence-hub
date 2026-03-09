@@ -62,11 +62,8 @@ export default function PastSales() {
   return (
     <div className="min-h-screen">
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-8 pt-6 pb-0">
-        <div className="flex items-start justify-between mb-1">
-          <div>
-            <h2 className="section-title mb-1">מכירות עבר</h2>
-            <p className="text-sm text-muted-foreground">ניתוח ביצועי עבר והשוואת מכירות</p>
-          </div>
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="section-title">מכירות עבר</h2>
           <div className="flex items-center bg-card border border-border rounded-lg p-0.5 shadow-sm">
             <button
               onClick={() => setBrand("genazym")}
