@@ -10,10 +10,8 @@ import { X, Search } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
-  { key: "retention", label: "נטישה ושימור" },
-  { key: "engagement", label: "מעורבות לקוחות" },
-  { key: "financial", label: "ביצועים כספיים" },
   { key: "trends", label: "מגמות" },
+  { key: "retention", label: "נטישה ושימור" },
 ];
 
 const upliftData = [
@@ -24,13 +22,6 @@ const upliftData = [
   { lot: "פריט 91", opening: 5000, final: 7500 },
 ];
 
-const engagementBysale = [
-  { sale: "#43", avgBids: 4.2, uniqueBidders: 180, returnRate: 62 },
-  { sale: "#44", avgBids: 3.8, uniqueBidders: 165, returnRate: 58 },
-  { sale: "#45", avgBids: 5.1, uniqueBidders: 210, returnRate: 68 },
-  { sale: "#46", avgBids: 3.5, uniqueBidders: 155, returnRate: 55 },
-  { sale: "#47", avgBids: 4.8, uniqueBidders: 195, returnRate: 65 },
-];
 
 type Brand = "genazym" | "zaidy";
 
@@ -845,51 +836,6 @@ export default function PastSales() {
           <RetentionTab brand={brand} brandLabel={brandLabel} />
         )}
 
-        {activeTab === "engagement" && (
-          <>
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <KPICard label="ממוצע הצעות לפריט" value="4.3" trend="up" trendValue="+8%" />
-              <KPICard label="שיעור חזרה" value="62%" trend="up" trendValue="+4%" />
-              <KPICard label="מציעים חדשים (%)" value="18%" trend="down" trendValue="-2%" />
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">מעורבות לפי מכירה</div>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={engagementBysale}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="avgBids" stroke="hsl(220,35%,18%)" strokeWidth={2} name="ממוצע הצעות" dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="returnRate" stroke="hsl(38,65%,52%)" strokeWidth={2} name="שיעור חזרה (%)" dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </>
-        )}
-
-        {activeTab === "financial" && (
-          <>
-            <div className="grid grid-cols-4 gap-4 mb-8">
-              <KPICard label="ממוצע מחיר פריט" value="$9,450" trend="up" trendValue="+6%" />
-              <KPICard label="עלית מחיר ממוצעת" value="87%" subtitle="מפתיחה לסגירה" trend="up" trendValue="+12%" />
-              <KPICard label="פריט יקר ביותר" value="$48,000" subtitle="שולחן ערוך - ונציה" />
-              <KPICard label="עמלות" value="$1.2M" trend="up" trendValue="+8%" />
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">מגמת הכנסות</div>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={saleComparisonChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(38,65%,52%)" fill="hsl(38,65%,52%,0.12)" strokeWidth={2} name="הכנסות (אלפי $)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </>
-        )}
 
         {activeTab === "trends" && (
           <>
