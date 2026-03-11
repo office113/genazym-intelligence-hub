@@ -400,14 +400,12 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
                         const isCurrent = col.isCurrent;
                         const isDrillable = isCurrent && metric.drillType;
 
-                        // Trend color: compare to previous real sale column in sequence
+                        // Trend color: compare to next column (previous sale chronologically)
                         let trendColor = "";
                         if (!col.isBenchmark) {
-                          // Find the previous non-benchmark column (lower index)
-                          const prevRealCols = columns.slice(0, colIdx).filter(c => !c.isBenchmark);
-                          const prevCol = prevRealCols.length > 0 ? prevRealCols[prevRealCols.length - 1] : null;
-                          if (prevCol) {
-                            const prevVal = prevCol.getValue(metric.key);
+                          const nextCol = columns.slice(colIdx + 1).find(c => !c.isBenchmark);
+                          if (nextCol) {
+                            const prevVal = nextCol.getValue(metric.key);
                             if (val > prevVal) trendColor = "hsl(142, 60%, 40%)";
                             else if (val < prevVal) trendColor = "hsl(0, 65%, 48%)";
                           }
