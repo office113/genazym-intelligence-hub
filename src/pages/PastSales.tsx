@@ -865,7 +865,7 @@ function TrendsTab() {
 
   const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
-  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved" }[] = [
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved"; reversed?: boolean }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
     { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
     { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
@@ -875,8 +875,18 @@ function TrendsTab() {
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
     { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString(), drillType: "newInvolved" },
     { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString(), drillType: "registrants" },
-    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned" },
+    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned", reversed: true },
   ];
+
+  const getTrendColor = (metric: typeof metricRows[number], yearIdx: number) => {
+    if (yearIdx === 0) return undefined;
+    const curr = yearlyData[yearIdx][metric.key] as number;
+    const prev = yearlyData[yearIdx - 1][metric.key] as number;
+    if (curr === prev || curr === 0 || prev === 0) return undefined;
+    const improved = curr > prev;
+    if (metric.reversed) return improved ? "hsl(0, 72%, 51%)" : "hsl(142, 71%, 40%)";
+    return improved ? "hsl(142, 71%, 40%)" : "hsl(0, 72%, 51%)";
+  };
 
   const handleCellClick = (drillType: "registrants" | "churned" | "newInvolved", year: number, value: number) => {
     if (value === 0) return;
