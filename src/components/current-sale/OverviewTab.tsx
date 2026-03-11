@@ -100,8 +100,7 @@ export default function OverviewTab() {
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
 
-  // Current sale info (kept for compatibility)
-  const currentSale = salesList.find(s => s.id === currentSaleId)!;
+  // currentSale already defined above
 
   // Get snapshot for a sale at a specific DX
   const getSnapshot = (saleId: string, dx: number): SaleSnapshot | undefined =>
