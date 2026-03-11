@@ -295,10 +295,10 @@ export default function OverviewTab() {
                 onChange={e => setSelectedSaleId(e.target.value)}
                 className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
               >
-                {salesList.map(s => (
+                {salesList.filter(s => s.brand === selectedBrand).map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.brand})
-                    {s.isCurrent ? " ★" : ""}
+                    {s.name}
+                    {s.id === currentSaleId ? " ★" : ""}
                   </option>
                 ))}
               </select>
