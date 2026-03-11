@@ -219,7 +219,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
               <CalendarClock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
               <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>
-                D-{autoDX}
+                אנחנו כעת ב־D-{autoDX}
               </span>
             </div>
           )}
