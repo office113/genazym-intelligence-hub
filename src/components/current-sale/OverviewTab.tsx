@@ -313,7 +313,27 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
 
         const columns: ColDef[] = [];
 
-        // Current sale column
+        // Benchmark column first (will appear on the far side)
+        columns.push({
+          id: "avg",
+          label: "ממוצע 6 מכירות אחרונות",
+          isBenchmark: true,
+          getValue: (key) => mode1Data.avg(key),
+        });
+
+        // Past sale columns in chronological order (oldest first)
+        const pastChronological = [...pastWithSnaps].sort((a, b) => new Date(a.sale.date).getTime() - new Date(b.sale.date).getTime());
+        pastChronological.forEach(({ sale, snap }) => {
+          columns.push({
+            id: sale.id,
+            label: sale.name,
+            sublabel: sale.date,
+            snap,
+            getValue: (key) => snap[key] as number,
+          });
+        });
+
+        // Current sale column last (rightmost in RTL = most prominent)
         if (currentSnap) {
           columns.push({
             id: currentSaleId,
@@ -324,31 +344,6 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
             getValue: (key) => currentSnap[key] as number,
           });
         }
-
-        // Past sale columns
-        pastWithSnaps.forEach(({ sale, snap }) => {
-          columns.push({
-            id: sale.id,
-            label: sale.name,
-            sublabel: sale.date,
-            snap,
-            getValue: (key) => snap[key] as number,
-          });
-        });
-
-        // Benchmark columns
-        columns.push({
-          id: "avg",
-          label: "ממוצע עבר",
-          isBenchmark: true,
-          getValue: (key) => mode1Data.avg(key),
-        });
-        columns.push({
-          id: "median",
-          label: "חציון עבר",
-          isBenchmark: true,
-          getValue: (key) => mode1Data.median(key),
-        });
 
         // Metric rows definition
         const metricRows: { label: string; key: keyof SaleSnapshot; format?: "price" | "pct"; drillType?: string }[] = [
@@ -405,13 +400,14 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
                         const isCurrent = col.isCurrent;
                         const isDrillable = isCurrent && metric.drillType;
 
-                        // Trend color: compare to next column (previous sale chronologically)
+                        // Trend color: compare to previous real sale column in sequence
                         let trendColor = "";
                         if (!col.isBenchmark) {
-                          // Find the next non-benchmark column
-                          const nextCol = columns.slice(colIdx + 1).find(c => !c.isBenchmark);
-                          if (nextCol) {
-                            const prevVal = nextCol.getValue(metric.key);
+                          // Find the previous non-benchmark column (lower index)
+                          const prevRealCols = columns.slice(0, colIdx).filter(c => !c.isBenchmark);
+                          const prevCol = prevRealCols.length > 0 ? prevRealCols[prevRealCols.length - 1] : null;
+                          if (prevCol) {
+                            const prevVal = prevCol.getValue(metric.key);
                             if (val > prevVal) trendColor = "hsl(142, 60%, 40%)";
                             else if (val < prevVal) trendColor = "hsl(0, 65%, 48%)";
                           }
