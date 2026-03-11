@@ -410,7 +410,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
                   })()}
 
                   {/* Past sales */}
-                  {salesList.filter(s => !s.isCurrent).map(sale => {
+                  {salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand).map(sale => {
                     const snap = getSnapshot(sale.id, selectedDX);
                     if (!snap) return null;
                     return (
