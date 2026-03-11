@@ -668,8 +668,134 @@ function combineYearlyData(g: YearlyData[], z: YearlyData[]): YearlyData[] {
 
 const currentYear = new Date().getFullYear();
 
+// Mock drill-down data for new registrants and churned customers per year/brand
+interface TrendsDrillDownCustomer {
+  id: string;
+  name: string;
+  registrationDate?: string;
+  firstBidDate: string;
+  maxHistoricalBid: number;
+  totalHistoricalWins: number;
+  lastActiveSale: string;
+}
+
+const trendsDrillDownData: Record<string, Record<number, TrendsDrillDownCustomer[]>> = {
+  genazym_registrants: {
+    2021: [
+      { id: "TR01", name: "אברהם כהן", registrationDate: "2021-02-10", firstBidDate: "2021-03-15", maxHistoricalBid: 4200, totalHistoricalWins: 9800, lastActiveSale: "מכירה #47" },
+      { id: "TR02", name: "יצחק לוי", registrationDate: "2021-06-22", firstBidDate: "2021-07-20", maxHistoricalBid: 1800, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+      { id: "TR03", name: "יעקב רוזנברג", registrationDate: "2021-08-05", firstBidDate: "2021-09-14", maxHistoricalBid: 2600, totalHistoricalWins: 0, lastActiveSale: "מכירה #44" },
+    ],
+    2022: [
+      { id: "TR04", name: "דוד שוורץ", registrationDate: "2022-01-03", firstBidDate: "2022-01-10", maxHistoricalBid: 950, totalHistoricalWins: 0, lastActiveSale: "מכירה #43" },
+      { id: "TR05", name: "נחום שטיין", registrationDate: "2022-11-18", firstBidDate: "2022-12-05", maxHistoricalBid: 1200, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2023: [
+      { id: "TR06", name: "צבי הורוביץ", registrationDate: "2023-03-28", firstBidDate: "2023-04-07", maxHistoricalBid: 800, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+      { id: "TR07", name: "יוסף ברגר", registrationDate: "2023-08-01", firstBidDate: "2023-08-19", maxHistoricalBid: 550, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+    ],
+    2024: [
+      { id: "TR08", name: "אהרון וייס", registrationDate: "2024-01-15", firstBidDate: "2024-02-20", maxHistoricalBid: 3200, totalHistoricalWins: 6400, lastActiveSale: "מכירה #47" },
+      { id: "TR09", name: "בנימין הלל", registrationDate: "2024-05-10", firstBidDate: "2024-06-02", maxHistoricalBid: 1500, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+      { id: "TR10", name: "גרשון מאיר", registrationDate: "2024-09-22", firstBidDate: "2024-10-15", maxHistoricalBid: 4800, totalHistoricalWins: 8200, lastActiveSale: "מכירה #47" },
+    ],
+    2025: [
+      { id: "TR11", name: "הלל שפירא", registrationDate: "2025-02-14", firstBidDate: "2025-03-01", maxHistoricalBid: 2100, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+      { id: "TR12", name: "זבולון קרמר", registrationDate: "2025-06-30", firstBidDate: "2025-07-18", maxHistoricalBid: 1800, totalHistoricalWins: 3200, lastActiveSale: "מכירה #47" },
+    ],
+    2026: [
+      { id: "TR13", name: "טוביה אלקנה", registrationDate: "2026-01-20", firstBidDate: "2026-02-05", maxHistoricalBid: 900, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
+  genazym_churned: {
+    2022: [
+      { id: "TC01", name: "משה גולדברג", firstBidDate: "2020-11-02", maxHistoricalBid: 3500, totalHistoricalWins: 5600, lastActiveSale: "מכירה #43" },
+      { id: "TC02", name: "שמואל פרידמן", firstBidDate: "2019-06-22", maxHistoricalBid: 7800, totalHistoricalWins: 18200, lastActiveSale: "מכירה #43" },
+    ],
+    2023: [
+      { id: "TC03", name: "יעקב רוזנברג", firstBidDate: "2021-09-14", maxHistoricalBid: 2600, totalHistoricalWins: 0, lastActiveSale: "מכירה #44" },
+      { id: "TC04", name: "חיים ויסברג", firstBidDate: "2020-02-28", maxHistoricalBid: 5100, totalHistoricalWins: 11400, lastActiveSale: "מכירה #44" },
+      { id: "TC05", name: "דוד שוורץ", firstBidDate: "2023-01-10", maxHistoricalBid: 950, totalHistoricalWins: 0, lastActiveSale: "מכירה #44" },
+    ],
+    2024: [
+      { id: "TC06", name: "אליהו קליין", firstBidDate: "2021-05-18", maxHistoricalBid: 3200, totalHistoricalWins: 6100, lastActiveSale: "מכירה #45" },
+      { id: "TC07", name: "ברוך הלפרין", firstBidDate: "2020-08-11", maxHistoricalBid: 4800, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2025: [
+      { id: "TC08", name: "מנחם פלדמן", firstBidDate: "2019-12-30", maxHistoricalBid: 6400, totalHistoricalWins: 15800, lastActiveSale: "מכירה #46" },
+      { id: "TC09", name: "צבי הורוביץ", firstBidDate: "2023-04-07", maxHistoricalBid: 800, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+      { id: "TC10", name: "נחום שטיין", firstBidDate: "2022-12-05", maxHistoricalBid: 1200, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2026: [
+      { id: "TC11", name: "שלמה גרינפלד", firstBidDate: "2021-01-25", maxHistoricalBid: 3900, totalHistoricalWins: 7200, lastActiveSale: "מכירה #47" },
+      { id: "TC12", name: "יוסף ברגר", firstBidDate: "2023-08-19", maxHistoricalBid: 550, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+      { id: "TC13", name: "אברהם כהן", firstBidDate: "2021-03-15", maxHistoricalBid: 4200, totalHistoricalWins: 9800, lastActiveSale: "מכירה #47" },
+    ],
+  },
+  zaidy_registrants: {
+    2021: [
+      { id: "ZTR01", name: "עמוס בן דוד", registrationDate: "2021-09-15", firstBidDate: "2021-10-03", maxHistoricalBid: 2800, totalHistoricalWins: 4600, lastActiveSale: "מכירה #44" },
+    ],
+    2022: [
+      { id: "ZTR02", name: "רפאל מזרחי", registrationDate: "2022-03-20", firstBidDate: "2022-04-12", maxHistoricalBid: 2200, totalHistoricalWins: 3800, lastActiveSale: "מכירה #47" },
+      { id: "ZTR03", name: "נתן אזולאי", registrationDate: "2022-01-05", firstBidDate: "2022-01-17", maxHistoricalBid: 1900, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2023: [
+      { id: "ZTR04", name: "פנחס נחמן", registrationDate: "2023-03-10", firstBidDate: "2023-03-21", maxHistoricalBid: 720, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2024: [
+      { id: "ZTR05", name: "יהודה אלבז", registrationDate: "2024-04-02", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2025: [
+      { id: "ZTR06", name: "בנימין שרף", registrationDate: "2025-02-28", firstBidDate: "2025-03-09", maxHistoricalBid: 11000, totalHistoricalWins: 24000, lastActiveSale: "מכירה #45" },
+    ],
+    2026: [
+      { id: "ZTR07", name: "שמעון דהן", registrationDate: "2026-01-08", firstBidDate: "2026-01-22", maxHistoricalBid: 1400, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
+  zaidy_churned: {
+    2022: [
+      { id: "ZTC01", name: "עמוס בן דוד", firstBidDate: "2021-10-03", maxHistoricalBid: 2800, totalHistoricalWins: 4600, lastActiveSale: "מכירה #43" },
+    ],
+    2023: [
+      { id: "ZTC02", name: "נתן אזולאי", firstBidDate: "2022-01-17", maxHistoricalBid: 1900, totalHistoricalWins: 0, lastActiveSale: "מכירה #44" },
+    ],
+    2024: [
+      { id: "ZTC03", name: "גד שמעוני", firstBidDate: "2021-07-29", maxHistoricalBid: 1500, totalHistoricalWins: 1500, lastActiveSale: "מכירה #45" },
+    ],
+    2025: [
+      { id: "ZTC04", name: "אריה כץ", firstBidDate: "2020-05-14", maxHistoricalBid: 3400, totalHistoricalWins: 8100, lastActiveSale: "מכירה #46" },
+      { id: "ZTC05", name: "פנחס נחמן", firstBidDate: "2023-03-21", maxHistoricalBid: 720, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2026: [
+      { id: "ZTC06", name: "רפאל מזרחי", firstBidDate: "2022-04-12", maxHistoricalBid: 2200, totalHistoricalWins: 3800, lastActiveSale: "מכירה #47" },
+      { id: "ZTC07", name: "יהודה אלבז", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+  },
+};
+
+function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned", year: number): TrendsDrillDownCustomer[] {
+  if (brandFilter === "both") {
+    const gKey = `genazym_${type}`;
+    const zKey = `zaidy_${type}`;
+    const gCustomers = trendsDrillDownData[gKey]?.[year] || [];
+    const zCustomers = trendsDrillDownData[zKey]?.[year] || [];
+    const seen = new Set<string>();
+    const combined: TrendsDrillDownCustomer[] = [];
+    for (const c of [...gCustomers, ...zCustomers]) {
+      if (!seen.has(c.name)) { seen.add(c.name); combined.push(c); }
+    }
+    return combined;
+  }
+  const key = `${brandFilter === "genazym" ? "genazym" : "zaidy"}_${type}`;
+  return trendsDrillDownData[key]?.[year] || [];
+}
+
 function TrendsTab() {
   const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
+  const [drillDownOpen, setDrillDownOpen] = useState(false);
+  const [drillDownType, setDrillDownType] = useState<"registrants" | "churned">("registrants");
+  const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = useMemo(() => {
     if (brandFilter === "genazym") return genazymYearlyData;
@@ -677,13 +803,20 @@ function TrendsTab() {
     return combineYearlyData(genazymYearlyData, zaidiYearlyData);
   }, [brandFilter]);
 
+  const drillDownCustomers = useMemo(() =>
+    getDrillDownCustomers(brandFilter, drillDownType, drillDownYear),
+    [brandFilter, drillDownType, drillDownYear]
+  );
+
   const brandOptions: { key: TrendsBrandFilter; label: string }[] = [
     { key: "genazym", label: "גנזים" },
     { key: "zaidy", label: "זיידי" },
     { key: "both", label: "שניהם יחד" },
   ];
 
-  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string }[] = [
+  const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
+
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
     { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
     { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
@@ -692,83 +825,166 @@ function TrendsTab() {
     { label: "מחיר חציוני", key: "medianPrice", format: v => `$${v.toLocaleString()}` },
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
     { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString() },
-    { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString() },
-    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString() },
+    { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString(), drillType: "registrants" },
+    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned" },
   ];
 
+  const handleCellClick = (drillType: "registrants" | "churned", year: number, value: number) => {
+    if (value === 0) return;
+    setDrillDownType(drillType);
+    setDrillDownYear(year);
+    setDrillDownOpen(true);
+  };
+
+  const drillDownTitle = drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים";
+
   return (
-    <div className="chart-card">
-      {/* Local brand filter */}
-      <div className="flex items-center justify-between mb-6" dir="rtl">
-        <div>
-          <div className="chart-title mb-0">מגמות שנתיות</div>
-          <p className="text-xs text-muted-foreground mt-1">6 שנים אחרונות כולל השנה הנוכחית</p>
+    <>
+      <div className="chart-card">
+        {/* Local brand filter */}
+        <div className="flex items-center justify-between mb-6" dir="rtl">
+          <div>
+            <div className="chart-title mb-0">מגמות שנתיות</div>
+            <p className="text-xs text-muted-foreground mt-1">6 שנים אחרונות כולל השנה הנוכחית</p>
+          </div>
+          <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+            {brandOptions.map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setBrandFilter(opt.key)}
+                className={`px-4 py-2 text-[12px] font-semibold rounded-md transition-all ${
+                  brandFilter === opt.key
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
-          {brandOptions.map(opt => (
-            <button
-              key={opt.key}
-              onClick={() => setBrandFilter(opt.key)}
-              className={`px-4 py-2 text-[12px] font-semibold rounded-md transition-all ${
-                brandFilter === opt.key
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+
+        {/* Matrix table */}
+        <div className="overflow-auto" dir="rtl">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b-2 border-border/50">
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 min-w-[180px] bg-card sticky right-0 z-10" />
+                {yearlyData.map(yd => (
+                  <th
+                    key={yd.year}
+                    className={`text-center text-[13px] font-bold px-5 py-3.5 min-w-[120px] ${
+                      yd.year === currentYear
+                        ? "text-primary"
+                        : "text-foreground"
+                    }`}
+                  >
+                    <span className="tabular-nums">{yd.year}</span>
+                    {yd.year === currentYear && (
+                      <span className="block text-[9px] font-medium text-primary/70 mt-0.5">שנה נוכחית</span>
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {metricRows.map((metric, rowIdx) => (
+                <tr
+                  key={metric.key}
+                  className={`transition-colors hover:bg-accent/8 ${rowIdx % 2 === 1 ? "bg-secondary/15" : ""} border-b border-border/20`}
+                >
+                  <td className="text-right text-[12px] font-semibold text-muted-foreground px-5 py-3.5 whitespace-nowrap bg-card sticky right-0 z-10 border-l border-border/30">
+                    {metric.label}
+                  </td>
+                  {yearlyData.map(yd => {
+                    const value = yd[metric.key] as number;
+                    const isDrillable = !!metric.drillType && value > 0;
+                    return (
+                      <td
+                        key={yd.year}
+                        onClick={isDrillable ? () => handleCellClick(metric.drillType!, yd.year, value) : undefined}
+                        className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-colors ${
+                          yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"
+                        } ${isDrillable
+                          ? "cursor-pointer hover:bg-primary/10 underline decoration-dotted underline-offset-4 decoration-primary/40"
+                          : "cursor-default"
+                        }`}
+                      >
+                        {metric.format(value)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Matrix table */}
-      <div className="overflow-auto" dir="rtl">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b-2 border-border/50">
-              <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 min-w-[180px] bg-card sticky right-0 z-10" />
-              {yearlyData.map(yd => (
-                <th
-                  key={yd.year}
-                  className={`text-center text-[13px] font-bold px-5 py-3.5 min-w-[120px] ${
-                    yd.year === currentYear
-                      ? "text-primary"
-                      : "text-foreground"
-                  }`}
-                >
-                  <span className="tabular-nums">{yd.year}</span>
-                  {yd.year === currentYear && (
-                    <span className="block text-[9px] font-medium text-primary/70 mt-0.5">שנה נוכחית</span>
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {metricRows.map((metric, rowIdx) => (
-              <tr
-                key={metric.key}
-                className={`transition-colors hover:bg-accent/8 ${rowIdx % 2 === 1 ? "bg-secondary/15" : ""} border-b border-border/20`}
-              >
-                <td className="text-right text-[12px] font-semibold text-muted-foreground px-5 py-3.5 whitespace-nowrap bg-card sticky right-0 z-10 border-l border-border/30">
-                  {metric.label}
-                </td>
-                {yearlyData.map(yd => (
-                  <td
-                    key={yd.year}
-                    className={`text-center text-[13px] tabular-nums px-5 py-3.5 cursor-pointer hover:bg-primary/5 transition-colors ${
-                      yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"
-                    }`}
-                  >
-                    {metric.format(yd[metric.key] as number)}
-                  </td>
-                ))}
+      {/* Drill-down panel */}
+      <InvestigationPanel
+        open={drillDownOpen}
+        onClose={() => setDrillDownOpen(false)}
+        title={`${drillDownTitle} — ${drillDownYear}`}
+        subtitle={`${brandLabel} | ${drillDownCustomers.length} לקוחות`}
+      >
+        <div className="px-10 py-5 border-b border-border/40 shrink-0">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
+              <div className="text-lg font-bold text-foreground tracking-tight">{drillDownCustomers.length}</div>
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">{drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים"}</div>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
+              <div className="text-lg font-bold text-foreground tracking-tight">
+                {drillDownCustomers.length > 0
+                  ? `$${Math.max(...drillDownCustomers.map(c => c.maxHistoricalBid)).toLocaleString()}`
+                  : "—"}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">ביד מקסימלי גבוה ביותר</div>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
+              <div className="text-lg font-bold text-foreground tracking-tight">
+                {drillDownCustomers.filter(c => c.totalHistoricalWins > 0).length}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">עם זכיות היסטוריות</div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <table className="w-full text-sm" dir="rtl">
+            <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
+              <tr>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                {drillDownType === "registrants" && (
+                  <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך הרשמה</th>
+                )}
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מקסימום ביד<br />היסטורי</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ זכיות<br />היסטורי</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירה אחרונה<br />שהיה מעורב בה</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            </thead>
+            <tbody>
+              {drillDownCustomers.map((c, idx) => (
+                <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
+                  <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                  {drillDownType === "registrants" && (
+                    <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.registrationDate || "—"}</td>
+                  )}
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.firstBidDate}</td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.lastActiveSale}</td>
+                </tr>
+              ))}
+              {drillDownCustomers.length === 0 && (
+                <tr><td colSpan={drillDownType === "registrants" ? 6 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </InvestigationPanel>
+    </>
   );
 }
 
