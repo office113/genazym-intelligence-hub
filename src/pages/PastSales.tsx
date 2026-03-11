@@ -610,6 +610,158 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
     </>
   );
 }
+// ========== Yearly Trends Table ==========
+
+type TrendsBrandFilter = "genazym" | "zaidy" | "both";
+
+interface YearlyData {
+  year: number;
+  salesCount: number;
+  totalRevenue: number;
+  uniqueInvolved: number;
+  uniqueWinners: number;
+  avgPricePerItem: number;
+  medianPrice: number;
+  booksSold: number;
+}
+
+const genazymYearlyData: YearlyData[] = [
+  { year: 2021, salesCount: 4, totalRevenue: 6800000, uniqueInvolved: 310, uniqueWinners: 125, avgPricePerItem: 8200, medianPrice: 5400, booksSold: 829 },
+  { year: 2022, salesCount: 5, totalRevenue: 9200000, uniqueInvolved: 385, uniqueWinners: 158, avgPricePerItem: 8900, medianPrice: 5800, booksSold: 1034 },
+  { year: 2023, salesCount: 5, totalRevenue: 11500000, uniqueInvolved: 420, uniqueWinners: 172, avgPricePerItem: 9600, medianPrice: 6200, booksSold: 1198 },
+  { year: 2024, salesCount: 6, totalRevenue: 14200000, uniqueInvolved: 482, uniqueWinners: 198, avgPricePerItem: 10200, medianPrice: 6800, booksSold: 1392 },
+  { year: 2025, salesCount: 4, totalRevenue: 10800000, uniqueInvolved: 445, uniqueWinners: 185, avgPricePerItem: 10800, medianPrice: 7100, booksSold: 1000 },
+  { year: 2026, salesCount: 1, totalRevenue: 2850000, uniqueInvolved: 195, uniqueWinners: 71, avgPricePerItem: 11200, medianPrice: 7400, booksSold: 254 },
+];
+
+const zaidiYearlyData: YearlyData[] = [
+  { year: 2021, salesCount: 3, totalRevenue: 2100000, uniqueInvolved: 145, uniqueWinners: 52, avgPricePerItem: 3800, medianPrice: 2200, booksSold: 553 },
+  { year: 2022, salesCount: 4, totalRevenue: 3400000, uniqueInvolved: 178, uniqueWinners: 68, avgPricePerItem: 4100, medianPrice: 2500, booksSold: 829 },
+  { year: 2023, salesCount: 4, totalRevenue: 4200000, uniqueInvolved: 198, uniqueWinners: 78, avgPricePerItem: 4400, medianPrice: 2700, booksSold: 955 },
+  { year: 2024, salesCount: 5, totalRevenue: 5600000, uniqueInvolved: 214, uniqueWinners: 88, avgPricePerItem: 4800, medianPrice: 2900, booksSold: 1167 },
+  { year: 2025, salesCount: 3, totalRevenue: 3900000, uniqueInvolved: 192, uniqueWinners: 75, avgPricePerItem: 5100, medianPrice: 3100, booksSold: 765 },
+  { year: 2026, salesCount: 1, totalRevenue: 980000, uniqueInvolved: 91, uniqueWinners: 30, avgPricePerItem: 5400, medianPrice: 3200, booksSold: 181 },
+];
+
+function combineYearlyData(g: YearlyData[], z: YearlyData[]): YearlyData[] {
+  return g.map((gy, i) => {
+    const zy = z[i];
+    const totalSold = gy.booksSold + zy.booksSold;
+    return {
+      year: gy.year,
+      salesCount: gy.salesCount + zy.salesCount,
+      totalRevenue: gy.totalRevenue + zy.totalRevenue,
+      uniqueInvolved: gy.uniqueInvolved + zy.uniqueInvolved,
+      uniqueWinners: gy.uniqueWinners + zy.uniqueWinners,
+      avgPricePerItem: totalSold > 0 ? Math.round((gy.totalRevenue + zy.totalRevenue) / totalSold) : 0,
+      medianPrice: Math.round((gy.medianPrice + zy.medianPrice) / 2),
+      booksSold: totalSold,
+    };
+  });
+}
+
+const currentYear = new Date().getFullYear();
+
+function TrendsTab() {
+  const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
+
+  const yearlyData = useMemo(() => {
+    if (brandFilter === "genazym") return genazymYearlyData;
+    if (brandFilter === "zaidy") return zaidiYearlyData;
+    return combineYearlyData(genazymYearlyData, zaidiYearlyData);
+  }, [brandFilter]);
+
+  const brandOptions: { key: TrendsBrandFilter; label: string }[] = [
+    { key: "genazym", label: "גנזים" },
+    { key: "zaidy", label: "זיידי" },
+    { key: "both", label: "שניהם יחד" },
+  ];
+
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string }[] = [
+    { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
+    { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
+    { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
+    { label: "סך לקוחות זוכים", key: "uniqueWinners", format: v => v.toLocaleString() },
+    { label: "מחיר ממוצע לפריט", key: "avgPricePerItem", format: v => `$${v.toLocaleString()}` },
+    { label: "מחיר חציוני", key: "medianPrice", format: v => `$${v.toLocaleString()}` },
+    { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
+  ];
+
+  return (
+    <div className="chart-card">
+      {/* Local brand filter */}
+      <div className="flex items-center justify-between mb-6" dir="rtl">
+        <div>
+          <div className="chart-title mb-0">מגמות שנתיות</div>
+          <p className="text-xs text-muted-foreground mt-1">6 שנים אחרונות כולל השנה הנוכחית</p>
+        </div>
+        <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+          {brandOptions.map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setBrandFilter(opt.key)}
+              className={`px-4 py-2 text-[12px] font-semibold rounded-md transition-all ${
+                brandFilter === opt.key
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Matrix table */}
+      <div className="overflow-auto" dir="rtl">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="border-b-2 border-border/50">
+              <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 min-w-[180px] bg-card sticky right-0 z-10" />
+              {yearlyData.map(yd => (
+                <th
+                  key={yd.year}
+                  className={`text-center text-[13px] font-bold px-5 py-3.5 min-w-[120px] ${
+                    yd.year === currentYear
+                      ? "text-primary"
+                      : "text-foreground"
+                  }`}
+                >
+                  <span className="tabular-nums">{yd.year}</span>
+                  {yd.year === currentYear && (
+                    <span className="block text-[9px] font-medium text-primary/70 mt-0.5">שנה נוכחית</span>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {metricRows.map((metric, rowIdx) => (
+              <tr
+                key={metric.key}
+                className={`transition-colors hover:bg-accent/8 ${rowIdx % 2 === 1 ? "bg-secondary/15" : ""} border-b border-border/20`}
+              >
+                <td className="text-right text-[12px] font-semibold text-muted-foreground px-5 py-3.5 whitespace-nowrap bg-card sticky right-0 z-10 border-l border-border/30">
+                  {metric.label}
+                </td>
+                {yearlyData.map(yd => (
+                  <td
+                    key={yd.year}
+                    className={`text-center text-[13px] tabular-nums px-5 py-3.5 cursor-pointer hover:bg-primary/5 transition-colors ${
+                      yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"
+                    }`}
+                  >
+                    {metric.format(yd[metric.key] as number)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
