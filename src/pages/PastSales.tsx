@@ -10,7 +10,7 @@ import { X, Search } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
-  { key: "compare", label: "השוואת מכירות" },
+  { key: "retention", label: "נטישה ושימור" },
   { key: "engagement", label: "מעורבות לקוחות" },
   { key: "financial", label: "ביצועים כספיים" },
   { key: "trends", label: "מגמות" },
@@ -303,6 +303,259 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: { open
   );
 }
 
+// ========== Retention Tab ==========
+
+interface RetentionCustomer {
+  id: string;
+  name: string;
+  email: string;
+  salesWithoutInvolvement: number;
+  maxHistoricalBid: number;
+  totalHistoricalWins: number;
+  salesInvolved: number;
+  lastActiveSale: string;
+  isReturning: boolean;
+  everWon: boolean;
+}
+
+const genazymRetentionCustomers: RetentionCustomer[] = [
+  { id: "RC01", name: "אברהם גולדשטיין", email: "a.goldstein@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 52000, totalHistoricalWins: 185000, salesInvolved: 12, lastActiveSale: "מכירה #43", isReturning: false, everWon: true },
+  { id: "RC02", name: "יצחק לוי", email: "y.levi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 35000, totalHistoricalWins: 340000, salesInvolved: 18, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+  { id: "RC03", name: "משה כהן", email: "m.cohen@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 68000, totalHistoricalWins: 92000, salesInvolved: 8, lastActiveSale: "מכירה #45", isReturning: false, everWon: true },
+  { id: "RC04", name: "דוד פרידמן", email: "d.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #46", isReturning: false, everWon: false },
+  { id: "RC05", name: "שלמה רוזנברג", email: "s.rosenberg@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 120000, totalHistoricalWins: 520000, salesInvolved: 22, lastActiveSale: "מכירה #44", isReturning: false, everWon: true },
+  { id: "RC06", name: "חיים ויסמן", email: "c.weisman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 28000, totalHistoricalWins: 78000, salesInvolved: 9, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+  { id: "RC07", name: "נתן שטרן", email: "n.stern@email.com", salesWithoutInvolvement: 5, maxHistoricalBid: 45000, totalHistoricalWins: 290000, salesInvolved: 15, lastActiveSale: "מכירה #42", isReturning: false, everWon: true },
+  { id: "RC08", name: "אליהו ברגר", email: "e.berger@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 12000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #45", isReturning: false, everWon: false },
+  { id: "RC09", name: "רפאל דיאמנט", email: "r.diamant@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 8500, totalHistoricalWins: 42000, salesInvolved: 7, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+  { id: "RC10", name: "שמואל פרידמן", email: "s.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 78000, totalHistoricalWins: 0, salesInvolved: 11, lastActiveSale: "מכירה #46", isReturning: false, everWon: false },
+  { id: "RC11", name: "יעקב מלר", email: "y.maler@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 32000, totalHistoricalWins: 125000, salesInvolved: 14, lastActiveSale: "מכירה #43", isReturning: false, everWon: true },
+  { id: "RC12", name: "מנחם פלדמן", email: "m.feldman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 55000, totalHistoricalWins: 210000, salesInvolved: 16, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+];
+
+const zaidiRetentionCustomers: RetentionCustomer[] = [
+  { id: "RZ01", name: "רפאל מזרחי", email: "r.mizrachi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 12000, totalHistoricalWins: 48000, salesInvolved: 8, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+  { id: "RZ02", name: "עמוס בן דוד", email: "a.bendavid@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 18000, totalHistoricalWins: 62000, salesInvolved: 10, lastActiveSale: "מכירה #44", isReturning: false, everWon: true },
+  { id: "RZ03", name: "נתן אזולאי", email: "n.azoulay@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 8500, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #45", isReturning: false, everWon: false },
+  { id: "RZ04", name: "גד שמעוני", email: "g.shimoni@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 31000, salesInvolved: 7, lastActiveSale: "מכירה #46", isReturning: false, everWon: true },
+  { id: "RZ05", name: "אריה כץ", email: "a.katz@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 22000, totalHistoricalWins: 85000, salesInvolved: 12, lastActiveSale: "מכירה #47", isReturning: true, everWon: true },
+  { id: "RZ06", name: "פנחס נחמן", email: "p.nachman@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 5200, totalHistoricalWins: 0, salesInvolved: 3, lastActiveSale: "מכירה #43", isReturning: false, everWon: false },
+  { id: "RZ07", name: "בנימין שרף", email: "b.sharaf@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 11000, totalHistoricalWins: 24000, salesInvolved: 6, lastActiveSale: "מכירה #45", isReturning: false, everWon: true },
+  { id: "RZ08", name: "יהודה אלבז", email: "y.elbaz@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 14000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #46", isReturning: false, everWon: false },
+];
+
+const brandRetentionData: Record<Brand, { customers: RetentionCustomer[]; latestSale: string }> = {
+  genazym: { customers: genazymRetentionCustomers, latestSale: "מכירה #47" },
+  zaidy: { customers: zaidiRetentionCustomers, latestSale: "מכירה #47" },
+};
+
+type SortField = "salesWithoutInvolvement" | "maxHistoricalBid" | "totalHistoricalWins" | "salesInvolved";
+type SortDir = "asc" | "desc";
+
+function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string }) {
+  const data = brandRetentionData[brand];
+  const [search, setSearch] = useState("");
+  const [minMaxBid, setMinMaxBid] = useState("");
+  const [minTotalWins, setMinTotalWins] = useState("");
+  const [minSalesInvolved, setMinSalesInvolved] = useState("");
+  const [minSalesWithout, setMinSalesWithout] = useState("");
+  const [returningFilter, setReturningFilter] = useState<"all" | "yes" | "no">("all");
+  const [everWonFilter, setEverWonFilter] = useState<"all" | "yes" | "no">("all");
+  const [sortField, setSortField] = useState<SortField>("maxHistoricalBid");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const significantWinnerThreshold = brand === "genazym" ? 20000 : 10000;
+  const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
+
+  const kpi1 = useMemo(() => {
+    return data.customers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold).length;
+  }, [data, significantWinnerThreshold]);
+
+  const kpi2 = useMemo(() => {
+    return data.customers.filter(c => c.isReturning).length;
+  }, [data]);
+
+  const kpi3 = useMemo(() => {
+    return data.customers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2).length;
+  }, [data, highBidAbsentThreshold]);
+
+  const kpi4 = useMemo(() => {
+    return data.customers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon).length;
+  }, [data]);
+
+  const filtered = useMemo(() => {
+    let result = data.customers.filter(c => {
+      if (search && !c.name.includes(search) && !c.email.toLowerCase().includes(search.toLowerCase())) return false;
+      if (minMaxBid && c.maxHistoricalBid < Number(minMaxBid)) return false;
+      if (minTotalWins && c.totalHistoricalWins < Number(minTotalWins)) return false;
+      if (minSalesInvolved && c.salesInvolved < Number(minSalesInvolved)) return false;
+      if (minSalesWithout && c.salesWithoutInvolvement < Number(minSalesWithout)) return false;
+      if (returningFilter === "yes" && !c.isReturning) return false;
+      if (returningFilter === "no" && c.isReturning) return false;
+      if (everWonFilter === "yes" && !c.everWon) return false;
+      if (everWonFilter === "no" && c.everWon) return false;
+      return true;
+    });
+    result.sort((a, b) => {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      return sortDir === "desc" ? (bVal as number) - (aVal as number) : (aVal as number) - (bVal as number);
+    });
+    return result;
+  }, [data, search, minMaxBid, minTotalWins, minSalesInvolved, minSalesWithout, returningFilter, everWonFilter, sortField, sortDir]);
+
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) setSortDir(d => d === "desc" ? "asc" : "desc");
+    else { setSortField(field); setSortDir("desc"); }
+  };
+
+  const sortIcon = (field: SortField) => sortField === field ? (sortDir === "desc" ? " ↓" : " ↑") : "";
+
+  return (
+    <>
+      <div className="mb-6 flex items-center gap-3">
+        <span className="text-sm text-muted-foreground">מכירת ייחוס:</span>
+        <span className="text-sm font-semibold text-foreground">{data.latestSale}</span>
+        <span className="text-xs text-muted-foreground mr-2">({brandLabel})</span>
+      </div>
+
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="kpi-card">
+          <div className="kpi-value">{kpi1}</div>
+          <div className="kpi-label">זוכים משמעותיים שנעלמו</div>
+          <div className="text-[11px] text-muted-foreground mt-1.5 opacity-70 leading-relaxed">
+            לא מעורבים ב-3 מכירות אחרונות, סך זכיות מעל ${significantWinnerThreshold.toLocaleString()}
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-value">{kpi2}</div>
+          <div className="kpi-label">לקוחות שחזרו</div>
+          <div className="text-[11px] text-muted-foreground mt-1.5 opacity-70 leading-relaxed">
+            חזרו למכירה האחרונה לאחר היעדרות של 3 מכירות
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-value">{kpi3}</div>
+          <div className="kpi-label">בעלי ביד גבוה שנעדרים</div>
+          <div className="text-[11px] text-muted-foreground mt-1.5 opacity-70 leading-relaxed">
+            ביד מקסימלי מעל ${highBidAbsentThreshold.toLocaleString()}, לא פעילים ב-2 מכירות אחרונות
+          </div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-value">{kpi4}</div>
+          <div className="kpi-label">לקוחות עם ביד גבוה ללא זכייה</div>
+          <div className="text-[11px] text-muted-foreground mt-1.5 opacity-70 leading-relaxed">
+            ביד מקסימלי מעל $10,000 ומעולם לא זכו בפריט
+          </div>
+        </div>
+      </div>
+
+      <div className="chart-card">
+        <div className="chart-title mb-0">לקוחות לניתוח שימור</div>
+        <p className="text-xs text-muted-foreground mb-5">ניתוח שימור ונטישת לקוחות במותג {brandLabel}</p>
+
+        <div className="flex flex-wrap items-end gap-3 mb-5 pb-5 border-b border-border/40" dir="rtl">
+          <div className="relative flex-shrink-0" style={{ minWidth: 180 }}>
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input type="text" placeholder="חיפוש שם / אימייל" value={search} onChange={e => setSearch(e.target.value)}
+              className="w-full pr-9 pl-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-[12px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">ביד מקסימלי מינימלי</label>
+            <input type="number" placeholder="$" value={minMaxBid} onChange={e => setMinMaxBid(e.target.value)}
+              className="w-24 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-[12px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors tabular-nums" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">סך זכיות מינימלי</label>
+            <input type="number" placeholder="$" value={minTotalWins} onChange={e => setMinTotalWins(e.target.value)}
+              className="w-24 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-[12px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors tabular-nums" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">מכירות מעורב (מינ׳)</label>
+            <input type="number" placeholder="#" value={minSalesInvolved} onChange={e => setMinSalesInvolved(e.target.value)}
+              className="w-20 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-[12px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors tabular-nums" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">מכירות ללא מעורבות (מינ׳)</label>
+            <input type="number" placeholder="#" value={minSalesWithout} onChange={e => setMinSalesWithout(e.target.value)}
+              className="w-20 px-3 py-2 rounded-lg bg-secondary/40 border border-border/50 text-[12px] placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors tabular-nums" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">לקוח חוזר</label>
+            <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+              {(["all", "yes", "no"] as const).map(v => (
+                <button key={v} onClick={() => setReturningFilter(v)}
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${returningFilter === v ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  {v === "all" ? "הכל" : v === "yes" ? "כן" : "לא"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-muted-foreground font-medium">זכה אי פעם</label>
+            <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
+              {(["all", "yes", "no"] as const).map(v => (
+                <button key={v} onClick={() => setEverWonFilter(v)}
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-all ${everWonFilter === v ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                  {v === "all" ? "הכל" : v === "yes" ? "כן" : "לא"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <span className="text-[12px] text-muted-foreground mr-auto self-end pb-2">{filtered.length} לקוחות</span>
+        </div>
+
+        <div className="overflow-auto max-h-[520px]">
+          <table className="w-full text-sm" dir="rtl">
+            <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
+              <tr>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("salesWithoutInvolvement")}>
+                  מס׳ מכירות אחרונות<br />ללא מעורבות{sortIcon("salesWithoutInvolvement")}
+                </th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("maxHistoricalBid")}>
+                  מקסימום ביד<br />היסטורי{sortIcon("maxHistoricalBid")}
+                </th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("totalHistoricalWins")}>
+                  סך זכיות<br />היסטורי{sortIcon("totalHistoricalWins")}
+                </th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("salesInvolved")}>
+                  מס׳ מכירות שבהן<br />היה מעורב{sortIcon("salesInvolved")}
+                </th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירה אחרונה<br />שבה היה פעיל</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c, idx) => (
+                <tr key={c.id} className={`cursor-pointer transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
+                  <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.email}</td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums text-center">
+                    <span className={c.salesWithoutInvolvement >= 3 ? "text-destructive font-semibold" : ""}>{c.salesWithoutInvolvement}</span>
+                  </td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>
+                  <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.salesInvolved}</td>
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">
+                    <span className="flex items-center gap-2">
+                      {c.lastActiveSale}
+                      {c.isReturning && <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>חזר</span>}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות בהתאם לסינון</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -524,34 +777,8 @@ export default function PastSales() {
           </>
         )}
 
-        {activeTab === "compare" && (
-          <>
-            <div className="chart-card mb-6">
-              <div className="chart-title">השוואת הכנסות בין מכירות</div>
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={saleComparisonChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="revenue" fill="hsl(220,35%,18%)" radius={[4, 4, 0, 0]} name="הכנסות (אלפי $)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">עליית מחיר: פתיחה מול סגירה</div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={upliftData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="lot" type="category" tick={{ fontSize: 12 }} width={80} />
-                  <Tooltip />
-                  <Bar dataKey="opening" fill="hsl(40,8%,80%)" name="מחיר פתיחה" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="final" fill="hsl(38,65%,52%)" name="מחיר סגירה" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </>
+        {activeTab === "retention" && (
+          <RetentionTab brand={brand} brandLabel={brandLabel} />
         )}
 
         {activeTab === "engagement" && (
