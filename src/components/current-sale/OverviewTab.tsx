@@ -328,7 +328,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
           });
         }
 
-        // Past sale columns newest to oldest
+        // Past sale columns newest to oldest (visible in matrix)
         const pastByDateDesc = [...pastWithSnaps].sort((a, b) => new Date(b.sale.date).getTime() - new Date(a.sale.date).getTime());
         pastByDateDesc.forEach(({ sale, snap }) => {
           columns.push({
@@ -339,6 +339,18 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
             getValue: (key) => snap[key] as number,
           });
         });
+
+        // Build a map: for each sale ID, find the previous same-brand sale's snapshot (even if not visible)
+        const allBrandSales = salesList
+          .filter(s => s.brand === selectedBrand)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const prevSaleSnapMap: Record<string, SaleSnapshot | undefined> = {};
+        for (let i = 0; i < allBrandSales.length; i++) {
+          const prevSale = allBrandSales[i + 1];
+          if (prevSale) {
+            prevSaleSnapMap[allBrandSales[i].id] = getSnapshot(prevSale.id, selectedDX);
+          }
+        }
 
         // Benchmark column last (farthest left in RTL)
         columns.push({
@@ -402,12 +414,12 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
                         const val = col.getValue(metric.key);
                         const isDrillable = !col.isBenchmark && !!metric.drillType;
 
-                        // Trend color: compare to next column (previous sale chronologically)
+                        // Trend color: compare to previous same-brand sale (even if not visible in matrix)
                         let trendColor = "";
                         if (!col.isBenchmark) {
-                          const nextCol = columns.slice(colIdx + 1).find(c => !c.isBenchmark);
-                          if (nextCol) {
-                            const prevVal = nextCol.getValue(metric.key);
+                          const prevSnap = prevSaleSnapMap[col.id];
+                          if (prevSnap) {
+                            const prevVal = prevSnap[metric.key] as number;
                             if (val > prevVal) trendColor = "hsl(142, 60%, 40%)";
                             else if (val < prevVal) trendColor = "hsl(0, 65%, 48%)";
                           }
