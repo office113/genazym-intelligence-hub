@@ -88,7 +88,7 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנזים" | "זיידי" }) {
+export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode }) {
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
