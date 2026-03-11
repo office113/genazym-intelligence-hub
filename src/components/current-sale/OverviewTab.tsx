@@ -304,7 +304,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
       {/*  MODE 1: BY D-X DAY                   */}
       {/* ═══════════════════════════════════════ */}
       {mode === "byDX" && (
-
+        <>
           {/* Comparison Table */}
           <div className="chart-card">
             <div className="chart-title">השוואת מכירות ב-D-{selectedDX}</div>
