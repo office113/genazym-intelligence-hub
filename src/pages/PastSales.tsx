@@ -838,26 +838,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <>
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <KPICard label="מגמת הכנסות" value="עולה" trend="up" trendValue="+15% YoY" />
-              <KPICard label="מגמת מציעים" value="יציבה" trend="neutral" trendValue="±2%" />
-              <KPICard label="מגמת פריטים לא נמכרים" value="יורדת" trend="up" trendValue="-3%" subtitle="שיפור" />
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">מגמות לאורך זמן</div>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={saleComparisonChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="revenue" stroke="hsl(220,35%,18%)" strokeWidth={2} name="הכנסות" dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="sold" stroke="hsl(38,65%,52%)" strokeWidth={2} name="נמכרו" dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </>
+          <TrendsTab />
         )}
       </div>
 
