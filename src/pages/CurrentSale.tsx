@@ -1,7 +1,7 @@
 import { useState } from "react";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
-import OverviewTab from "@/components/current-sale/OverviewTab";
+import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { currentSaleDX, missingCustomers } from "@/data/mockData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Phone, Mail, AlertTriangle, CheckCircle2, Clock, TrendingDown } from "lucide-react";
