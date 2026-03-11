@@ -88,9 +88,7 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-// ─── MAIN COMPONENT ───
-export default function OverviewTab() {
-  const [selectedBrand, setSelectedBrand] = useState<"גנזים" | "זיידי">("גנזים");
+export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנזים" | "זיידי" }) {
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
