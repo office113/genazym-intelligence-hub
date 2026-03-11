@@ -400,8 +400,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
                       <td className="sticky right-0 bg-card z-10 font-semibold text-sm">{metric.label}</td>
                       {columns.map((col, colIdx) => {
                         const val = col.getValue(metric.key);
-                        const isCurrent = col.isCurrent;
-                        const isDrillable = isCurrent && metric.drillType;
+                        const isDrillable = !col.isBenchmark && !!metric.drillType;
 
                         // Trend color: compare to next column (previous sale chronologically)
                         let trendColor = "";
@@ -414,20 +413,23 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
                           }
                         }
 
+                        const saleName = col.label;
+                        const saleId = col.id;
+
                         return (
                           <td
                             key={col.id}
-                            className={`text-center ${isCurrent ? "font-bold" : ""} ${col.isBenchmark ? "text-muted-foreground font-semibold" : ""} ${isDrillable ? "cursor-pointer" : ""}`}
+                            className={`text-center ${col.isCurrent ? "font-bold" : ""} ${col.isBenchmark ? "text-muted-foreground font-semibold" : ""} ${isDrillable ? "cursor-pointer" : ""}`}
                             style={{
-                              ...(isCurrent ? { background: "hsl(var(--accent) / 0.04)" } : {}),
+                              ...(col.isCurrent ? { background: "hsl(var(--accent) / 0.04)" } : {}),
                               ...(col.isBenchmark ? { background: "hsl(var(--secondary) / 0.3)" } : {}),
                               ...(trendColor && !isDrillable ? { color: trendColor } : {}),
                             }}
-                            onClick={() => isDrillable && openDrillDown(metric.drillType!, metric.label, `${currentSale.name} · D-${selectedDX}`)}
+                            onClick={() => isDrillable && openDrillDown(metric.drillType!, metric.label, `${saleName} | מצב ב-D-${selectedDX}`, saleName, saleId, selectedDX)}
                           >
                             {isDrillable ? (
                               <span
-                                className="inline-block px-2 py-0.5 rounded-md border border-accent/20 cursor-pointer transition-colors hover:border-accent/40"
+                                className="inline-block px-2 py-0.5 rounded-md border border-accent/20 cursor-pointer transition-colors hover:border-accent/40 hover:shadow-sm"
                                 style={{ background: "hsl(var(--accent) / 0.08)", color: trendColor || "hsl(var(--accent))" }}
                               >
                                 {formatVal(val, metric.format)}
