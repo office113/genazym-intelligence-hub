@@ -107,7 +107,6 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
   const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
   const isFutureSale = useMemo(() => parseISO(currentSale.date) >= new Date(new Date().setHours(0,0,0,0)), [currentSale.date]);
 
-  const [mode, setMode] = useState<DisplayMode>("byDX");
   const [selectedDX, setSelectedDX] = useState(autoDX);
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
