@@ -2,6 +2,7 @@ import { useState } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
+import OverviewTab from "@/components/current-sale/OverviewTab";
 import { currentSaleDX, missingCustomers } from "@/data/mockData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Phone, Mail, AlertTriangle, CheckCircle2, Clock, TrendingDown } from "lucide-react";
@@ -34,98 +35,7 @@ export default function CurrentSale() {
       <SubNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} title="מכירה נוכחית — מכירה #48" />
 
       <div className="p-8 animate-fade-in">
-        {activeTab === "overview" && (
-          <>
-            {/* D-X Banner */}
-            <div className="chart-card mb-6 flex items-center gap-8">
-              <div className="flex-shrink-0 text-center px-6 py-2 border-l border-border">
-                <div className="text-5xl font-bold font-display" style={{ color: "hsl(var(--accent))" }}>D-4</div>
-                <div className="text-sm text-muted-foreground mt-1">ימים למכירה</div>
-              </div>
-              <div className="flex-1 grid grid-cols-5 gap-4">
-                <KPICard label="הצעות" value="180" trend="down" trendValue="-8% מהממוצע" onClick={() => {}} />
-                <KPICard label="מציעים" value="95" trend="neutral" trendValue="כממוצע" onClick={() => {}} />
-                <KPICard label="נרשמים חדשים" value="38" trend="up" trendValue="+15%" onClick={() => {}} />
-                <KPICard label="פריטים במעקב" value="245" trend="up" trendValue="+5%" onClick={() => {}} />
-                <KPICard label="ללא הצעות" value="42" trend="down" trendValue="12% מהפריטים" onClick={() => {}} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              <div className="chart-card">
-                <div className="chart-title">קצב הצעות: נוכחי מול ממוצע היסטורי</div>
-                <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={currentSaleDX}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                    <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="avg" stroke="hsl(40,8%,75%)" strokeWidth={2} strokeDasharray="6 3" name="ממוצע היסטורי" dot={false} />
-                    <Line type="monotone" dataKey="current" stroke="hsl(220,35%,18%)" strokeWidth={2.5} name="מכירה נוכחית" dot={{ r: 4, fill: "hsl(220,35%,18%)" }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="chart-card">
-                <div className="chart-title">התראות מרכזיות</div>
-                <div className="space-y-3">
-                  <div className="alert-card alert-card-warning flex items-start gap-3">
-                    <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--warning))" }} />
-                    <div>
-                      <div className="text-sm font-semibold">קצב הצעות מתחת לממוצע</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">180 הצעות ב-D-4 מול 195 בממוצע (-8%)</div>
-                    </div>
-                  </div>
-                  <div className="alert-card alert-card-danger flex items-start gap-3">
-                    <TrendingDown className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--destructive))" }} />
-                    <div>
-                      <div className="text-sm font-semibold">5 לקוחות VIP לא פעילים</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">בד״כ פעילים עד שלב זה, נדרשת פנייה</div>
-                    </div>
-                  </div>
-                  <div className="alert-card alert-card-success flex items-start gap-3">
-                    <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "hsl(var(--success))" }} />
-                    <div>
-                      <div className="text-sm font-semibold">נרשמים חדשים מעל הממוצע</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">38 נרשמים חדשים (+15% מהממוצע)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Missing Customers Preview */}
-            <div className="chart-card">
-              <div className="chart-title flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                לקוחות חסרים — בדרך כלל פעילים עד D-4
-              </div>
-              <table className="data-table">
-                <thead>
-                  <tr><th>שם</th><th>מכירה אחרונה</th><th>ממוצע הצעות</th><th>פעילות רגילה</th><th>סה״כ הוצאות</th><th>פעולה</th></tr>
-                </thead>
-                <tbody>
-                  {missingCustomers.slice(0, 3).map((c) => (
-                    <tr key={c.id} onClick={() => openCustomer(c)}>
-                      <td className="font-semibold">{c.name}</td>
-                      <td>{c.lastSale}</td>
-                      <td>{c.avgBids}</td>
-                      <td><span className="filter-chip text-xs">{c.usualDX}</span></td>
-                      <td>${c.totalSpend.toLocaleString()}</td>
-                      <td>
-                        <button className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-md transition-colors"
-                          style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--gold-dark))" }}
-                          onClick={(e) => { e.stopPropagation(); }}>
-                          <Phone className="w-3 h-3" /> התקשר
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        {activeTab === "overview" && <OverviewTab />}
 
         {activeTab === "pace" && (
           <>
