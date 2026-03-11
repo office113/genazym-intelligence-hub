@@ -952,14 +952,34 @@ function TrendsTab() {
                       <td
                         key={yd.year}
                         onClick={isDrillable ? () => handleCellClick(metric.drillType!, yd.year, value) : undefined}
-                        className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-colors ${
-                          yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"
-                        } ${isDrillable
-                          ? "cursor-pointer hover:bg-primary/10 underline decoration-dotted underline-offset-4 decoration-primary/40"
-                          : "cursor-default"
+                        className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-all ${
+                          !isDrillable
+                            ? `cursor-default ${yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"}`
+                            : "cursor-pointer"
                         }`}
                       >
-                        {metric.format(value)}
+                        {isDrillable ? (
+                          <span
+                            className="inline-block font-semibold rounded-md px-2 py-0.5 transition-all"
+                            style={{
+                              color: "hsl(var(--accent))",
+                              background: "hsl(var(--accent) / 0.08)",
+                            }}
+                            onMouseEnter={e => {
+                              (e.target as HTMLElement).style.background = "hsl(var(--accent) / 0.18)";
+                              (e.target as HTMLElement).style.textDecoration = "underline";
+                              (e.target as HTMLElement).style.textUnderlineOffset = "3px";
+                            }}
+                            onMouseLeave={e => {
+                              (e.target as HTMLElement).style.background = "hsl(var(--accent) / 0.08)";
+                              (e.target as HTMLElement).style.textDecoration = "none";
+                            }}
+                          >
+                            {metric.format(value)}
+                          </span>
+                        ) : (
+                          metric.format(value)
+                        )}
                       </td>
                     );
                   })}
