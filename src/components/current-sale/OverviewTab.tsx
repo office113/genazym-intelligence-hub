@@ -7,7 +7,7 @@ import { X, Search, ChevronDown, CalendarClock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 
-type DisplayMode = "byDX" | "bySale";
+export type DisplayMode = "overview" | "byDX" | "bySale";
 
 // Auto-detect current sale: latest sale with a future date
 function detectCurrentSale() {

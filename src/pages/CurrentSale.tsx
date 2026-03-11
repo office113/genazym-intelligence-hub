@@ -8,6 +8,8 @@ import { Phone, Mail, AlertTriangle, CheckCircle2, Clock, TrendingDown } from "l
 
 const tabs = [
   { key: "overview", label: "סקירה" },
+  { key: "byDX", label: "לפי יום לפני מכירה" },
+  { key: "bySale", label: "לפי מכירה אחת" },
   { key: "pace", label: "קצב התקדמות" },
   { key: "dx", label: "השוואת D-X" },
   { key: "missing", label: "לקוחות חסרים" },
