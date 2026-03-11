@@ -99,6 +99,9 @@ export const allSaleSnapshots: SaleSnapshot[] = [
   ...generateSnapshots("S043", "מכירה #43", "גנזים", "2024-04-18", 290, 465, 178, 235, 1780000, 48, 32, 11),
   ...generateSnapshots("S042", "מכירה #42", "זיידי", "2024-02-12", 150, 210, 88, 118, 480000, 30, 20, 5),
   ...generateSnapshots("S041", "מכירה #41", "גנזים", "2023-12-05", 280, 440, 168, 225, 1650000, 42, 30, 9),
+  // Older sales (not shown in matrix but used for comparison)
+  ...generateSnapshots("S040", "מכירה #40", "זיידי", "2023-10-15", 140, 195, 82, 108, 420000, 28, 18, 4),
+  ...generateSnapshots("S039", "מכירה #39", "גנזים", "2023-08-20", 260, 395, 155, 210, 1520000, 38, 26, 8),
 ];
 
 export const currentSaleId = "S048";
@@ -112,6 +115,8 @@ export const salesList = [
   { id: "S043", name: "מכירה #43", brand: "גנזים" as const, date: "2024-04-18", isCurrent: false },
   { id: "S042", name: "מכירה #42", brand: "זיידי" as const, date: "2024-02-12", isCurrent: false },
   { id: "S041", name: "מכירה #41", brand: "גנזים" as const, date: "2023-12-05", isCurrent: false },
+  { id: "S040", name: "מכירה #40", brand: "זיידי" as const, date: "2023-10-15", isCurrent: false },
+  { id: "S039", name: "מכירה #39", brand: "גנזים" as const, date: "2023-08-20", isCurrent: false },
 ];
 
 // Drill-down mock customers

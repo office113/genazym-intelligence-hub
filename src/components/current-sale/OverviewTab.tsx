@@ -316,11 +316,14 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
 
         const columns: ColDef[] = [];
 
+        // Helper to extract sale number from name like "מכירה #48" -> "48"
+        const saleNumber = (name: string) => name.replace(/[^\d]/g, "");
+
         // Current sale column first (rightmost in RTL, next to metric labels)
         if (currentSnap) {
           columns.push({
             id: currentSaleId,
-            label: currentSale.name,
+            label: `${selectedBrand} ${saleNumber(currentSale.name)}`,
             sublabel: currentSale.date,
             isCurrent: true,
             snap: currentSnap,
@@ -333,7 +336,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
         pastByDateDesc.forEach(({ sale, snap }) => {
           columns.push({
             id: sale.id,
-            label: sale.name,
+            label: `${selectedBrand} ${saleNumber(sale.name)}`,
             sublabel: sale.date,
             snap,
             getValue: (key) => snap[key] as number,
