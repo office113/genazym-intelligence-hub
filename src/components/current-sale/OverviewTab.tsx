@@ -400,10 +400,22 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
                   {metricRows.map(metric => (
                     <tr key={metric.key}>
                       <td className="sticky right-0 bg-card z-10 font-semibold text-sm">{metric.label}</td>
-                      {columns.map(col => {
+                      {columns.map((col, colIdx) => {
                         const val = col.getValue(metric.key);
                         const isCurrent = col.isCurrent;
                         const isDrillable = isCurrent && metric.drillType;
+
+                        // Trend color: compare to next column (previous sale chronologically)
+                        let trendColor = "";
+                        if (!col.isBenchmark) {
+                          // Find the next non-benchmark column
+                          const nextCol = columns.slice(colIdx + 1).find(c => !c.isBenchmark);
+                          if (nextCol) {
+                            const prevVal = nextCol.getValue(metric.key);
+                            if (val > prevVal) trendColor = "hsl(142, 60%, 40%)";
+                            else if (val < prevVal) trendColor = "hsl(0, 65%, 48%)";
+                          }
+                        }
 
                         return (
                           <td
@@ -412,11 +424,20 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
                             style={{
                               ...(isCurrent ? { background: "hsl(var(--accent) / 0.04)" } : {}),
                               ...(col.isBenchmark ? { background: "hsl(var(--secondary) / 0.3)" } : {}),
-                              ...(isDrillable ? { color: "hsl(var(--accent))" } : {}),
+                              ...(trendColor && !isDrillable ? { color: trendColor } : {}),
                             }}
                             onClick={() => isDrillable && openDrillDown(metric.drillType!, metric.label, `${currentSale.name} Â· D-${selectedDX}`)}
                           >
-                            {formatVal(val, metric.format)}
+                            {isDrillable ? (
+                              <span
+                                className="inline-block px-2 py-0.5 rounded-md border border-accent/20 cursor-pointer transition-colors hover:border-accent/40"
+                                style={{ background: "hsl(var(--accent) / 0.08)", color: trendColor || "hsl(var(--accent))" }}
+                              >
+                                {formatVal(val, metric.format)}
+                              </span>
+                            ) : (
+                              formatVal(val, metric.format)
+                            )}
                           </td>
                         );
                       })}
