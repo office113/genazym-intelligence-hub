@@ -580,19 +580,39 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
                 <div className="kpi-value text-xl">{(drillDownCustomers[drillDown.type] || drillDownCustomers.uniqueBidders).length}</div>
                 <div className="kpi-label">סה״כ רשומות</div>
               </div>
+              {drillDown.type === "uniqueBidders" && (
+                <>
+                  <div className="kpi-card">
+                    <div className="kpi-value text-xl">{drillDownCustomers.uniqueBidders.filter(c => c.wonAtEnd).length}</div>
+                    <div className="kpi-label">זכו בסוף המכירה</div>
+                  </div>
+                  <div className="kpi-card">
+                    <div className="kpi-value text-xl">{drillDownCustomers.uniqueBidders.filter(c => c.engagementType === "גם וגם").length}</div>
+                    <div className="kpi-label">מוקדם + לייב</div>
+                  </div>
+                </>
+              )}
               {drillDown.type === "newBidders" && (
                 <>
                   <div className="kpi-card">
-                    <div className="kpi-value text-xl">
-                      {drillDownCustomers.newBidders.filter(c => c.activeInOtherBrand).length}
-                    </div>
+                    <div className="kpi-value text-xl">{drillDownCustomers.newBidders.filter(c => c.activeInOtherBrand).length}</div>
                     <div className="kpi-label">פעילים במותג השני</div>
                   </div>
                   <div className="kpi-card">
-                    <div className="kpi-value text-xl">
-                      {drillDownCustomers.newBidders.filter(c => !c.activeInOtherBrand).length}
-                    </div>
+                    <div className="kpi-value text-xl">{drillDownCustomers.newBidders.filter(c => !c.activeInOtherBrand).length}</div>
                     <div className="kpi-label">חדשים לגמרי</div>
+                  </div>
+                </>
+              )}
+              {drillDown.type === "newBiddersFromOtherBrand" && (
+                <>
+                  <div className="kpi-card">
+                    <div className="kpi-value text-xl">{drillDownCustomers.newBiddersFromOtherBrand.reduce((a, c) => a + (c.winsOtherBrand || 0), 0)}</div>
+                    <div className="kpi-label">סה״כ זכיות במותג השני</div>
+                  </div>
+                  <div className="kpi-card">
+                    <div className="kpi-value text-xl">{drillDownCustomers.newBiddersFromOtherBrand.length > 0 ? drillDownCustomers.newBiddersFromOtherBrand[0].otherBrandName : "—"}</div>
+                    <div className="kpi-label">המותג השני</div>
                   </div>
                 </>
               )}
@@ -601,68 +621,154 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
             {/* Search */}
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="חיפוש..."
-                className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-              />
+              <input type="text" placeholder="חיפוש..." className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
             </div>
 
-            {/* Data table */}
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="data-table w-full">
-                <thead>
-                  <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                    <th>שם</th>
-                    {drillDown.type === "lotsWithBids" ? (
-                      <>
-                        <th>הצעה ראשונה</th>
-                        <th>הצעה מקסימלית</th>
-                        <th>מס׳ הצעות</th>
-                      </>
-                    ) : (
-                      <>
-                        <th>תאריך ביד ראשון</th>
-                        <th>מקסימום ביד היסטורי</th>
-                        <th>מס׳ זכיות</th>
-                        <th>מכירה אחרונה</th>
-                        {drillDown.type === "newBidders" && <th>פעיל במותג השני</th>}
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(drillDownCustomers[drillDown.type] || drillDownCustomers.uniqueBidders).map((c, i) => (
-                    <tr key={i} style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                      <td className="font-semibold">{c.name}</td>
-                      {drillDown.type === "lotsWithBids" ? (
-                        <>
-                          <td>{c.firstBidDate}</td>
-                          <td className="font-semibold">{c.maxHistoricalBid}</td>
-                          <td>{c.totalWins}</td>
-                        </>
-                      ) : (
-                        <>
-                          <td>{c.firstBidDate}</td>
-                          <td className="font-semibold">{c.maxHistoricalBid}</td>
-                          <td>{c.totalWins}</td>
-                          <td>{c.lastActiveSale}</td>
-                          {drillDown.type === "newBidders" && (
-                            <td>
-                              {c.activeInOtherBrand ? (
-                                <span className="badge-ai">כן</span>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">לא</span>
-                              )}
-                            </td>
-                          )}
-                        </>
-                      )}
+            {/* ── uniqueBidders table ── */}
+            {drillDown.type === "uniqueBidders" && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="data-table w-full">
+                  <thead>
+                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                      <th>שם לקוח</th>
+                      <th>תאריך ביד ראשון במותג</th>
+                      <th>סוג מעורבות עד אותו יום</th>
+                      <th>מס׳ בידים עד אותו יום</th>
+                      <th>מס׳ לוטים עם ביד</th>
+                      <th>ביד מקסימלי עד אותו יום</th>
+                      <th>האם זכה בסוף המכירה</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {drillDownCustomers.uniqueBidders.map((c, i) => (
+                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                        <td className="font-semibold">{c.name}</td>
+                        <td>{c.firstBidDate}</td>
+                        <td>
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                            style={{
+                              background: c.engagementType === "גם וגם" ? "hsl(var(--accent) / 0.12)" : c.engagementType === "מוקדם" ? "hsl(var(--primary) / 0.1)" : "hsl(200, 40%, 92%)",
+                              color: c.engagementType === "גם וגם" ? "hsl(var(--gold-dark))" : c.engagementType === "מוקדם" ? "hsl(var(--primary))" : "hsl(200, 45%, 35%)",
+                            }}>
+                            {c.engagementType}
+                          </span>
+                        </td>
+                        <td className="text-center">{c.bidsCount}</td>
+                        <td className="text-center">{c.lotsWithBidCount}</td>
+                        <td className="font-semibold">{c.maxBidAmount}</td>
+                        <td className="text-center">
+                          {c.wonAtEnd ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "hsl(142, 60%, 92%)", color: "hsl(142, 60%, 30%)" }}>כן</span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">לא</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ── newBidders table ── */}
+            {drillDown.type === "newBidders" && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="data-table w-full">
+                  <thead>
+                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                      <th>שם לקוח</th>
+                      <th>תאריך הרשמה</th>
+                      <th>תאריך ביד ראשון</th>
+                      <th>מס׳ בידים עד אותו יום</th>
+                      <th>מס׳ לוטים עם ביד</th>
+                      <th>ביד מקסימלי עד אותו יום</th>
+                      <th>היה פעיל בעבר באותו מותג</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drillDownCustomers.newBidders.map((c, i) => (
+                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                        <td className="font-semibold">{c.name}</td>
+                        <td>{c.registrationDate}</td>
+                        <td>{c.firstBidDate}</td>
+                        <td className="text-center">{c.bidsCount}</td>
+                        <td className="text-center">{c.lotsWithBidCount}</td>
+                        <td className="font-semibold">{c.maxBidAmount}</td>
+                        <td className="text-center">
+                          {c.activeInOtherBrand ? (
+                            <span className="badge-ai">כן</span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">לא</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ── newBiddersFromOtherBrand table ── */}
+            {drillDown.type === "newBiddersFromOtherBrand" && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="data-table w-full">
+                  <thead>
+                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                      <th>שם לקוח</th>
+                      <th>תאריך הרשמה</th>
+                      <th>תאריך ביד ראשון במותג הנוכחי</th>
+                      <th>המותג השני</th>
+                      <th>תאריך פעילות ראשון במותג השני</th>
+                      <th>ביד מקסימלי היסטורי במותג השני</th>
+                      <th>מס׳ זכיות במותג השני</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drillDownCustomers.newBiddersFromOtherBrand.map((c, i) => (
+                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                        <td className="font-semibold">{c.name}</td>
+                        <td>{c.registrationDate}</td>
+                        <td>{c.firstBidDate}</td>
+                        <td>
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" }}>
+                            {c.otherBrandName}
+                          </span>
+                        </td>
+                        <td>{c.firstActivityOtherBrand}</td>
+                        <td className="font-semibold">{c.maxBidOtherBrand}</td>
+                        <td className="text-center font-semibold">{c.winsOtherBrand}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ── lotsWithBids fallback ── */}
+            {drillDown.type === "lotsWithBids" && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <table className="data-table w-full">
+                  <thead>
+                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                      <th>שם</th>
+                      <th>הצעה ראשונה</th>
+                      <th>הצעה מקסימלית</th>
+                      <th>מס׳ הצעות</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {drillDownCustomers.lotsWithBids.map((c, i) => (
+                      <tr key={i} style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                        <td className="font-semibold">{c.name}</td>
+                        <td>{c.firstBidDate}</td>
+                        <td className="font-semibold">{c.maxHistoricalBid}</td>
+                        <td>{c.totalWins}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </InvestigationPanel>
