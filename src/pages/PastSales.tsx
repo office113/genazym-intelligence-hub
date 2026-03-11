@@ -974,7 +974,7 @@ function TrendsTab() {
       <InvestigationPanel
         open={drillDownOpen}
         onClose={() => setDrillDownOpen(false)}
-        title={`${drillDownTitle} — ${drillDownYear}`}
+        title={`${drillDownTitles[drillDownType]} — ${drillDownYear}`}
         subtitle={`${brandLabel} | ${drillDownCustomers.length} לקוחות`}
       >
         <div className="px-10 py-5 border-b border-border/40 shrink-0">
