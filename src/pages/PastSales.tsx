@@ -839,9 +839,6 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   const key = `${brandFilter === "genazym" ? "genazym" : "zaidy"}_${type}`;
   return trendsDrillDownData[key]?.[year] || [];
 }
-  const key = `${brandFilter === "genazym" ? "genazym" : "zaidy"}_${type}`;
-  return trendsDrillDownData[key]?.[year] || [];
-}
 
 function TrendsTab() {
   const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
