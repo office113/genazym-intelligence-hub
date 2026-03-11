@@ -623,6 +623,9 @@ interface YearlyData {
   avgPricePerItem: number;
   medianPrice: number;
   booksSold: number;
+  newInvolved: number;
+  newRegistrants: number;
+  churned: number;
 }
 
 const genazymYearlyData: YearlyData[] = [
