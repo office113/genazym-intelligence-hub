@@ -89,37 +89,46 @@ function generateSnapshots(
 }
 
 export const allSaleSnapshots: SaleSnapshot[] = [
-  // Current sale - #48 (Genazym)
-  ...generateSnapshots("S048", "מכירה #48", "גנזים", "2025-03-25", 310, 420, 185, 248, 1850000, 52, 38, 12),
-  // Past sales
-  ...generateSnapshots("S047", "מכירה #47", "גנזים", "2024-12-15", 320, 510, 198, 272, 2120000, 45, 35, 10),
-  ...generateSnapshots("S046", "מכירה #46", "זיידי", "2024-10-20", 180, 285, 112, 148, 680000, 38, 28, 8),
-  ...generateSnapshots("S045", "מכירה #45", "גנזים", "2024-08-10", 350, 580, 225, 298, 2450000, 52, 42, 15),
-  ...generateSnapshots("S044", "מכירה #44", "זיידי", "2024-06-05", 160, 240, 98, 128, 520000, 34, 22, 6),
-  ...generateSnapshots("S043", "מכירה #43", "גנזים", "2024-04-18", 290, 465, 178, 235, 1780000, 48, 32, 11),
-  ...generateSnapshots("S042", "מכירה #42", "זיידי", "2024-02-12", 150, 210, 88, 118, 480000, 30, 20, 5),
-  ...generateSnapshots("S041", "מכירה #41", "גנזים", "2023-12-05", 280, 440, 168, 225, 1650000, 42, 30, 9),
-  // Older sales (not shown in matrix but used for comparison)
-  ...generateSnapshots("S040", "מכירה #40", "זיידי", "2023-10-15", 140, 195, 82, 108, 420000, 28, 18, 4),
-  ...generateSnapshots("S039", "מכירה #39", "גנזים", "2023-08-20", 260, 395, 155, 210, 1520000, 38, 26, 8),
-  // Hidden older sales used for predecessor comparison logic
-  ...generateSnapshots("S038", "מכירה #38", "זיידי", "2023-06-18", 132, 176, 76, 99, 398000, 24, 16, 4),
-  ...generateSnapshots("S037", "מכירה #37", "גנזים", "2023-04-25", 245, 360, 142, 196, 1410000, 34, 22, 7),
+  // ── גנזים sales (consecutive: #42 through #48) ──
+  ...generateSnapshots("G048", "מכירה #48", "גנזים", "2025-03-25", 310, 420, 185, 248, 1850000, 52, 38, 12),
+  ...generateSnapshots("G047", "מכירה #47", "גנזים", "2024-12-15", 320, 510, 198, 272, 2120000, 45, 35, 10),
+  ...generateSnapshots("G046", "מכירה #46", "גנזים", "2024-08-10", 350, 580, 225, 298, 2450000, 52, 42, 15),
+  ...generateSnapshots("G045", "מכירה #45", "גנזים", "2024-04-18", 290, 465, 178, 235, 1780000, 48, 32, 11),
+  ...generateSnapshots("G044", "מכירה #44", "גנזים", "2023-12-05", 280, 440, 168, 225, 1650000, 42, 30, 9),
+  ...generateSnapshots("G043", "מכירה #43", "גנזים", "2023-08-20", 260, 395, 155, 210, 1520000, 38, 26, 8),
+  // Hidden predecessor for color comparison
+  ...generateSnapshots("G042", "מכירה #42", "גנזים", "2023-04-25", 245, 360, 142, 196, 1410000, 34, 22, 7),
+
+  // ── זיידי sales (consecutive: #29 through #35) ──
+  ...generateSnapshots("Z035", "מכירה #35", "זיידי", "2025-04-10", 190, 295, 118, 155, 710000, 40, 30, 9),
+  ...generateSnapshots("Z034", "מכירה #34", "זיידי", "2024-10-20", 180, 285, 112, 148, 680000, 38, 28, 8),
+  ...generateSnapshots("Z033", "מכירה #33", "זיידי", "2024-06-05", 160, 240, 98, 128, 520000, 34, 22, 6),
+  ...generateSnapshots("Z032", "מכירה #32", "זיידי", "2024-02-12", 150, 210, 88, 118, 480000, 30, 20, 5),
+  ...generateSnapshots("Z031", "מכירה #31", "זיידי", "2023-10-15", 140, 195, 82, 108, 420000, 28, 18, 4),
+  ...generateSnapshots("Z030", "מכירה #30", "זיידי", "2023-06-18", 132, 176, 76, 99, 398000, 24, 16, 4),
+  // Hidden predecessor for color comparison
+  ...generateSnapshots("Z029", "מכירה #29", "זיידי", "2023-02-10", 125, 160, 70, 92, 365000, 20, 14, 3),
 ];
 
-export const currentSaleId = "S048";
+export const currentSaleId = "G048";
 
 export const salesList = [
-  { id: "S048", name: "מכירה #48", brand: "גנזים" as const, date: "2025-03-25", isCurrent: true },
-  { id: "S047", name: "מכירה #47", brand: "גנזים" as const, date: "2024-12-15", isCurrent: false },
-  { id: "S046", name: "מכירה #46", brand: "זיידי" as const, date: "2024-10-20", isCurrent: false },
-  { id: "S045", name: "מכירה #45", brand: "גנזים" as const, date: "2024-08-10", isCurrent: false },
-  { id: "S044", name: "מכירה #44", brand: "זיידי" as const, date: "2024-06-05", isCurrent: false },
-  { id: "S043", name: "מכירה #43", brand: "גנזים" as const, date: "2024-04-18", isCurrent: false },
-  { id: "S042", name: "מכירה #42", brand: "זיידי" as const, date: "2024-02-12", isCurrent: false },
-  { id: "S041", name: "מכירה #41", brand: "גנזים" as const, date: "2023-12-05", isCurrent: false },
-  { id: "S040", name: "מכירה #40", brand: "זיידי" as const, date: "2023-10-15", isCurrent: false },
-  { id: "S039", name: "מכירה #39", brand: "גנזים" as const, date: "2023-08-20", isCurrent: false },
+  // גנזים (consecutive #42–#48)
+  { id: "G048", name: "מכירה #48", brand: "גנזים" as const, date: "2025-03-25", isCurrent: true },
+  { id: "G047", name: "מכירה #47", brand: "גנזים" as const, date: "2024-12-15", isCurrent: false },
+  { id: "G046", name: "מכירה #46", brand: "גנזים" as const, date: "2024-08-10", isCurrent: false },
+  { id: "G045", name: "מכירה #45", brand: "גנזים" as const, date: "2024-04-18", isCurrent: false },
+  { id: "G044", name: "מכירה #44", brand: "גנזים" as const, date: "2023-12-05", isCurrent: false },
+  { id: "G043", name: "מכירה #43", brand: "גנזים" as const, date: "2023-08-20", isCurrent: false },
+  { id: "G042", name: "מכירה #42", brand: "גנזים" as const, date: "2023-04-25", isCurrent: false },
+  // זיידי (consecutive #29–#35)
+  { id: "Z035", name: "מכירה #35", brand: "זיידי" as const, date: "2025-04-10", isCurrent: true },
+  { id: "Z034", name: "מכירה #34", brand: "זיידי" as const, date: "2024-10-20", isCurrent: false },
+  { id: "Z033", name: "מכירה #33", brand: "זיידי" as const, date: "2024-06-05", isCurrent: false },
+  { id: "Z032", name: "מכירה #32", brand: "זיידי" as const, date: "2024-02-12", isCurrent: false },
+  { id: "Z031", name: "מכירה #31", brand: "זיידי" as const, date: "2023-10-15", isCurrent: false },
+  { id: "Z030", name: "מכירה #30", brand: "זיידי" as const, date: "2023-06-18", isCurrent: false },
+  { id: "Z029", name: "מכירה #29", brand: "זיידי" as const, date: "2023-02-10", isCurrent: false },
 ];
 
 // Drill-down mock customers
