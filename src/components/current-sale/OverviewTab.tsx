@@ -303,128 +303,131 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
       {/* ═══════════════════════════════════════ */}
       {/*  MODE 1: BY D-X DAY                   */}
       {/* ═══════════════════════════════════════ */}
-      {mode === "byDX" && (
-        <>
-          {/* Comparison Table */}
+      {mode === "byDX" && (() => {
+        // Build columns: current sale first, then past sales, then benchmarks
+        const currentSnap = getSnapshot(currentSaleId, selectedDX);
+        const pastSalesFiltered = salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand);
+        const pastWithSnaps = pastSalesFiltered.map(s => ({ sale: s, snap: getSnapshot(s.id, selectedDX) })).filter(x => x.snap) as { sale: typeof salesList[0]; snap: SaleSnapshot }[];
+
+        type ColDef = { id: string; label: string; sublabel?: string; isCurrent?: boolean; isBenchmark?: boolean; snap?: SaleSnapshot; getValue: (key: keyof SaleSnapshot) => number };
+
+        const columns: ColDef[] = [];
+
+        // Current sale column
+        if (currentSnap) {
+          columns.push({
+            id: currentSaleId,
+            label: currentSale.name,
+            sublabel: currentSale.date,
+            isCurrent: true,
+            snap: currentSnap,
+            getValue: (key) => currentSnap[key] as number,
+          });
+        }
+
+        // Past sale columns
+        pastWithSnaps.forEach(({ sale, snap }) => {
+          columns.push({
+            id: sale.id,
+            label: sale.name,
+            sublabel: sale.date,
+            snap,
+            getValue: (key) => snap[key] as number,
+          });
+        });
+
+        // Benchmark columns
+        columns.push({
+          id: "avg",
+          label: "ממוצע עבר",
+          isBenchmark: true,
+          getValue: (key) => mode1Data.avg(key),
+        });
+        columns.push({
+          id: "median",
+          label: "חציון עבר",
+          isBenchmark: true,
+          getValue: (key) => mode1Data.median(key),
+        });
+
+        // Metric rows definition
+        const metricRows: { label: string; key: keyof SaleSnapshot; format?: "price" | "pct"; drillType?: string }[] = [
+          { label: "סה״כ פריטים במכירה", key: "totalLots" },
+          { label: "סה״כ הצעות מוקדמות", key: "earlyBids" },
+          { label: "משתמשים שונים עם הצעות", key: "uniqueBidders", drillType: "uniqueBidders" },
+          { label: "מס׳ פריטים עם הצעות", key: "lotsWithBids", drillType: "lotsWithBids" },
+          { label: "אחוז פריטים עם הצעות", key: "lotsBidPct", format: "pct" },
+          { label: "מחיר מובטח", key: "guaranteedPrice", format: "price" },
+          { label: "נרשמים חדשים (28 ימים)", key: "newRegistrants28d" },
+          { label: "מס׳ בידרים חדשים", key: "newBidders", drillType: "newBidders" },
+          { label: "בידרים חדשים מהמותג השני", key: "newBiddersFromOtherBrand" },
+        ];
+
+        const formatVal = (v: number, format?: "price" | "pct") => {
+          if (format === "price") return fmtPrice(v);
+          if (format === "pct") return `${v}%`;
+          return v.toLocaleString();
+        };
+
+        return (
           <div className="chart-card">
             <div className="chart-title">השוואת מכירות ב-D-{selectedDX}</div>
             <div className="overflow-auto">
               <table className="data-table w-full">
                 <thead>
                   <tr>
-                    <th className="sticky right-0 bg-card z-10">מכירה</th>
-                    <th>מותג</th>
-                    <th>תאריך מכירה</th>
-                    <th>סה״כ פריטים</th>
-                    <th
-                      className="cursor-pointer hover:text-foreground transition-colors"
-                      style={{ color: "hsl(var(--accent))" }}
-                      onClick={() => openDrillDown("uniqueBidders", "סה״כ הצעות מוקדמות", `D-${selectedDX}`)}
-                    >סה״כ הצעות מוקדמות</th>
-                    <th
-                      className="cursor-pointer hover:text-foreground transition-colors"
-                      style={{ color: "hsl(var(--accent))" }}
-                      onClick={() => openDrillDown("uniqueBidders", "משתמשים שונים עם הצעות", `D-${selectedDX}`)}
-                    >משתמשים שונים</th>
-                    <th>מס׳ פריטים עם הצעות</th>
-                    <th>% פריטים עם הצעות</th>
-                    <th>מחיר מובטח</th>
-                    <th>נרשמים חדשים (28י׳)</th>
-                    <th>בידרים חדשים</th>
-                    <th>חדשים מהמותג השני</th>
+                    <th className="sticky right-0 bg-card z-10 min-w-[180px]">מדד</th>
+                    {columns.map(col => (
+                      <th
+                        key={col.id}
+                        className={`text-center min-w-[100px] ${col.isCurrent ? "font-bold" : ""} ${col.isBenchmark ? "text-muted-foreground" : ""}`}
+                        style={col.isCurrent ? { background: "hsl(var(--accent) / 0.08)", borderTop: "3px solid hsl(var(--accent))" } : col.isBenchmark ? { background: "hsl(var(--secondary) / 0.4)" } : {}}
+                      >
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span>{col.label}</span>
+                          {col.isCurrent && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--gold-dark))" }}>נוכחית</span>
+                          )}
+                          {col.sublabel && !col.isBenchmark && (
+                            <span className="text-[10px] text-muted-foreground font-normal">{col.sublabel}</span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Current sale - highlighted */}
-                  {(() => {
-                    const snap = getSnapshot(currentSaleId, selectedDX);
-                    const sale = currentSale;
-                    if (!snap) return null;
-                    return (
-                      <tr
-                        key={sale.id}
-                        className="font-semibold"
-                        style={{ background: "hsl(var(--accent) / 0.08)", borderRight: "3px solid hsl(var(--accent))" }}
-                      >
-                        <td className="sticky right-0 z-10" style={{ background: "hsl(var(--accent) / 0.08)" }}>
-                          <span className="font-bold">{sale.name}</span>
-                          <span className="text-xs mr-2 px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--gold-dark))" }}>נוכחית</span>
-                        </td>
-                        <td>{sale.brand}</td>
-                        <td>{sale.date}</td>
-                        <td>{snap.totalLots}</td>
-                        <td className="font-bold">{snap.earlyBids}</td>
-                        <td className="font-bold cursor-pointer" style={{ color: "hsl(var(--accent))" }} onClick={() => openDrillDown("uniqueBidders", "משתמשים שונים עם הצעות", `${sale.name} · D-${selectedDX}`)}>{snap.uniqueBidders}</td>
-                        <td className="cursor-pointer" style={{ color: "hsl(var(--accent))" }} onClick={() => openDrillDown("lotsWithBids", "מס׳ פריטים עם הצעות", `${sale.name} · D-${selectedDX}`)}>{snap.lotsWithBids}</td>
-                        <td>{snap.lotsBidPct}%</td>
-                        <td className="font-bold">{fmtPrice(snap.guaranteedPrice)}</td>
-                        <td>{snap.newRegistrants28d}</td>
-                        <td className="cursor-pointer" style={{ color: "hsl(var(--accent))" }} onClick={() => openDrillDown("newBidders", "מס׳ בידרים חדשים", `${sale.name} · D-${selectedDX}`)}>{snap.newBidders}</td>
-                        <td>{snap.newBiddersFromOtherBrand}</td>
-                      </tr>
-                    );
-                  })()}
+                  {metricRows.map(metric => (
+                    <tr key={metric.key}>
+                      <td className="sticky right-0 bg-card z-10 font-semibold text-sm">{metric.label}</td>
+                      {columns.map(col => {
+                        const val = col.getValue(metric.key);
+                        const isCurrent = col.isCurrent;
+                        const isDrillable = isCurrent && metric.drillType;
 
-                  {/* Past sales */}
-                  {salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand).map(sale => {
-                    const snap = getSnapshot(sale.id, selectedDX);
-                    if (!snap) return null;
-                    return (
-                      <tr key={sale.id}>
-                        <td className="sticky right-0 bg-card z-10 font-semibold">{sale.name}</td>
-                        <td>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                            style={{ background: sale.brand === "גנזים" ? "hsl(var(--primary) / 0.08)" : "hsl(var(--accent) / 0.1)", color: sale.brand === "גנזים" ? "hsl(var(--primary))" : "hsl(var(--gold-dark))" }}>
-                            {sale.brand}
-                          </span>
-                        </td>
-                        <td className="text-muted-foreground">{sale.date}</td>
-                        <td>{snap.totalLots}</td>
-                        <td>{snap.earlyBids}</td>
-                        <td>{snap.uniqueBidders}</td>
-                        <td>{snap.lotsWithBids}</td>
-                        <td>{snap.lotsBidPct}%</td>
-                        <td>{fmtPrice(snap.guaranteedPrice)}</td>
-                        <td>{snap.newRegistrants28d}</td>
-                        <td>{snap.newBidders}</td>
-                        <td>{snap.newBiddersFromOtherBrand}</td>
-                      </tr>
-                    );
-                  })}
-
-                  {/* Benchmark rows */}
-                  <tr className="border-t-2 border-border" style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                    <td className="sticky right-0 z-10 font-bold text-muted-foreground" style={{ background: "hsl(var(--secondary) / 0.5)" }}>ממוצע עבר</td>
-                    <td></td><td></td>
-                    <td className="font-semibold">{mode1Data.avg("totalLots")}</td>
-                    <td className="font-semibold">{mode1Data.avg("earlyBids")}</td>
-                    <td className="font-semibold">{mode1Data.avg("uniqueBidders")}</td>
-                    <td className="font-semibold">{mode1Data.avg("lotsWithBids")}</td>
-                    <td className="font-semibold">{mode1Data.avg("lotsBidPct")}%</td>
-                    <td className="font-semibold">{fmtPrice(mode1Data.avg("guaranteedPrice"))}</td>
-                    <td className="font-semibold">{mode1Data.avg("newRegistrants28d")}</td>
-                    <td className="font-semibold">{mode1Data.avg("newBidders")}</td>
-                    <td className="font-semibold">{mode1Data.avg("newBiddersFromOtherBrand")}</td>
-                  </tr>
-                  <tr style={{ background: "hsl(var(--secondary) / 0.3)" }}>
-                    <td className="sticky right-0 z-10 font-bold text-muted-foreground" style={{ background: "hsl(var(--secondary) / 0.3)" }}>חציון עבר</td>
-                    <td></td><td></td>
-                    <td>{mode1Data.median("totalLots")}</td>
-                    <td>{mode1Data.median("earlyBids")}</td>
-                    <td>{mode1Data.median("uniqueBidders")}</td>
-                    <td>{mode1Data.median("lotsWithBids")}</td>
-                    <td>{mode1Data.median("lotsBidPct")}%</td>
-                    <td>{fmtPrice(mode1Data.median("guaranteedPrice"))}</td>
-                    <td>{mode1Data.median("newRegistrants28d")}</td>
-                    <td>{mode1Data.median("newBidders")}</td>
-                    <td>{mode1Data.median("newBiddersFromOtherBrand")}</td>
-                  </tr>
+                        return (
+                          <td
+                            key={col.id}
+                            className={`text-center ${isCurrent ? "font-bold" : ""} ${col.isBenchmark ? "text-muted-foreground font-semibold" : ""} ${isDrillable ? "cursor-pointer" : ""}`}
+                            style={{
+                              ...(isCurrent ? { background: "hsl(var(--accent) / 0.04)" } : {}),
+                              ...(col.isBenchmark ? { background: "hsl(var(--secondary) / 0.3)" } : {}),
+                              ...(isDrillable ? { color: "hsl(var(--accent))" } : {}),
+                            }}
+                            onClick={() => isDrillable && openDrillDown(metric.drillType!, metric.label, `${currentSale.name} · D-${selectedDX}`)}
+                          >
+                            {formatVal(val, metric.format)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
-        </>
-      )}
+        );
+      })()}
 
       {/* ═══════════════════════════════════════ */}
       {/*  MODE 2: BY SINGLE SALE               */}
