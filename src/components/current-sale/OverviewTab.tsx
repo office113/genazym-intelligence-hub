@@ -344,14 +344,14 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
         });
 
         // Build a map: for each sale ID, find the previous same-brand sale's snapshot (even if not visible)
-        const allBrandSales = salesList
-          .filter(s => s.brand === selectedBrand)
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const brandSnapshotsAtDX = allSaleSnapshots
+          .filter(s => s.brand === selectedBrand && s.dx === selectedDX)
+          .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
         const prevSaleSnapMap: Record<string, SaleSnapshot | undefined> = {};
-        for (let i = 0; i < allBrandSales.length; i++) {
-          const prevSale = allBrandSales[i + 1];
-          if (prevSale) {
-            prevSaleSnapMap[allBrandSales[i].id] = getSnapshot(prevSale.id, selectedDX);
+        for (let i = 0; i < brandSnapshotsAtDX.length; i++) {
+          const prevSnap = brandSnapshotsAtDX[i + 1];
+          if (prevSnap) {
+            prevSaleSnapMap[brandSnapshotsAtDX[i].saleId] = prevSnap;
           }
         }
 

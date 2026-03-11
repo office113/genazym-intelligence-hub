@@ -102,6 +102,9 @@ export const allSaleSnapshots: SaleSnapshot[] = [
   // Older sales (not shown in matrix but used for comparison)
   ...generateSnapshots("S040", "מכירה #40", "זיידי", "2023-10-15", 140, 195, 82, 108, 420000, 28, 18, 4),
   ...generateSnapshots("S039", "מכירה #39", "גנזים", "2023-08-20", 260, 395, 155, 210, 1520000, 38, 26, 8),
+  // Hidden older sales used for predecessor comparison logic
+  ...generateSnapshots("S038", "מכירה #38", "זיידי", "2023-06-18", 132, 176, 76, 99, 398000, 24, 16, 4),
+  ...generateSnapshots("S037", "מכירה #37", "גנזים", "2023-04-25", 245, 360, 142, 196, 1410000, 34, 22, 7),
 ];
 
 export const currentSaleId = "S048";
