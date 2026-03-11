@@ -772,6 +772,55 @@ const trendsDrillDownData: Record<string, Record<number, TrendsDrillDownCustomer
       { id: "ZTC07", name: "יהודה אלבז", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
     ],
   },
+  genazym_newInvolved: {
+    2021: [
+      { id: "NI01", name: "אברהם כהן", firstBidDate: "2021-03-15", maxHistoricalBid: 4200, totalHistoricalWins: 9800, lastActiveSale: "מכירה #47" },
+      { id: "NI02", name: "יצחק לוי", firstBidDate: "2021-07-20", maxHistoricalBid: 1800, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+      { id: "NI03", name: "אליהו קליין", firstBidDate: "2021-05-18", maxHistoricalBid: 3200, totalHistoricalWins: 6100, lastActiveSale: "מכירה #45" },
+    ],
+    2022: [
+      { id: "NI04", name: "דוד שוורץ", firstBidDate: "2022-01-10", maxHistoricalBid: 950, totalHistoricalWins: 0, lastActiveSale: "מכירה #43" },
+      { id: "NI05", name: "נחום שטיין", firstBidDate: "2022-12-05", maxHistoricalBid: 1200, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+      { id: "NI06", name: "חיים ויסברג", firstBidDate: "2022-02-28", maxHistoricalBid: 5100, totalHistoricalWins: 11400, lastActiveSale: "מכירה #44" },
+    ],
+    2023: [
+      { id: "NI07", name: "צבי הורוביץ", firstBidDate: "2023-04-07", maxHistoricalBid: 800, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+      { id: "NI08", name: "יוסף ברגר", firstBidDate: "2023-08-19", maxHistoricalBid: 550, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+    ],
+    2024: [
+      { id: "NI09", name: "אהרון וייס", firstBidDate: "2024-02-20", maxHistoricalBid: 3200, totalHistoricalWins: 6400, lastActiveSale: "מכירה #47" },
+      { id: "NI10", name: "גרשון מאיר", firstBidDate: "2024-10-15", maxHistoricalBid: 4800, totalHistoricalWins: 8200, lastActiveSale: "מכירה #47" },
+      { id: "NI11", name: "בנימין הלל", firstBidDate: "2024-06-02", maxHistoricalBid: 1500, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2025: [
+      { id: "NI12", name: "הלל שפירא", firstBidDate: "2025-03-01", maxHistoricalBid: 2100, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+      { id: "NI13", name: "זבולון קרמר", firstBidDate: "2025-07-18", maxHistoricalBid: 1800, totalHistoricalWins: 3200, lastActiveSale: "מכירה #47" },
+    ],
+    2026: [
+      { id: "NI14", name: "טוביה אלקנה", firstBidDate: "2026-02-05", maxHistoricalBid: 900, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
+  zaidy_newInvolved: {
+    2021: [
+      { id: "ZNI01", name: "עמוס בן דוד", firstBidDate: "2021-10-03", maxHistoricalBid: 2800, totalHistoricalWins: 4600, lastActiveSale: "מכירה #44" },
+    ],
+    2022: [
+      { id: "ZNI02", name: "רפאל מזרחי", firstBidDate: "2022-04-12", maxHistoricalBid: 2200, totalHistoricalWins: 3800, lastActiveSale: "מכירה #47" },
+      { id: "ZNI03", name: "נתן אזולאי", firstBidDate: "2022-01-17", maxHistoricalBid: 1900, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2023: [
+      { id: "ZNI04", name: "פנחס נחמן", firstBidDate: "2023-03-21", maxHistoricalBid: 720, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2024: [
+      { id: "ZNI05", name: "יהודה אלבז", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2025: [
+      { id: "ZNI06", name: "בנימין שרף", firstBidDate: "2025-03-09", maxHistoricalBid: 11000, totalHistoricalWins: 24000, lastActiveSale: "מכירה #45" },
+    ],
+    2026: [
+      { id: "ZNI07", name: "שמעון דהן", firstBidDate: "2026-01-22", maxHistoricalBid: 1400, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
 };
 
 function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned", year: number): TrendsDrillDownCustomer[] {
