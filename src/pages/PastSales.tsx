@@ -865,7 +865,7 @@ function TrendsTab() {
 
   const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
-  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved" }[] = [
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved"; reversed?: boolean }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
     { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
     { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
@@ -875,8 +875,18 @@ function TrendsTab() {
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
     { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString(), drillType: "newInvolved" },
     { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString(), drillType: "registrants" },
-    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned" },
+    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned", reversed: true },
   ];
+
+  const getTrendColor = (metric: typeof metricRows[number], yearIdx: number) => {
+    if (yearIdx === 0) return undefined;
+    const curr = yearlyData[yearIdx][metric.key] as number;
+    const prev = yearlyData[yearIdx - 1][metric.key] as number;
+    if (curr === prev || curr === 0 || prev === 0) return undefined;
+    const improved = curr > prev;
+    if (metric.reversed) return improved ? "hsl(0, 72%, 51%)" : "hsl(142, 71%, 40%)";
+    return improved ? "hsl(142, 71%, 40%)" : "hsl(0, 72%, 51%)";
+  };
 
   const handleCellClick = (drillType: "registrants" | "churned" | "newInvolved", year: number, value: number) => {
     if (value === 0) return;
@@ -945,16 +955,17 @@ function TrendsTab() {
                   <td className="text-right text-[12px] font-semibold text-muted-foreground px-5 py-3.5 whitespace-nowrap bg-card sticky right-0 z-10 border-l border-border/30">
                     {metric.label}
                   </td>
-                  {yearlyData.map(yd => {
+                  {yearlyData.map((yd, yearIdx) => {
                     const value = yd[metric.key] as number;
                     const isDrillable = !!metric.drillType && value > 0;
+                    const trendColor = getTrendColor(metric, yearIdx);
                     return (
                       <td
                         key={yd.year}
                         onClick={isDrillable ? () => handleCellClick(metric.drillType!, yd.year, value) : undefined}
                         className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-all ${
                           !isDrillable
-                            ? `cursor-default ${yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"}`
+                            ? `cursor-default ${yd.year === currentYear ? "font-semibold" : ""}`
                             : "cursor-pointer"
                         }`}
                       >
@@ -962,7 +973,7 @@ function TrendsTab() {
                           <span
                             className="inline-block font-semibold rounded-md px-2 py-0.5 transition-all"
                             style={{
-                              color: "hsl(var(--accent))",
+                              color: trendColor || "hsl(var(--accent))",
                               background: "hsl(var(--accent) / 0.08)",
                             }}
                             onMouseEnter={e => {
@@ -978,7 +989,9 @@ function TrendsTab() {
                             {metric.format(value)}
                           </span>
                         ) : (
-                          metric.format(value)
+                          <span style={{ color: trendColor || (yd.year === currentYear ? "hsl(var(--foreground))" : "hsl(var(--foreground) / 0.85)") }}>
+                            {metric.format(value)}
+                          </span>
                         )}
                       </td>
                     );
