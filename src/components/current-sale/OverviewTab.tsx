@@ -190,8 +190,8 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
     return { selectedSale, saleSnapshots, chartData, benchmarkByDX };
   }, [selectedSaleId]);
 
-  const openDrillDown = (type: string, title: string, subtitle: string) => {
-    setDrillDown({ type, title, subtitle });
+  const openDrillDown = (type: string, title: string, subtitle: string, saleName?: string, saleId?: string, dx?: number) => {
+    setDrillDown({ type, title, subtitle, saleName: saleName || "", saleId: saleId || "", dx: dx ?? selectedDX });
   };
 
   const fmtPrice = (n: number) => {
