@@ -1001,7 +1001,7 @@ function TrendsTab() {
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
               <div className="text-lg font-bold text-foreground tracking-tight">{drillDownCustomers.length}</div>
-              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">{drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים"}</div>
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">{drillDownTitles[drillDownType]}</div>
             </div>
             <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
               <div className="text-lg font-bold text-foreground tracking-tight">
