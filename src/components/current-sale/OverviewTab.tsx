@@ -150,13 +150,13 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
   //  MODE 2: By Single Sale
   // ════════════════════════════════════
   const mode2Data = useMemo(() => {
-    const selectedSale = salesList.find(s => s.id === selectedSaleId)!;
+    const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0];
     const saleSnapshots = allSaleSnapshots
-      .filter(s => s.saleId === selectedSaleId)
+      .filter(s => s.saleId === selectedSale.id)
       .sort((a, b) => b.dx - a.dx); // D-30 first
 
     // Get same-brand past sales for benchmark
-    const sameBrandPast = salesList.filter(s => s.id !== selectedSaleId && s.brand === selectedSale.brand);
+    const sameBrandPast = salesList.filter(s => s.id !== selectedSale.id && s.brand === selectedSale.brand);
     const benchmarkByDX: Record<number, { earlyBids: number; uniqueBidders: number; lotsWithBids: number; lotsBidPct: number; guaranteedPrice: number }> = {};
     for (let dx = 30; dx >= 0; dx--) {
       const snaps = sameBrandPast.map(s => getSnapshot(s.id, dx)).filter(Boolean) as SaleSnapshot[];
