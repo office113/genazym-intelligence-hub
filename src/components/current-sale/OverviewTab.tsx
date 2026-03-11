@@ -343,7 +343,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
         // Benchmark column last (farthest left in RTL)
         columns.push({
           id: "avg",
-          label: "ממוצע 6 מכירות אחרונות",
+          label: "ממוצע 5 מכירות אחרונות",
           isBenchmark: true,
           getValue: (key) => mode1Data.avg(key),
         });
