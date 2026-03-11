@@ -691,6 +691,9 @@ function TrendsTab() {
     { label: "מחיר ממוצע לפריט", key: "avgPricePerItem", format: v => `$${v.toLocaleString()}` },
     { label: "מחיר חציוני", key: "medianPrice", format: v => `$${v.toLocaleString()}` },
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
+    { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString() },
+    { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString() },
+    { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString() },
   ];
 
   return (
