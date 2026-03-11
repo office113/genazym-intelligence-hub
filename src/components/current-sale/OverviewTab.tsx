@@ -197,6 +197,16 @@ export default function OverviewTab() {
           </div>
         </div>
 
+        {/* Current D-X indicator */}
+        {isFutureSale && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+            <CalendarClock className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
+              אנחנו כעת ב־D-{autoDX}
+            </span>
+          </div>
+        )}
+
         {/* Mode toggle */}
         <div className="flex bg-secondary/60 rounded-lg p-1 mr-auto">
           <button
