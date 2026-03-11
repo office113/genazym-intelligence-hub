@@ -212,55 +212,57 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
           </div>
         </div>
 
-        {/* Current D-X indicator */}
-        {isFutureSale && (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
-            <CalendarClock className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
-            <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
-              אנחנו כעת ב־D-{autoDX}
-            </span>
-          </div>
-        )}
-
-        {/* Mode-specific controls */}
-        {mode === "byDX" && (
-          <div className="flex items-center gap-2 mr-auto">
-            <span className="text-sm text-muted-foreground">יום:</span>
-            <div className="relative">
-              <select
-                value={selectedDX}
-                onChange={e => setSelectedDX(Number(e.target.value))}
-                className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
-              >
-                {dxOptions.map(dx => (
-                  <option key={dx} value={dx}>D-{dx}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        {/* Mode-specific controls + D-X indicator cluster */}
+        <div className="flex items-center gap-3 mr-auto">
+          {/* Current D-X status badge */}
+          {isFutureSale && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+              <CalendarClock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+              <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>
+                D-{autoDX}
+              </span>
             </div>
-          </div>
-        )}
+          )}
 
-        {mode === "bySale" && (
-          <div className="flex items-center gap-2 mr-auto">
-            <span className="text-sm text-muted-foreground">מכירה:</span>
-            <div className="relative">
-              <select
-                value={selectedSaleId}
-                onChange={e => setSelectedSaleId(e.target.value)}
-                className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
-              >
-                {salesList.filter(s => s.brand === selectedBrand).map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                    {s.id === currentSaleId ? " ★" : ""}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          {mode === "byDX" && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">יום:</span>
+              <div className="relative">
+                <select
+                  value={selectedDX}
+                  onChange={e => setSelectedDX(Number(e.target.value))}
+                  className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
+                >
+                  {dxOptions.map(dx => (
+                    <option key={dx} value={dx}>D-{dx}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {mode === "bySale" && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">מכירה:</span>
+              <div className="relative">
+                <select
+                  value={selectedSaleId}
+                  onChange={e => setSelectedSaleId(e.target.value)}
+                  className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
+                >
+                  {salesList.filter(s => s.brand === selectedBrand).map(s => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                      {s.id === currentSaleId ? " ★" : ""}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ═══ OVERVIEW MODE ═══ */}
