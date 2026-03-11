@@ -203,8 +203,8 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
   return (
     <div className="space-y-6">
       {/* ═══ TOP CONTROLS ═══ */}
-      <div className="chart-card flex flex-wrap items-center gap-4">
-        {/* Sale info */}
+      <div className="chart-card flex items-center justify-between gap-4">
+        {/* RIGHT: Sale info */}
         <div className="flex items-center gap-3 border-l border-border pl-5 ml-1">
           <div>
             <div className="text-lg font-bold font-display">{currentSale.name}</div>
@@ -212,18 +212,18 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
           </div>
         </div>
 
-        {/* Mode-specific controls + D-X indicator cluster */}
-        <div className="flex items-center gap-3 mr-auto">
-          {/* Current D-X status badge */}
-          {isFutureSale && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
-              <CalendarClock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-              <span className="text-xs font-bold" style={{ color: "hsl(var(--accent))" }}>
-                אנחנו כעת ב־D-{autoDX}
-              </span>
-            </div>
-          )}
+        {/* CENTER: Current real D-X status */}
+        {isFutureSale ? (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.08)" }}>
+            <CalendarClock className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
+              אנחנו כעת ב־D-{autoDX}
+            </span>
+          </div>
+        ) : <div />}
 
+        {/* LEFT: Mode-specific controls */}
+        <div className="flex items-center gap-3">
           {mode === "byDX" && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">יום:</span>
