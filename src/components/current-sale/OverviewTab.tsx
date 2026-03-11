@@ -203,7 +203,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
   return (
     <div className="space-y-6">
       {/* ═══ TOP CONTROLS ═══ */}
-      <div className="chart-card flex items-center justify-between gap-4">
+      <div className="chart-card relative flex items-center justify-between gap-4">
         {/* RIGHT: Sale info */}
         <div className="flex items-center gap-3 border-l border-border pl-5 ml-1">
           <div>
@@ -213,14 +213,14 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
         </div>
 
         {/* CENTER: Current real D-X status */}
-        {isFutureSale ? (
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.08)" }}>
-            <CalendarClock className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
-            <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
+        <div className="absolute left-1/2 -translate-x-1/2 pointer-events-none">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.08)" }}>
+            <CalendarClock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-xs font-bold whitespace-nowrap" style={{ color: "hsl(var(--accent))" }}>
               אנחנו כעת ב־D-{autoDX}
             </span>
           </div>
-        ) : <div />}
+        </div>
 
         {/* LEFT: Mode-specific controls */}
         <div className="flex items-center gap-3">
