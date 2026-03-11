@@ -90,7 +90,21 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
 
 // ─── MAIN COMPONENT ───
 export default function OverviewTab() {
-  const currentSale = useMemo(() => detectCurrentSale(), []);
+  const [selectedBrand, setSelectedBrand] = useState<"גנזים" | "זיידי">("גנזים");
+
+  // Detect current sale per selected brand
+  const currentSale = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const futureSales = salesList
+      .filter(s => s.brand === selectedBrand && parseISO(s.date) >= today)
+      .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+    if (futureSales.length > 0) return futureSales[0];
+    // Fallback: latest sale of this brand
+    const brandSales = salesList.filter(s => s.brand === selectedBrand).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+    return brandSales[0] || salesList[0];
+  }, [selectedBrand]);
+
   const currentSaleId = currentSale.id;
   const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
   const isFutureSale = useMemo(() => parseISO(currentSale.date) >= new Date(new Date().setHours(0,0,0,0)), [currentSale.date]);
@@ -100,18 +114,22 @@ export default function OverviewTab() {
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
 
-  // currentSale already defined above
+  // Reset DX and selected sale when brand changes
+  useMemo(() => {
+    setSelectedDX(autoDX);
+    setSelectedSaleId(currentSaleId);
+  }, [selectedBrand]);
 
   // Get snapshot for a sale at a specific DX
   const getSnapshot = (saleId: string, dx: number): SaleSnapshot | undefined =>
     allSaleSnapshots.find(s => s.saleId === saleId && s.dx === dx);
 
   // ════════════════════════════════════
-  //  MODE 1: By D-X Day
+  //  MODE 1: By D-X Day — filtered by brand
   // ════════════════════════════════════
   const mode1Data = useMemo(() => {
     const currentSnap = getSnapshot(currentSaleId, selectedDX);
-    const pastSales = salesList.filter(s => !s.isCurrent);
+    const pastSales = salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand);
     const pastSnapshots = pastSales.map(s => getSnapshot(s.id, selectedDX)).filter(Boolean) as SaleSnapshot[];
 
     const avg = (field: keyof SaleSnapshot) => {
@@ -126,7 +144,7 @@ export default function OverviewTab() {
     };
 
     return { currentSnap, pastSnapshots, pastSales, avg, median };
-  }, [selectedDX]);
+  }, [selectedDX, selectedBrand, currentSaleId]);
 
   // ════════════════════════════════════
   //  MODE 2: By Single Sale
@@ -189,6 +207,24 @@ export default function OverviewTab() {
     <div className="space-y-6">
       {/* ═══ TOP CONTROLS ═══ */}
       <div className="chart-card flex flex-wrap items-center gap-4">
+        {/* Brand switcher */}
+        <div className="flex rounded-lg p-1 border border-border" style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+          {(["גנזים", "זיידי"] as const).map(brand => (
+            <button
+              key={brand}
+              onClick={() => setSelectedBrand(brand)}
+              className={`px-5 py-2 text-sm font-bold rounded-md transition-all ${
+                selectedBrand === brand
+                  ? "text-accent-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              style={selectedBrand === brand ? { background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" } : {}}
+            >
+              {brand}
+            </button>
+          ))}
+        </div>
+
         {/* Sale info */}
         <div className="flex items-center gap-3 border-l border-border pl-5 ml-1">
           <div>
@@ -259,10 +295,10 @@ export default function OverviewTab() {
                 onChange={e => setSelectedSaleId(e.target.value)}
                 className="appearance-none bg-card border border-border rounded-lg px-4 py-2 pr-9 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent/30"
               >
-                {salesList.map(s => (
+                {salesList.filter(s => s.brand === selectedBrand).map(s => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.brand})
-                    {s.isCurrent ? " ★" : ""}
+                    {s.name}
+                    {s.id === currentSaleId ? " ★" : ""}
                   </option>
                 ))}
               </select>
