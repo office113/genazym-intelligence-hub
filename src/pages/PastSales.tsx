@@ -823,7 +823,7 @@ const trendsDrillDownData: Record<string, Record<number, TrendsDrillDownCustomer
   },
 };
 
-function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned", year: number): TrendsDrillDownCustomer[] {
+function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned" | "newInvolved", year: number): TrendsDrillDownCustomer[] {
   if (brandFilter === "both") {
     const gKey = `genazym_${type}`;
     const zKey = `zaidy_${type}`;
@@ -836,6 +836,9 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
     }
     return combined;
   }
+  const key = `${brandFilter === "genazym" ? "genazym" : "zaidy"}_${type}`;
+  return trendsDrillDownData[key]?.[year] || [];
+}
   const key = `${brandFilter === "genazym" ? "genazym" : "zaidy"}_${type}`;
   return trendsDrillDownData[key]?.[year] || [];
 }
