@@ -843,7 +843,7 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
 function TrendsTab() {
   const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
   const [drillDownOpen, setDrillDownOpen] = useState(false);
-  const [drillDownType, setDrillDownType] = useState<"registrants" | "churned">("registrants");
+  const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = useMemo(() => {
@@ -865,7 +865,7 @@ function TrendsTab() {
 
   const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
-  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" }[] = [
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved" }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
     { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
     { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
@@ -873,19 +873,19 @@ function TrendsTab() {
     { label: "מחיר ממוצע לפריט", key: "avgPricePerItem", format: v => `$${v.toLocaleString()}` },
     { label: "מחיר חציוני", key: "medianPrice", format: v => `$${v.toLocaleString()}` },
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
-    { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString() },
+    { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString(), drillType: "newInvolved" },
     { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString(), drillType: "registrants" },
     { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned" },
   ];
 
-  const handleCellClick = (drillType: "registrants" | "churned", year: number, value: number) => {
+  const handleCellClick = (drillType: "registrants" | "churned" | "newInvolved", year: number, value: number) => {
     if (value === 0) return;
     setDrillDownType(drillType);
     setDrillDownYear(year);
     setDrillDownOpen(true);
   };
 
-  const drillDownTitle = drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים";
+  const drillDownTitles: Record<string, string> = { registrants: "נרשמים חדשים", churned: "נוטשים", newInvolved: "מעורבים חדשים" };
 
   return (
     <>
