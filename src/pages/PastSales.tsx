@@ -10,10 +10,8 @@ import { X, Search } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
-  { key: "retention", label: "נטישה ושימור" },
-  { key: "engagement", label: "מעורבות לקוחות" },
-  { key: "financial", label: "ביצועים כספיים" },
   { key: "trends", label: "מגמות" },
+  { key: "retention", label: "נטישה ושימור" },
 ];
 
 const upliftData = [
