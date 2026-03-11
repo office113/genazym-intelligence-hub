@@ -22,13 +22,6 @@ const upliftData = [
   { lot: "פריט 91", opening: 5000, final: 7500 },
 ];
 
-const engagementBysale = [
-  { sale: "#43", avgBids: 4.2, uniqueBidders: 180, returnRate: 62 },
-  { sale: "#44", avgBids: 3.8, uniqueBidders: 165, returnRate: 58 },
-  { sale: "#45", avgBids: 5.1, uniqueBidders: 210, returnRate: 68 },
-  { sale: "#46", avgBids: 3.5, uniqueBidders: 155, returnRate: 55 },
-  { sale: "#47", avgBids: 4.8, uniqueBidders: 195, returnRate: 65 },
-];
 
 type Brand = "genazym" | "zaidy";
 
