@@ -358,7 +358,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
           { label: "מחיר מובטח", key: "guaranteedPrice", format: "price" },
           { label: "נרשמים חדשים (28 ימים)", key: "newRegistrants28d" },
           { label: "מס׳ בידרים חדשים", key: "newBidders", drillType: "newBidders" },
-          { label: "מעורבות חדשה מהמותג השני", key: "newBiddersFromOtherBrand" },
+          { label: "מעורבות חדשה מהמותג השני", key: "newBiddersFromOtherBrand", drillType: "newBiddersFromOtherBrand" },
         ];
 
         const formatVal = (v: number, format?: "price" | "pct") => {
