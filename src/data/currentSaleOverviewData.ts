@@ -25,6 +25,17 @@ export interface DrillDownCustomer {
   lastActiveSale: string;
   registrationDate?: string;
   activeInOtherBrand?: boolean;
+  // For uniqueBidders drill-down
+  engagementType?: "מוקדם" | "לייב" | "גם וגם";
+  bidsCount?: number;
+  lotsWithBidCount?: number;
+  maxBidAmount?: string;
+  wonAtEnd?: boolean;
+  // For newBiddersFromOtherBrand drill-down
+  otherBrandName?: string;
+  firstActivityOtherBrand?: string;
+  maxBidOtherBrand?: string;
+  winsOtherBrand?: number;
 }
 
 // Helper to generate realistic cumulative snapshot data
