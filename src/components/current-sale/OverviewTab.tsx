@@ -126,7 +126,10 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
   // ════════════════════════════════════
   const mode1Data = useMemo(() => {
     const currentSnap = getSnapshot(currentSaleId, selectedDX);
-    const pastSales = salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand);
+    const pastSales = salesList
+      .filter(s => s.id !== currentSaleId && s.brand === selectedBrand)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
     const pastSnapshots = pastSales.map(s => getSnapshot(s.id, selectedDX)).filter(Boolean) as SaleSnapshot[];
 
     const avg = (field: keyof SaleSnapshot) => {
