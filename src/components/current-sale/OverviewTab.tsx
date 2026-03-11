@@ -109,7 +109,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
 
   const [selectedDX, setSelectedDX] = useState(autoDX);
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
-  const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
+  const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string; saleName: string; saleId: string; dx: number } | null>(null);
 
   // Reset DX and selected sale when brand changes
   useMemo(() => {
