@@ -772,9 +772,58 @@ const trendsDrillDownData: Record<string, Record<number, TrendsDrillDownCustomer
       { id: "ZTC07", name: "יהודה אלבז", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
     ],
   },
+  genazym_newInvolved: {
+    2021: [
+      { id: "NI01", name: "אברהם כהן", firstBidDate: "2021-03-15", maxHistoricalBid: 4200, totalHistoricalWins: 9800, lastActiveSale: "מכירה #47" },
+      { id: "NI02", name: "יצחק לוי", firstBidDate: "2021-07-20", maxHistoricalBid: 1800, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+      { id: "NI03", name: "אליהו קליין", firstBidDate: "2021-05-18", maxHistoricalBid: 3200, totalHistoricalWins: 6100, lastActiveSale: "מכירה #45" },
+    ],
+    2022: [
+      { id: "NI04", name: "דוד שוורץ", firstBidDate: "2022-01-10", maxHistoricalBid: 950, totalHistoricalWins: 0, lastActiveSale: "מכירה #43" },
+      { id: "NI05", name: "נחום שטיין", firstBidDate: "2022-12-05", maxHistoricalBid: 1200, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+      { id: "NI06", name: "חיים ויסברג", firstBidDate: "2022-02-28", maxHistoricalBid: 5100, totalHistoricalWins: 11400, lastActiveSale: "מכירה #44" },
+    ],
+    2023: [
+      { id: "NI07", name: "צבי הורוביץ", firstBidDate: "2023-04-07", maxHistoricalBid: 800, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+      { id: "NI08", name: "יוסף ברגר", firstBidDate: "2023-08-19", maxHistoricalBid: 550, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+    ],
+    2024: [
+      { id: "NI09", name: "אהרון וייס", firstBidDate: "2024-02-20", maxHistoricalBid: 3200, totalHistoricalWins: 6400, lastActiveSale: "מכירה #47" },
+      { id: "NI10", name: "גרשון מאיר", firstBidDate: "2024-10-15", maxHistoricalBid: 4800, totalHistoricalWins: 8200, lastActiveSale: "מכירה #47" },
+      { id: "NI11", name: "בנימין הלל", firstBidDate: "2024-06-02", maxHistoricalBid: 1500, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2025: [
+      { id: "NI12", name: "הלל שפירא", firstBidDate: "2025-03-01", maxHistoricalBid: 2100, totalHistoricalWins: 0, lastActiveSale: "מכירה #47" },
+      { id: "NI13", name: "זבולון קרמר", firstBidDate: "2025-07-18", maxHistoricalBid: 1800, totalHistoricalWins: 3200, lastActiveSale: "מכירה #47" },
+    ],
+    2026: [
+      { id: "NI14", name: "טוביה אלקנה", firstBidDate: "2026-02-05", maxHistoricalBid: 900, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
+  zaidy_newInvolved: {
+    2021: [
+      { id: "ZNI01", name: "עמוס בן דוד", firstBidDate: "2021-10-03", maxHistoricalBid: 2800, totalHistoricalWins: 4600, lastActiveSale: "מכירה #44" },
+    ],
+    2022: [
+      { id: "ZNI02", name: "רפאל מזרחי", firstBidDate: "2022-04-12", maxHistoricalBid: 2200, totalHistoricalWins: 3800, lastActiveSale: "מכירה #47" },
+      { id: "ZNI03", name: "נתן אזולאי", firstBidDate: "2022-01-17", maxHistoricalBid: 1900, totalHistoricalWins: 0, lastActiveSale: "מכירה #45" },
+    ],
+    2023: [
+      { id: "ZNI04", name: "פנחס נחמן", firstBidDate: "2023-03-21", maxHistoricalBid: 720, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2024: [
+      { id: "ZNI05", name: "יהודה אלבז", firstBidDate: "2024-04-18", maxHistoricalBid: 14000, totalHistoricalWins: 0, lastActiveSale: "מכירה #46" },
+    ],
+    2025: [
+      { id: "ZNI06", name: "בנימין שרף", firstBidDate: "2025-03-09", maxHistoricalBid: 11000, totalHistoricalWins: 24000, lastActiveSale: "מכירה #45" },
+    ],
+    2026: [
+      { id: "ZNI07", name: "שמעון דהן", firstBidDate: "2026-01-22", maxHistoricalBid: 1400, totalHistoricalWins: 0, lastActiveSale: "מכירה #48" },
+    ],
+  },
 };
 
-function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned", year: number): TrendsDrillDownCustomer[] {
+function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrants" | "churned" | "newInvolved", year: number): TrendsDrillDownCustomer[] {
   if (brandFilter === "both") {
     const gKey = `genazym_${type}`;
     const zKey = `zaidy_${type}`;
@@ -794,7 +843,7 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
 function TrendsTab() {
   const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
   const [drillDownOpen, setDrillDownOpen] = useState(false);
-  const [drillDownType, setDrillDownType] = useState<"registrants" | "churned">("registrants");
+  const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = useMemo(() => {
@@ -816,7 +865,7 @@ function TrendsTab() {
 
   const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
-  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" }[] = [
+  const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved" }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
     { label: "סך כספי המכירות בשנה", key: "totalRevenue", format: v => `$${v.toLocaleString()}` },
     { label: "סך לקוחות מעורבים", key: "uniqueInvolved", format: v => v.toLocaleString() },
@@ -824,19 +873,19 @@ function TrendsTab() {
     { label: "מחיר ממוצע לפריט", key: "avgPricePerItem", format: v => `$${v.toLocaleString()}` },
     { label: "מחיר חציוני", key: "medianPrice", format: v => `$${v.toLocaleString()}` },
     { label: "מס׳ ספרים שנמכרו", key: "booksSold", format: v => v.toLocaleString() },
-    { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString() },
+    { label: "מס׳ מעורבים חדשים", key: "newInvolved", format: v => v.toLocaleString(), drillType: "newInvolved" },
     { label: "מס׳ נרשמים חדשים", key: "newRegistrants", format: v => v.toLocaleString(), drillType: "registrants" },
     { label: "מס׳ נוטשים השנה", key: "churned", format: v => v === 0 ? "—" : v.toLocaleString(), drillType: "churned" },
   ];
 
-  const handleCellClick = (drillType: "registrants" | "churned", year: number, value: number) => {
+  const handleCellClick = (drillType: "registrants" | "churned" | "newInvolved", year: number, value: number) => {
     if (value === 0) return;
     setDrillDownType(drillType);
     setDrillDownYear(year);
     setDrillDownOpen(true);
   };
 
-  const drillDownTitle = drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים";
+  const drillDownTitles: Record<string, string> = { registrants: "נרשמים חדשים", churned: "נוטשים", newInvolved: "מעורבים חדשים" };
 
   return (
     <>
@@ -903,14 +952,34 @@ function TrendsTab() {
                       <td
                         key={yd.year}
                         onClick={isDrillable ? () => handleCellClick(metric.drillType!, yd.year, value) : undefined}
-                        className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-colors ${
-                          yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"
-                        } ${isDrillable
-                          ? "cursor-pointer hover:bg-primary/10 underline decoration-dotted underline-offset-4 decoration-primary/40"
-                          : "cursor-default"
+                        className={`text-center text-[13px] tabular-nums px-5 py-3.5 transition-all ${
+                          !isDrillable
+                            ? `cursor-default ${yd.year === currentYear ? "font-semibold text-foreground" : "text-foreground/85"}`
+                            : "cursor-pointer"
                         }`}
                       >
-                        {metric.format(value)}
+                        {isDrillable ? (
+                          <span
+                            className="inline-block font-semibold rounded-md px-2 py-0.5 transition-all"
+                            style={{
+                              color: "hsl(var(--accent))",
+                              background: "hsl(var(--accent) / 0.08)",
+                            }}
+                            onMouseEnter={e => {
+                              (e.target as HTMLElement).style.background = "hsl(var(--accent) / 0.18)";
+                              (e.target as HTMLElement).style.textDecoration = "underline";
+                              (e.target as HTMLElement).style.textUnderlineOffset = "3px";
+                            }}
+                            onMouseLeave={e => {
+                              (e.target as HTMLElement).style.background = "hsl(var(--accent) / 0.08)";
+                              (e.target as HTMLElement).style.textDecoration = "none";
+                            }}
+                          >
+                            {metric.format(value)}
+                          </span>
+                        ) : (
+                          metric.format(value)
+                        )}
                       </td>
                     );
                   })}
@@ -925,14 +994,14 @@ function TrendsTab() {
       <InvestigationPanel
         open={drillDownOpen}
         onClose={() => setDrillDownOpen(false)}
-        title={`${drillDownTitle} — ${drillDownYear}`}
+        title={`${drillDownTitles[drillDownType]} — ${drillDownYear}`}
         subtitle={`${brandLabel} | ${drillDownCustomers.length} לקוחות`}
       >
         <div className="px-10 py-5 border-b border-border/40 shrink-0">
           <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
               <div className="text-lg font-bold text-foreground tracking-tight">{drillDownCustomers.length}</div>
-              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">{drillDownType === "registrants" ? "נרשמים חדשים" : "נוטשים"}</div>
+              <div className="text-[11px] text-muted-foreground mt-1.5 font-medium">{drillDownTitles[drillDownType]}</div>
             </div>
             <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 text-center">
               <div className="text-lg font-bold text-foreground tracking-tight">
