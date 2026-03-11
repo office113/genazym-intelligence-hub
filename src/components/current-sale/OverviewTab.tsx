@@ -88,9 +88,7 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-// ─── MAIN COMPONENT ───
-export default function OverviewTab() {
-  const [selectedBrand, setSelectedBrand] = useState<"גנזים" | "זיידי">("גנזים");
+export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנזים" | "זיידי" }) {
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
@@ -207,24 +205,6 @@ export default function OverviewTab() {
     <div className="space-y-6">
       {/* ═══ TOP CONTROLS ═══ */}
       <div className="chart-card flex flex-wrap items-center gap-4">
-        {/* Brand switcher */}
-        <div className="flex rounded-lg p-1 border border-border" style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-          {(["גנזים", "זיידי"] as const).map(brand => (
-            <button
-              key={brand}
-              onClick={() => setSelectedBrand(brand)}
-              className={`px-5 py-2 text-sm font-bold rounded-md transition-all ${
-                selectedBrand === brand
-                  ? "text-accent-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              style={selectedBrand === brand ? { background: "hsl(var(--accent))", color: "hsl(var(--accent-foreground))" } : {}}
-            >
-              {brand}
-            </button>
-          ))}
-        </div>
-
         {/* Sale info */}
         <div className="flex items-center gap-3 border-l border-border pl-5 ml-1">
           <div>

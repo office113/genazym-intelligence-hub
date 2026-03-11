@@ -1,5 +1,4 @@
 import { useState } from "react";
-import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab from "@/components/current-sale/OverviewTab";
@@ -23,19 +22,62 @@ const recommendedActions = [
   { id: 5, priority: "low", action: "לשלוח ניוזלטר סיכום שבועי", reason: "38 נרשמים חדשים השבוע, שיעור צפייה 45%", type: "email" },
 ];
 
+type Brand = "genazym" | "zaidy";
+
 export default function CurrentSale() {
   const [activeTab, setActiveTab] = useState("overview");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [brand, setBrand] = useState<Brand>("genazym");
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
 
+  const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
+
   return (
     <div className="min-h-screen">
-      <SubNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} title="מכירה נוכחית — מכירה #48" />
+      {/* ═══ STICKY HEADER — matches PastSales pattern ═══ */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-8 pt-6 pb-0">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="section-title">מכירה נוכחית</h2>
+          <div className="flex items-center bg-card border border-border rounded-lg p-0.5 shadow-sm">
+            <button
+              onClick={() => setBrand("genazym")}
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                brand === "genazym"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              גנזים
+            </button>
+            <button
+              onClick={() => setBrand("zaidy")}
+              className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                brand === "zaidy"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              זיידי
+            </button>
+          </div>
+        </div>
+        <div className="sub-nav mb-0 inline-flex mt-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`sub-nav-item ${activeTab === tab.key ? "sub-nav-item-active" : ""}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="p-8 animate-fade-in">
-        {activeTab === "overview" && <OverviewTab />}
+        {activeTab === "overview" && <OverviewTab selectedBrand={selectedBrand} />}
 
         {activeTab === "pace" && (
           <>
