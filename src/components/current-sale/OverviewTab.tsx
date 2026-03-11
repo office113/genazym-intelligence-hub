@@ -305,16 +305,6 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
       {/* ═══════════════════════════════════════ */}
       {mode === "byDX" && (
         <>
-          {/* D-X indicator */}
-          <div className="flex items-center gap-4 mb-2">
-            <div className="text-4xl font-bold font-display" style={{ color: "hsl(var(--accent))" }}>
-              D-{selectedDX}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              השוואת כל המכירות כפי שנראו {selectedDX} ימים לפני המכירה
-            </div>
-          </div>
-
           {/* KPI Row */}
           <div className="grid grid-cols-6 gap-3">
             {[
