@@ -1,12 +1,30 @@
 import { useState, useMemo } from "react";
-import { allSaleSnapshots, salesList, currentSaleId, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { allSaleSnapshots, salesList, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, ChevronDown } from "lucide-react";
+import { X, Search, ChevronDown, CalendarClock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { differenceInDays, parseISO } from "date-fns";
 
 type DisplayMode = "byDX" | "bySale";
+
+// Auto-detect current sale: latest sale with a future date
+function detectCurrentSale() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const futureSales = salesList
+    .filter(s => parseISO(s.date) >= today)
+    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+  return futureSales.length > 0 ? futureSales[0] : salesList[0];
+}
+
+function calcCurrentDX(saleDate: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = differenceInDays(parseISO(saleDate), today);
+  return Math.max(0, Math.min(30, diff));
+}
 
 // ─── KPI CARD ───
 function OverviewKPI({ label, value, comparison, compLabel }: {
