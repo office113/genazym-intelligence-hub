@@ -90,12 +90,17 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
 
 // ─── MAIN COMPONENT ───
 export default function OverviewTab() {
+  const currentSale = useMemo(() => detectCurrentSale(), []);
+  const currentSaleId = currentSale.id;
+  const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
+  const isFutureSale = useMemo(() => parseISO(currentSale.date) >= new Date(new Date().setHours(0,0,0,0)), [currentSale.date]);
+
   const [mode, setMode] = useState<DisplayMode>("byDX");
-  const [selectedDX, setSelectedDX] = useState(10);
+  const [selectedDX, setSelectedDX] = useState(autoDX);
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
 
-  // Current sale info
+  // Current sale info (kept for compatibility)
   const currentSale = salesList.find(s => s.id === currentSaleId)!;
 
   // Get snapshot for a sale at a specific DX
