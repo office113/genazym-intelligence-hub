@@ -217,7 +217,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.08)" }}>
             <CalendarClock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
             <span className="text-xs font-bold whitespace-nowrap" style={{ color: "hsl(var(--accent))" }}>
-              אנחנו כעת ב־D-{autoDX}
+              {currentSale.name} · אנחנו כעת ב־D-{autoDX}
             </span>
           </div>
         </div>
