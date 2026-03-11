@@ -1,12 +1,30 @@
 import { useState, useMemo } from "react";
-import { allSaleSnapshots, salesList, currentSaleId, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { allSaleSnapshots, salesList, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, ChevronDown } from "lucide-react";
+import { X, Search, ChevronDown, CalendarClock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { differenceInDays, parseISO } from "date-fns";
 
 type DisplayMode = "byDX" | "bySale";
+
+// Auto-detect current sale: latest sale with a future date
+function detectCurrentSale() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const futureSales = salesList
+    .filter(s => parseISO(s.date) >= today)
+    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+  return futureSales.length > 0 ? futureSales[0] : salesList[0];
+}
+
+function calcCurrentDX(saleDate: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = differenceInDays(parseISO(saleDate), today);
+  return Math.max(0, Math.min(30, diff));
+}
 
 // ─── KPI CARD ───
 function OverviewKPI({ label, value, comparison, compLabel }: {
@@ -72,13 +90,17 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
 
 // ─── MAIN COMPONENT ───
 export default function OverviewTab() {
+  const currentSale = useMemo(() => detectCurrentSale(), []);
+  const currentSaleId = currentSale.id;
+  const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
+  const isFutureSale = useMemo(() => parseISO(currentSale.date) >= new Date(new Date().setHours(0,0,0,0)), [currentSale.date]);
+
   const [mode, setMode] = useState<DisplayMode>("byDX");
-  const [selectedDX, setSelectedDX] = useState(10);
+  const [selectedDX, setSelectedDX] = useState(autoDX);
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
 
-  // Current sale info
-  const currentSale = salesList.find(s => s.id === currentSaleId)!;
+  // currentSale already defined above
 
   // Get snapshot for a sale at a specific DX
   const getSnapshot = (saleId: string, dx: number): SaleSnapshot | undefined =>
@@ -174,6 +196,16 @@ export default function OverviewTab() {
             <div className="text-xs text-muted-foreground">{currentSale.brand} · {currentSale.date}</div>
           </div>
         </div>
+
+        {/* Current D-X indicator */}
+        {isFutureSale && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/30" style={{ background: "hsl(var(--accent) / 0.1)" }}>
+            <CalendarClock className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
+            <span className="text-sm font-bold" style={{ color: "hsl(var(--accent))" }}>
+              אנחנו כעת ב־D-{autoDX}
+            </span>
+          </div>
+        )}
 
         {/* Mode toggle */}
         <div className="flex bg-secondary/60 rounded-lg p-1 mr-auto">
