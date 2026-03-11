@@ -332,7 +332,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
         }
 
         // Past sale columns newest to oldest (visible in matrix)
-        const pastByDateDesc = [...pastWithSnaps].sort((a, b) => new Date(b.sale.date).getTime() - new Date(a.sale.date).getTime());
+        const pastByDateDesc = [...pastWithSnaps].sort((a, b) => new Date(b.sale.date).getTime() - new Date(a.sale.date).getTime()).slice(0, 5);
         pastByDateDesc.forEach(({ sale, snap }) => {
           columns.push({
             id: sale.id,
