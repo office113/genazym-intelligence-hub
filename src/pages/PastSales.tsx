@@ -629,21 +629,21 @@ interface YearlyData {
 }
 
 const genazymYearlyData: YearlyData[] = [
-  { year: 2021, salesCount: 4, totalRevenue: 6800000, uniqueInvolved: 310, uniqueWinners: 125, avgPricePerItem: 8200, medianPrice: 5400, booksSold: 829 },
-  { year: 2022, salesCount: 5, totalRevenue: 9200000, uniqueInvolved: 385, uniqueWinners: 158, avgPricePerItem: 8900, medianPrice: 5800, booksSold: 1034 },
-  { year: 2023, salesCount: 5, totalRevenue: 11500000, uniqueInvolved: 420, uniqueWinners: 172, avgPricePerItem: 9600, medianPrice: 6200, booksSold: 1198 },
-  { year: 2024, salesCount: 6, totalRevenue: 14200000, uniqueInvolved: 482, uniqueWinners: 198, avgPricePerItem: 10200, medianPrice: 6800, booksSold: 1392 },
-  { year: 2025, salesCount: 4, totalRevenue: 10800000, uniqueInvolved: 445, uniqueWinners: 185, avgPricePerItem: 10800, medianPrice: 7100, booksSold: 1000 },
-  { year: 2026, salesCount: 1, totalRevenue: 2850000, uniqueInvolved: 195, uniqueWinners: 71, avgPricePerItem: 11200, medianPrice: 7400, booksSold: 254 },
+  { year: 2021, salesCount: 4, totalRevenue: 6800000, uniqueInvolved: 310, uniqueWinners: 125, avgPricePerItem: 8200, medianPrice: 5400, booksSold: 829, newInvolved: 85, newRegistrants: 120, churned: 0 },
+  { year: 2022, salesCount: 5, totalRevenue: 9200000, uniqueInvolved: 385, uniqueWinners: 158, avgPricePerItem: 8900, medianPrice: 5800, booksSold: 1034, newInvolved: 98, newRegistrants: 145, churned: 42 },
+  { year: 2023, salesCount: 5, totalRevenue: 11500000, uniqueInvolved: 420, uniqueWinners: 172, avgPricePerItem: 9600, medianPrice: 6200, booksSold: 1198, newInvolved: 72, newRegistrants: 110, churned: 55 },
+  { year: 2024, salesCount: 6, totalRevenue: 14200000, uniqueInvolved: 482, uniqueWinners: 198, avgPricePerItem: 10200, medianPrice: 6800, booksSold: 1392, newInvolved: 105, newRegistrants: 160, churned: 48 },
+  { year: 2025, salesCount: 4, totalRevenue: 10800000, uniqueInvolved: 445, uniqueWinners: 185, avgPricePerItem: 10800, medianPrice: 7100, booksSold: 1000, newInvolved: 62, newRegistrants: 95, churned: 68 },
+  { year: 2026, salesCount: 1, totalRevenue: 2850000, uniqueInvolved: 195, uniqueWinners: 71, avgPricePerItem: 11200, medianPrice: 7400, booksSold: 254, newInvolved: 18, newRegistrants: 32, churned: 82 },
 ];
 
 const zaidiYearlyData: YearlyData[] = [
-  { year: 2021, salesCount: 3, totalRevenue: 2100000, uniqueInvolved: 145, uniqueWinners: 52, avgPricePerItem: 3800, medianPrice: 2200, booksSold: 553 },
-  { year: 2022, salesCount: 4, totalRevenue: 3400000, uniqueInvolved: 178, uniqueWinners: 68, avgPricePerItem: 4100, medianPrice: 2500, booksSold: 829 },
-  { year: 2023, salesCount: 4, totalRevenue: 4200000, uniqueInvolved: 198, uniqueWinners: 78, avgPricePerItem: 4400, medianPrice: 2700, booksSold: 955 },
-  { year: 2024, salesCount: 5, totalRevenue: 5600000, uniqueInvolved: 214, uniqueWinners: 88, avgPricePerItem: 4800, medianPrice: 2900, booksSold: 1167 },
-  { year: 2025, salesCount: 3, totalRevenue: 3900000, uniqueInvolved: 192, uniqueWinners: 75, avgPricePerItem: 5100, medianPrice: 3100, booksSold: 765 },
-  { year: 2026, salesCount: 1, totalRevenue: 980000, uniqueInvolved: 91, uniqueWinners: 30, avgPricePerItem: 5400, medianPrice: 3200, booksSold: 181 },
+  { year: 2021, salesCount: 3, totalRevenue: 2100000, uniqueInvolved: 145, uniqueWinners: 52, avgPricePerItem: 3800, medianPrice: 2200, booksSold: 553, newInvolved: 48, newRegistrants: 65, churned: 0 },
+  { year: 2022, salesCount: 4, totalRevenue: 3400000, uniqueInvolved: 178, uniqueWinners: 68, avgPricePerItem: 4100, medianPrice: 2500, booksSold: 829, newInvolved: 55, newRegistrants: 78, churned: 22 },
+  { year: 2023, salesCount: 4, totalRevenue: 4200000, uniqueInvolved: 198, uniqueWinners: 78, avgPricePerItem: 4400, medianPrice: 2700, booksSold: 955, newInvolved: 38, newRegistrants: 52, churned: 31 },
+  { year: 2024, salesCount: 5, totalRevenue: 5600000, uniqueInvolved: 214, uniqueWinners: 88, avgPricePerItem: 4800, medianPrice: 2900, booksSold: 1167, newInvolved: 45, newRegistrants: 68, churned: 28 },
+  { year: 2025, salesCount: 3, totalRevenue: 3900000, uniqueInvolved: 192, uniqueWinners: 75, avgPricePerItem: 5100, medianPrice: 3100, booksSold: 765, newInvolved: 28, newRegistrants: 42, churned: 35 },
+  { year: 2026, salesCount: 1, totalRevenue: 980000, uniqueInvolved: 91, uniqueWinners: 30, avgPricePerItem: 5400, medianPrice: 3200, booksSold: 181, newInvolved: 8, newRegistrants: 15, churned: 41 },
 ];
 
 function combineYearlyData(g: YearlyData[], z: YearlyData[]): YearlyData[] {
@@ -659,6 +659,9 @@ function combineYearlyData(g: YearlyData[], z: YearlyData[]): YearlyData[] {
       avgPricePerItem: totalSold > 0 ? Math.round((gy.totalRevenue + zy.totalRevenue) / totalSold) : 0,
       medianPrice: Math.round((gy.medianPrice + zy.medianPrice) / 2),
       booksSold: totalSold,
+      newInvolved: gy.newInvolved + zy.newInvolved,
+      newRegistrants: gy.newRegistrants + zy.newRegistrants,
+      churned: gy.churned + zy.churned,
     };
   });
 }
