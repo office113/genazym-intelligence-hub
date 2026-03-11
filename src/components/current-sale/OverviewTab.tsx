@@ -305,40 +305,6 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
       {/* ═══════════════════════════════════════ */}
       {mode === "byDX" && (
         <>
-          {/* KPI Row */}
-          <div className="grid grid-cols-6 gap-3">
-            {[
-              { key: "earlyBids", label: "סה״כ הצעות מוקדמות" },
-              { key: "uniqueBidders", label: "משתמשים שונים עם הצעות" },
-              { key: "lotsWithBids", label: "מס׳ פריטים עם הצעות" },
-              { key: "lotsBidPct", label: "אחוז פריטים עם הצעות", suffix: "%" },
-              { key: "guaranteedPrice", label: "מחיר מובטח", format: "price" },
-              { key: "newBidders", label: "מס׳ בידרים חדשים" },
-            ].map(kpi => {
-              const curr = mode1Data.currentSnap;
-              const val = curr ? (curr as any)[kpi.key] : 0;
-              const avgVal = mode1Data.avg(kpi.key as keyof SaleSnapshot);
-              const displayVal = kpi.format === "price" ? fmtPrice(val) : kpi.suffix ? `${val}${kpi.suffix}` : val;
-              const displayAvg = kpi.format === "price" ? fmtPrice(avgVal) : kpi.suffix ? `${avgVal}${kpi.suffix}` : avgVal;
-
-              const drillType = kpi.key === "uniqueBidders" ? "uniqueBidders" : kpi.key === "lotsWithBids" ? "lotsWithBids" : kpi.key === "newBidders" ? "newBidders" : null;
-
-              return (
-                <div
-                  key={kpi.key}
-                  className={`kpi-card ${drillType ? "cursor-pointer" : ""}`}
-                  onClick={() => drillType && openDrillDown(drillType, kpi.label, `${currentSale.name} · D-${selectedDX}`)}
-                >
-                  <div className="kpi-value text-2xl">{displayVal}</div>
-                  <div className="kpi-label text-xs">{kpi.label}</div>
-                  <div className="text-xs text-muted-foreground mt-1.5 opacity-80">
-                    ממוצע: <span className="font-semibold text-foreground">{displayAvg}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
           {/* Comparison Table */}
           <div className="chart-card">
             <div className="chart-title">השוואת מכירות ב-D-{selectedDX}</div>
