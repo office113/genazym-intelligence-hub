@@ -524,34 +524,8 @@ export default function PastSales() {
           </>
         )}
 
-        {activeTab === "compare" && (
-          <>
-            <div className="chart-card mb-6">
-              <div className="chart-title">השוואת הכנסות בין מכירות</div>
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={saleComparisonChart}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="revenue" fill="hsl(220,35%,18%)" radius={[4, 4, 0, 0]} name="הכנסות (אלפי $)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">עליית מחיר: פתיחה מול סגירה</div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={upliftData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
-                  <YAxis dataKey="lot" type="category" tick={{ fontSize: 12 }} width={80} />
-                  <Tooltip />
-                  <Bar dataKey="opening" fill="hsl(40,8%,80%)" name="מחיר פתיחה" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="final" fill="hsl(38,65%,52%)" name="מחיר סגירה" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </>
+        {activeTab === "retention" && (
+          <RetentionTab brand={brand} brandLabel={brandLabel} />
         )}
 
         {activeTab === "engagement" && (
