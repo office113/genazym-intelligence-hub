@@ -7,7 +7,7 @@ import { X, Search, ChevronDown, CalendarClock } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 
-type DisplayMode = "byDX" | "bySale";
+export type DisplayMode = "overview" | "byDX" | "bySale";
 
 // Auto-detect current sale: latest sale with a future date
 function detectCurrentSale() {
@@ -88,7 +88,7 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנזים" | "זיידי" }) {
+export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode }) {
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
@@ -107,7 +107,6 @@ export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנז�
   const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
   const isFutureSale = useMemo(() => parseISO(currentSale.date) >= new Date(new Date().setHours(0,0,0,0)), [currentSale.date]);
 
-  const [mode, setMode] = useState<DisplayMode>("byDX");
   const [selectedDX, setSelectedDX] = useState(autoDX);
   const [selectedSaleId, setSelectedSaleId] = useState(currentSaleId);
   const [drillDown, setDrillDown] = useState<{ type: string; title: string; subtitle: string } | null>(null);
@@ -223,33 +222,9 @@ export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנז�
           </div>
         )}
 
-        {/* Mode toggle */}
-        <div className="flex bg-secondary/60 rounded-lg p-1 mr-auto">
-          <button
-            onClick={() => setMode("byDX")}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-              mode === "byDX"
-                ? "bg-card shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            לפי יום לפני מכירה
-          </button>
-          <button
-            onClick={() => setMode("bySale")}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-              mode === "bySale"
-                ? "bg-card shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            לפי מכירה אחת
-          </button>
-        </div>
-
         {/* Mode-specific controls */}
         {mode === "byDX" && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-auto">
             <span className="text-sm text-muted-foreground">יום:</span>
             <div className="relative">
               <select
@@ -267,7 +242,7 @@ export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנז�
         )}
 
         {mode === "bySale" && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-auto">
             <span className="text-sm text-muted-foreground">מכירה:</span>
             <div className="relative">
               <select
@@ -287,6 +262,41 @@ export default function OverviewTab({ selectedBrand }: { selectedBrand: "גנז�
           </div>
         )}
       </div>
+
+      {/* ═══ OVERVIEW MODE ═══ */}
+      {mode === "overview" && (
+        <>
+          {/* KPI Row - current sale at current D-X */}
+          <div className="grid grid-cols-6 gap-3">
+            {[
+              { key: "earlyBids", label: "סה״כ הצעות מוקדמות" },
+              { key: "uniqueBidders", label: "משתמשים שונים עם הצעות" },
+              { key: "lotsWithBids", label: "מס׳ פריטים עם הצעות" },
+              { key: "lotsBidPct", label: "אחוז פריטים עם הצעות", suffix: "%" },
+              { key: "guaranteedPrice", label: "מחיר מובטח", format: "price" },
+              { key: "newBidders", label: "מס׳ בידרים חדשים" },
+            ].map(kpi => {
+              const snap = getSnapshot(currentSaleId, autoDX);
+              const val = snap ? (snap as any)[kpi.key] : 0;
+              const pastSales = salesList.filter(s => s.id !== currentSaleId && s.brand === selectedBrand);
+              const pastSnaps = pastSales.map(s => getSnapshot(s.id, autoDX)).filter(Boolean) as SaleSnapshot[];
+              const avgVal = pastSnaps.length ? Math.round(pastSnaps.reduce((a, s) => a + (s as any)[kpi.key], 0) / pastSnaps.length) : 0;
+              const displayVal = kpi.format === "price" ? fmtPrice(val) : kpi.suffix ? `${val}${kpi.suffix}` : val;
+              const displayAvg = kpi.format === "price" ? fmtPrice(avgVal) : kpi.suffix ? `${avgVal}${kpi.suffix}` : avgVal;
+
+              return (
+                <div key={kpi.key} className="kpi-card">
+                  <div className="kpi-value text-2xl">{displayVal}</div>
+                  <div className="kpi-label text-xs">{kpi.label}</div>
+                  <div className="text-xs text-muted-foreground mt-1.5 opacity-80">
+                    ממוצע עבר ב-D-{autoDX}: <span className="font-semibold text-foreground">{displayAvg}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* ═══════════════════════════════════════ */}
       {/*  MODE 1: BY D-X DAY                   */}

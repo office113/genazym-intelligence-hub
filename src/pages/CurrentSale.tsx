@@ -1,13 +1,15 @@
 import { useState } from "react";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
-import OverviewTab from "@/components/current-sale/OverviewTab";
+import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { currentSaleDX, missingCustomers } from "@/data/mockData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Phone, Mail, AlertTriangle, CheckCircle2, Clock, TrendingDown } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
+  { key: "byDX", label: "לפי יום לפני מכירה" },
+  { key: "bySale", label: "לפי מכירה אחת" },
   { key: "pace", label: "קצב התקדמות" },
   { key: "dx", label: "השוואת D-X" },
   { key: "missing", label: "לקוחות חסרים" },
@@ -77,7 +79,9 @@ export default function CurrentSale() {
       </div>
 
       <div className="p-8 animate-fade-in">
-        {activeTab === "overview" && <OverviewTab selectedBrand={selectedBrand} />}
+        {(activeTab === "overview" || activeTab === "byDX" || activeTab === "bySale") && (
+          <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} />
+        )}
 
         {activeTab === "pace" && (
           <>
