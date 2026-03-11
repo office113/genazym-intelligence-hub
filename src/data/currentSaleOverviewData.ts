@@ -117,13 +117,13 @@ export const salesList = [
 // Drill-down mock customers
 export const drillDownCustomers: Record<string, DrillDownCustomer[]> = {
   uniqueBidders: [
-    { name: "אברהם גולדשטיין", email: "a.gold@email.com", firstBidDate: "2021-03-15", maxHistoricalBid: "$22,000", totalWins: 42, lastActiveSale: "מכירה #48", registrationDate: "2021-01-10" },
-    { name: "משה כהן", email: "m.cohen@email.com", firstBidDate: "2022-07-20", maxHistoricalBid: "$8,500", totalWins: 28, lastActiveSale: "מכירה #48", registrationDate: "2022-06-01" },
-    { name: "יצחק לוי", email: "y.levi@email.com", firstBidDate: "2020-11-02", maxHistoricalBid: "$35,000", totalWins: 65, lastActiveSale: "מכירה #47", registrationDate: "2020-10-15" },
-    { name: "דוד פרידמן", email: "d.friedman@email.com", firstBidDate: "2023-01-10", maxHistoricalBid: "$4,200", totalWins: 12, lastActiveSale: "מכירה #48", registrationDate: "2022-12-20" },
-    { name: "שלמה רוזנברג", email: "s.rosen@email.com", firstBidDate: "2019-06-22", maxHistoricalBid: "$48,000", totalWins: 98, lastActiveSale: "מכירה #47", registrationDate: "2019-05-01" },
-    { name: "חיים ויסמן", email: "c.weisman@email.com", firstBidDate: "2021-05-18", maxHistoricalBid: "$12,000", totalWins: 18, lastActiveSale: "מכירה #48", registrationDate: "2021-04-02" },
-    { name: "נתן שטרן", email: "n.stern@email.com", firstBidDate: "2020-08-11", maxHistoricalBid: "$18,500", totalWins: 55, lastActiveSale: "מכירה #48", registrationDate: "2020-07-20" },
+    { name: "אברהם גולדשטיין", email: "a.gold@email.com", firstBidDate: "2021-03-15", maxHistoricalBid: "$22,000", totalWins: 42, lastActiveSale: "מכירה #48", registrationDate: "2021-01-10", engagementType: "גם וגם", bidsCount: 14, lotsWithBidCount: 8, maxBidAmount: "$6,200", wonAtEnd: true },
+    { name: "משה כהן", email: "m.cohen@email.com", firstBidDate: "2022-07-20", maxHistoricalBid: "$8,500", totalWins: 28, lastActiveSale: "מכירה #48", registrationDate: "2022-06-01", engagementType: "מוקדם", bidsCount: 7, lotsWithBidCount: 5, maxBidAmount: "$3,800", wonAtEnd: false },
+    { name: "יצחק לוי", email: "y.levi@email.com", firstBidDate: "2020-11-02", maxHistoricalBid: "$35,000", totalWins: 65, lastActiveSale: "מכירה #47", registrationDate: "2020-10-15", engagementType: "לייב", bidsCount: 22, lotsWithBidCount: 12, maxBidAmount: "$12,500", wonAtEnd: true },
+    { name: "דוד פרידמן", email: "d.friedman@email.com", firstBidDate: "2023-01-10", maxHistoricalBid: "$4,200", totalWins: 12, lastActiveSale: "מכירה #48", registrationDate: "2022-12-20", engagementType: "מוקדם", bidsCount: 3, lotsWithBidCount: 2, maxBidAmount: "$2,100", wonAtEnd: false },
+    { name: "שלמה רוזנברג", email: "s.rosen@email.com", firstBidDate: "2019-06-22", maxHistoricalBid: "$48,000", totalWins: 98, lastActiveSale: "מכירה #47", registrationDate: "2019-05-01", engagementType: "גם וגם", bidsCount: 31, lotsWithBidCount: 18, maxBidAmount: "$15,000", wonAtEnd: true },
+    { name: "חיים ויסמן", email: "c.weisman@email.com", firstBidDate: "2021-05-18", maxHistoricalBid: "$12,000", totalWins: 18, lastActiveSale: "מכירה #48", registrationDate: "2021-04-02", engagementType: "לייב", bidsCount: 9, lotsWithBidCount: 6, maxBidAmount: "$4,500", wonAtEnd: true },
+    { name: "נתן שטרן", email: "n.stern@email.com", firstBidDate: "2020-08-11", maxHistoricalBid: "$18,500", totalWins: 55, lastActiveSale: "מכירה #48", registrationDate: "2020-07-20", engagementType: "מוקדם", bidsCount: 11, lotsWithBidCount: 7, maxBidAmount: "$5,800", wonAtEnd: false },
   ],
   lotsWithBids: [
     { name: "ספר נועם אלימלך - מהדורה ראשונה", email: "", firstBidDate: "D-18", maxHistoricalBid: "$22,000", totalWins: 12, lastActiveSale: "מכירה #48" },
@@ -132,10 +132,15 @@ export const drillDownCustomers: Record<string, DrillDownCustomer[]> = {
     { name: "שולחן ערוך - דפוס ראשון, ונציה 1565", email: "", firstBidDate: "D-8", maxHistoricalBid: "$35,000", totalWins: 3, lastActiveSale: "מכירה #48" },
   ],
   newBidders: [
-    { name: "רפאל דיאמנט", email: "r.diamant@email.com", firstBidDate: "2025-03-08", maxHistoricalBid: "$3,200", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-02-28", activeInOtherBrand: false },
-    { name: "עמנואל בלוך", email: "e.bloch@email.com", firstBidDate: "2025-03-12", maxHistoricalBid: "$1,800", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-01", activeInOtherBrand: true },
-    { name: "יונתן שפירא", email: "y.shapira@email.com", firstBidDate: "2025-03-05", maxHistoricalBid: "$5,500", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-02-25", activeInOtherBrand: false },
-    { name: "אהרון קופרמן", email: "a.kuperman@email.com", firstBidDate: "2025-03-10", maxHistoricalBid: "$2,400", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-02", activeInOtherBrand: true },
-    { name: "בנימין הרשקוביץ", email: "b.hersh@email.com", firstBidDate: "2025-03-14", maxHistoricalBid: "$4,100", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-05", activeInOtherBrand: false },
+    { name: "רפאל דיאמנט", email: "r.diamant@email.com", firstBidDate: "2025-03-08", maxHistoricalBid: "$3,200", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-02-28", activeInOtherBrand: false, bidsCount: 4, lotsWithBidCount: 3, maxBidAmount: "$3,200" },
+    { name: "עמנואל בלוך", email: "e.bloch@email.com", firstBidDate: "2025-03-12", maxHistoricalBid: "$1,800", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-01", activeInOtherBrand: true, bidsCount: 2, lotsWithBidCount: 2, maxBidAmount: "$1,800" },
+    { name: "יונתן שפירא", email: "y.shapira@email.com", firstBidDate: "2025-03-05", maxHistoricalBid: "$5,500", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-02-25", activeInOtherBrand: false, bidsCount: 6, lotsWithBidCount: 4, maxBidAmount: "$5,500" },
+    { name: "אהרון קופרמן", email: "a.kuperman@email.com", firstBidDate: "2025-03-10", maxHistoricalBid: "$2,400", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-02", activeInOtherBrand: true, bidsCount: 3, lotsWithBidCount: 2, maxBidAmount: "$2,400" },
+    { name: "בנימין הרשקוביץ", email: "b.hersh@email.com", firstBidDate: "2025-03-14", maxHistoricalBid: "$4,100", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-05", activeInOtherBrand: false, bidsCount: 5, lotsWithBidCount: 3, maxBidAmount: "$4,100" },
+  ],
+  newBiddersFromOtherBrand: [
+    { name: "עמנואל בלוך", email: "e.bloch@email.com", firstBidDate: "2025-03-12", maxHistoricalBid: "$1,800", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-01", activeInOtherBrand: true, otherBrandName: "זיידי", firstActivityOtherBrand: "2024-08-15", maxBidOtherBrand: "$4,200", winsOtherBrand: 3 },
+    { name: "אהרון קופרמן", email: "a.kuperman@email.com", firstBidDate: "2025-03-10", maxHistoricalBid: "$2,400", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-03-02", activeInOtherBrand: true, otherBrandName: "זיידי", firstActivityOtherBrand: "2024-05-20", maxBidOtherBrand: "$6,800", winsOtherBrand: 7 },
+    { name: "מנחם פלדמן", email: "m.feldman@email.com", firstBidDate: "2025-03-06", maxHistoricalBid: "$3,500", totalWins: 0, lastActiveSale: "מכירה #48", registrationDate: "2025-02-20", activeInOtherBrand: true, otherBrandName: "זיידי", firstActivityOtherBrand: "2023-11-10", maxBidOtherBrand: "$8,500", winsOtherBrand: 12 },
   ],
 };
