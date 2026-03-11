@@ -328,7 +328,7 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
           });
         }
 
-        // Past sale columns newest to oldest
+        // Past sale columns newest to oldest (visible in matrix)
         const pastByDateDesc = [...pastWithSnaps].sort((a, b) => new Date(b.sale.date).getTime() - new Date(a.sale.date).getTime());
         pastByDateDesc.forEach(({ sale, snap }) => {
           columns.push({
@@ -339,6 +339,18 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "×
             getValue: (key) => snap[key] as number,
           });
         });
+
+        // Build a map: for each sale ID, find the previous same-brand sale's snapshot (even if not visible)
+        const allBrandSales = salesList
+          .filter(s => s.brand === selectedBrand)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const prevSaleSnapMap: Record<string, SaleSnapshot | undefined> = {};
+        for (let i = 0; i < allBrandSales.length; i++) {
+          const prevSale = allBrandSales[i + 1];
+          if (prevSale) {
+            prevSaleSnapMap[allBrandSales[i].id] = getSnapshot(prevSale.id, selectedDX);
+          }
+        }
 
         // Benchmark column last (farthest left in RTL)
         columns.push({
