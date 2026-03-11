@@ -313,7 +313,27 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
 
         const columns: ColDef[] = [];
 
-        // Current sale column
+        // Benchmark column first (will appear on the far side)
+        columns.push({
+          id: "avg",
+          label: "ממוצע 6 מכירות אחרונות",
+          isBenchmark: true,
+          getValue: (key) => mode1Data.avg(key),
+        });
+
+        // Past sale columns in chronological order (oldest first)
+        const pastChronological = [...pastWithSnaps].sort((a, b) => new Date(a.sale.date).getTime() - new Date(b.sale.date).getTime());
+        pastChronological.forEach(({ sale, snap }) => {
+          columns.push({
+            id: sale.id,
+            label: sale.name,
+            sublabel: sale.date,
+            snap,
+            getValue: (key) => snap[key] as number,
+          });
+        });
+
+        // Current sale column last (rightmost in RTL = most prominent)
         if (currentSnap) {
           columns.push({
             id: currentSaleId,
@@ -324,31 +344,6 @@ export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "�
             getValue: (key) => currentSnap[key] as number,
           });
         }
-
-        // Past sale columns
-        pastWithSnaps.forEach(({ sale, snap }) => {
-          columns.push({
-            id: sale.id,
-            label: sale.name,
-            sublabel: sale.date,
-            snap,
-            getValue: (key) => snap[key] as number,
-          });
-        });
-
-        // Benchmark columns
-        columns.push({
-          id: "avg",
-          label: "ממוצע עבר",
-          isBenchmark: true,
-          getValue: (key) => mode1Data.avg(key),
-        });
-        columns.push({
-          id: "median",
-          label: "חציון עבר",
-          isBenchmark: true,
-          getValue: (key) => mode1Data.median(key),
-        });
 
         // Metric rows definition
         const metricRows: { label: string; key: keyof SaleSnapshot; format?: "price" | "pct"; drillType?: string }[] = [
