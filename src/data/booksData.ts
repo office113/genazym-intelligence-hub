@@ -80,7 +80,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B005", lotNumber: 91, title: "אוסף דפוסי סלאוויטא וזיטאמיר",
     descriptionHe: "אוסף של 12 כרכים מדפוסי סלאוויטא וזיטאמיר. כולל פריטים נדירים ביותר.",
     descriptionEn: "Collection of 12 volumes from Slavita and Zhitomir presses. Includes extremely rare items.",
-    author: "שפירא", year: 1820, origin: "אוקראינה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "שפירא", year: "1820", origin: "אוקראינה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 5000, finalPrice: null, sold: false,
     tags: ["סלאוויטא", "זיטאמיר", "חסידות", "אוסף"],
     communities: ["חסידות", "אוקראינה"], uniqueness: ["אוסף שלם", "דפוס סלאוויטא"],
