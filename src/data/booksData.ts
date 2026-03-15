@@ -131,7 +131,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B010", lotNumber: 8, title: "חומש עם רש\"י - דפוס שונצינו",
     descriptionHe: "חומש עם פירוש רש\"י מדפוס שונצינו. אחד הדפוסים העבריים המוקדמים ביותר.",
     descriptionEn: "Pentateuch with Rashi commentary from Soncino press. One of the earliest Hebrew prints.",
-    author: "שלמה שונצינו", year: 1490, origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
+    author: "שלמה שונצינו", year: "1490", origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
     openingPrice: 35000, finalPrice: 58000, sold: true,
     tags: ["חומש", "רש\"י", "שונצינו", "אינקונבולה"],
     communities: ["אשכנז", "איטליה"], uniqueness: ["אינקונבולה", "דפוס שונצינו"],
