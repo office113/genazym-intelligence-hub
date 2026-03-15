@@ -238,7 +238,7 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
                 <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={40} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, direction: "rtl", boxShadow: "0 4px 20px hsl(var(--foreground) / 0.08)" }} />
                 <Bar dataKey="לא חזרו" radius={[6, 6, 0, 0]} cursor="pointer"
-                  onClick={(_d: unknown, idx: number) => openChurnDrillDown(churnEntries[idx])}>
+                  onClick={(_d: unknown, idx: number) => openChurnDrillDown(recentChurn[idx])}>
                   {churnChartData.map((_, index) => (
                     <Cell key={index} fill="hsl(var(--chart-4))" />
                   ))}
