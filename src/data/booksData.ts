@@ -60,7 +60,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B003", lotNumber: 45, title: "ספר נועם אלימלך - מהדורה ראשונה",
     descriptionHe: "מהדורה ראשונה של הספר הקדוש נועם אלימלך, לבוב תקמ\"ז. מצב טוב מאוד, עם הגהות בכתב יד.",
     descriptionEn: "First edition of the holy book Noam Elimelech, Lvov 1787. Very good condition with handwritten glosses.",
-    author: "ר' אלימלך מליז'ענסק", year: 1787, origin: "פולין", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "ר' אלימלך מליז'ענסק", year: "1787", origin: "פולין", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 20000, finalPrice: null, sold: false,
     tags: ["חסידות", "מהדורה ראשונה", "נדיר מאוד", "הגהות"],
     communities: ["חסידות", "גליציה"], uniqueness: ["מהדורה ראשונה", "הגהות בכתב יד"],
