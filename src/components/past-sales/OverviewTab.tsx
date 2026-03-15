@@ -226,6 +226,19 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
           </div>
         </div>
 
+        {/* DEBUG TABLE — remove after verification */}
+        <div className="chart-card">
+          <h3 className="text-sm font-semibold mb-2 text-destructive">🐛 DEBUG: involvedWinnersData (chart input)</h3>
+          <table className="w-full text-xs border border-border">
+            <thead><tr className="bg-muted"><th className="p-1 border border-border">auction_name</th><th className="p-1 border border-border">involved_count</th><th className="p-1 border border-border">winners_count</th></tr></thead>
+            <tbody>
+              {recentAggs.map((a) => (
+                <tr key={a.auction_name}><td className="p-1 border border-border">{a.auction_name}</td><td className="p-1 border border-border">{a.involved}</td><td className="p-1 border border-border">{a.winners}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         {/* לא חזרו */}
         <div className="chart-card">
           <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
