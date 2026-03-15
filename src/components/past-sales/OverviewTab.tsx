@@ -157,9 +157,15 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
     return num ? `${bHeb} ${num}` : name;
   };
 
-  // Chart data — last 7 auctions, oldest→newest
-  const recentAggs = useMemo(() => auctionAggs.slice(-7), [auctionAggs]);
-  const recentChurn = useMemo(() => churnEntries.slice(-7), [churnEntries]);
+  // Chart data — SQL semantics: ORDER BY auction_name DESC LIMIT 7, then reverse for display
+  const recentAggs = useMemo(
+    () => [...auctionAggs].sort((a, b) => b.auction_name.localeCompare(a.auction_name)).slice(0, 7).reverse(),
+    [auctionAggs]
+  );
+  const recentChurn = useMemo(
+    () => [...churnEntries].sort((a, b) => b.auction_name.localeCompare(a.auction_name)).slice(0, 7).reverse(),
+    [churnEntries]
+  );
 
   const involvedWinnersData = useMemo(
     () => recentAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
