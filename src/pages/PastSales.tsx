@@ -1147,7 +1147,13 @@ export default function PastSales() {
       </div>
 
       <div className="p-8 animate-fade-in">
-        {activeTab === "overview" && (
+        {loading && activeTab === "overview" && (
+          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">טוען נתונים…</div>
+        )}
+        {error && activeTab === "overview" && (
+          <div className="flex items-center justify-center py-20 text-destructive text-sm">שגיאה בטעינת נתונים: {error}</div>
+        )}
+        {activeTab === "overview" && !loading && !error && (
           <>
             <div className="grid grid-cols-4 gap-4 mb-8">
               <KPICard label="מחיר פתיחה ממוצע לפריט" value={kpis.avgOpeningPrice} subtitle="ממוצע מחיר פתיחה בכל המכירות" />
