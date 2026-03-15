@@ -40,7 +40,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B001", lotNumber: 12, title: "כתב יד על קלף - תהלים עם פירוש", 
     descriptionHe: "כתב יד מרשים על קלף עם פירוש ייחודי לספר תהלים, כולל איורים מזרחיים נדירים. מאה ה-15.",
     descriptionEn: "Impressive vellum manuscript with unique commentary on Psalms, featuring rare oriental illustrations. 15th century.",
-    author: "לא ידוע", year: 1480, origin: "תימן", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "לא ידוע", year: "1480", origin: "תימן", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 8000, finalPrice: null, sold: false,
     tags: ["קלף", "תהלים", "מזרחי", "איורים", "כתב יד"],
     communities: ["תימן", "מזרח"], uniqueness: ["כתב יד מקורי", "איורים נדירים"],
