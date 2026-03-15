@@ -1086,9 +1086,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const kpis = brandKPIs[brand];
-  const churnData = brandChurnData[brand];
-  const involvedData = brandInvolvedData[brand];
+  const { pastSalesData, involvedData, churnData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
