@@ -65,12 +65,16 @@ function aggregateByAuction(rows: CustomerAuctionRow[]): AuctionAgg[] {
     map.get(r.auction_name)!.push(r);
   }
   return Array.from(map.entries())
-    .map(([name, rs]) => ({
-      auction_name: name,
-      auction_number: rs[0]?.auction_number ?? 0,
-      involved: rs.filter((r) => (r.total_bids ?? 0) > 0).length,
-      winners: rs.filter((r) => r.was_winner).length,
-    }))
+    .map(([name, rs]) => {
+      const distinctEmails = new Set(rs.map((r) => r.email));
+      const winnerEmails = new Set(rs.filter((r) => r.was_winner).map((r) => r.email));
+      return {
+        auction_name: name,
+        auction_number: rs[0]?.auction_number ?? 0,
+        involved: distinctEmails.size,
+        winners: winnerEmails.size,
+      };
+    })
     .sort((a, b) => a.auction_number - b.auction_number);
 }
 
