@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
-import { pastSalesData, saleComparisonChart } from "@/data/mockData";
+import { usePastSales } from "@/hooks/usePastSales";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell, LabelList } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -1086,9 +1086,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const kpis = brandKPIs[brand];
-  const churnData = brandChurnData[brand];
-  const involvedData = brandInvolvedData[brand];
+  const { pastSalesData, involvedData, churnData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
