@@ -50,7 +50,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B002", lotNumber: 34, title: "הגדה של פסח מאוירת - אמסטרדם 1695",
     descriptionHe: "הגדה נדירה עם חריטות נחושת מקוריות. אחד מהעותקים הבודדים ששרדו בשלמות.",
     descriptionEn: "Rare Haggadah with original copper engravings. One of the few surviving complete copies.",
-    author: "אברהם בר יעקב", year: 1695, origin: "הולנד", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "אברהם בר יעקב", year: "1695", origin: "הולנד", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 15000, finalPrice: null, sold: false,
     tags: ["הגדה", "אמסטרדם", "איורי נחושת", "נדיר"],
     communities: ["אשכנז", "הולנד"], uniqueness: ["חריטות מקוריות", "שלמות מלאה"],
