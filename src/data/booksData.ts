@@ -121,7 +121,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B009", lotNumber: 52, title: "מגילת אסתר על קלף - כתב יד מאויר",
     descriptionHe: "מגילת אסתר מאוירת על קלף, עם ציורים מרהיבים בצבעי זהב ותכלת. איטליה, המאה ה-18.",
     descriptionEn: "Illustrated Esther scroll on parchment, with stunning gold and azure paintings. Italy, 18th century.",
-    author: "לא ידוע", year: 1740, origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "לא ידוע", year: "1740", origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 10000, finalPrice: 16500, sold: true,
     tags: ["מגילה", "כתב יד", "איורים", "קלף", "זהב"],
     communities: ["איטליה", "ספרד"], uniqueness: ["איורי זהב", "מגילה שלמה"],
