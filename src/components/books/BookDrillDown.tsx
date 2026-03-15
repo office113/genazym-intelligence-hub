@@ -71,9 +71,7 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
       if (cancelled) return;
 
       // שליפת שמות לקוחות
-      const eventEmails = (eventsData ?? []).map((e: any) => e.customer_email).filter(Boolean);
-      const winnerEmailsList = (winnersData ?? []).map((w: any) => w.customer_email).filter(Boolean);
-      const emails = [...new Set([...eventEmails, ...winnerEmailsList])];
+      const emails = [...new Set((eventsData ?? []).map((e: any) => e.customer_email).filter(Boolean))];
       let customerNames: Record<string, string> = {};
 
       if (emails.length > 0) {
@@ -114,9 +112,11 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
       });
 
       // סימון זוכים
-      const winnerEmails = new Set((winnersData ?? []).map((w: any) => w.customer_email));
+      const winnerEmails = new Set(
+        (winnersData ?? []).map((w: any) => (w.customer_email ?? "").trim().toLowerCase()).filter(Boolean),
+      );
       Object.values(grouped).forEach((b) => {
-        if (winnerEmails.has(b.customerEmail)) {
+        if (winnerEmails.has(b.customerEmail.trim().toLowerCase())) {
           b.won = true;
           b.bidType = "winner";
         }
