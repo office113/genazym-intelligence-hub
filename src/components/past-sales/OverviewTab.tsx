@@ -68,7 +68,7 @@ function aggregateByAuction(rows: CustomerAuctionRow[]): AuctionAgg[] {
     .map(([name, rs]) => ({
       auction_name: name,
       auction_number: rs[0]?.auction_number ?? 0,
-      involved: rs.length,
+      involved: rs.filter((r) => (r.total_bids ?? 0) > 0).length,
       winners: rs.filter((r) => r.was_winner).length,
     }))
     .sort((a, b) => a.auction_number - b.auction_number);
