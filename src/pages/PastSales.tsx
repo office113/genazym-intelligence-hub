@@ -1,6 +1,7 @@
 import { useState } from "react";
 import OverviewTab from "@/components/past-sales/OverviewTab";
-import { useCustomerAuctionActivity, useCustomerBrandActivity } from "@/hooks/useSupabaseData";
+import { useCustomerAuctionActivity } from "@/hooks/useSupabaseData";
+import type { CustomerAuctionRow } from "@/data/pastSalesMockData";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -14,9 +15,8 @@ export default function PastSales() {
   const [activeTab, setActiveTab] = useState("overview");
   const [brand, setBrand] = useState<Brand>("genazym");
 
-  // Wire to Supabase views
+  // Wire to Supabase — will use mock fallback inside OverviewTab until permissions work
   const auctionActivity = useCustomerAuctionActivity();
-  const brandActivity = useCustomerBrandActivity();
 
   return (
     <div className="min-h-screen" dir="rtl">
@@ -65,9 +65,8 @@ export default function PastSales() {
         {activeTab === "overview" && (
           <OverviewTab
             brand={brand}
-            auctionData={auctionActivity.data as Record<string, unknown>[] | undefined}
-            brandData={brandActivity.data as Record<string, unknown>[] | undefined}
-            isLoading={auctionActivity.isLoading || brandActivity.isLoading}
+            auctionData={auctionActivity.data as CustomerAuctionRow[] | undefined}
+            isLoading={auctionActivity.isLoading}
           />
         )}
 

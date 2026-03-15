@@ -4,108 +4,160 @@ import InvestigationPanel from "@/components/dashboard/InvestigationPanel";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from "recharts";
+import {
+  MOCK_CUSTOMER_AUCTION_DATA,
+  INVOLVEMENT_LABELS,
+  type CustomerAuctionRow,
+} from "@/data/pastSalesMockData";
 
-// ─── Types matching fact_customer_auction_activity / fact_customer_brand_activity ───
-interface AuctionRow {
-  auction_name?: string;
-  brand?: string;
-  total_involved?: number;
-  total_winners?: number;
-  avg_opening_price?: number;
-  avg_closing_price?: number;
-  total_opening_value?: number;
-  total_closing_value?: number;
-  unique_involved?: number;
-  churned_count?: number;
-  [key: string]: unknown;
-}
-
-interface BrandRow {
-  brand?: string;
-  unique_involved?: number;
-  avg_involved_per_sale?: number;
-  avg_opening_price?: number;
-  avg_gap_open_close?: number;
-  [key: string]: unknown;
-}
-
+// ─── Props ───
 interface OverviewTabProps {
   brand: "genazym" | "zaidy";
-  auctionData?: AuctionRow[];
-  brandData?: BrandRow[];
+  auctionData?: CustomerAuctionRow[];
   isLoading: boolean;
 }
 
-// ─── Fallback mock data (renders until Supabase permissions are fixed) ───
-const MOCK_AUCTION: AuctionRow[] = [
-  { auction_name: "מכירה #47", brand: "genazym", total_involved: 298, total_winners: 142, avg_opening_price: 850, avg_closing_price: 1420, total_opening_value: 272000, total_closing_value: 404700, churned_count: 28 },
-  { auction_name: "מכירה #46", brand: "genazym", total_involved: 265, total_winners: 128, avg_opening_price: 780, avg_closing_price: 1350, total_opening_value: 218400, total_closing_value: 324000, churned_count: 35 },
-  { auction_name: "מכירה #45", brand: "genazym", total_involved: 340, total_winners: 165, avg_opening_price: 920, avg_closing_price: 1580, total_opening_value: 322000, total_closing_value: 490000, churned_count: 22 },
-  { auction_name: "מכירה #44", brand: "genazym", total_involved: 280, total_winners: 135, avg_opening_price: 810, avg_closing_price: 1390, total_opening_value: 235000, total_closing_value: 354000, churned_count: 31 },
-  { auction_name: "מכירה #43", brand: "genazym", total_involved: 310, total_winners: 148, avg_opening_price: 870, avg_closing_price: 1480, total_opening_value: 269700, total_closing_value: 399600, churned_count: 26 },
-  { auction_name: "מכירה #47", brand: "zaidy", total_involved: 185, total_winners: 92, avg_opening_price: 620, avg_closing_price: 980, total_opening_value: 114700, total_closing_value: 180000, churned_count: 18 },
-  { auction_name: "מכירה #46", brand: "zaidy", total_involved: 172, total_winners: 85, avg_opening_price: 590, avg_closing_price: 920, total_opening_value: 101480, total_closing_value: 158000, churned_count: 22 },
-  { auction_name: "מכירה #45", brand: "zaidy", total_involved: 210, total_winners: 105, avg_opening_price: 650, avg_closing_price: 1050, total_opening_value: 136500, total_closing_value: 220500, churned_count: 15 },
-  { auction_name: "מכירה #44", brand: "zaidy", total_involved: 168, total_winners: 82, avg_opening_price: 580, avg_closing_price: 910, total_opening_value: 97440, total_closing_value: 152880, churned_count: 20 },
-  { auction_name: "מכירה #43", brand: "zaidy", total_involved: 195, total_winners: 95, avg_opening_price: 640, avg_closing_price: 1020, total_opening_value: 124800, total_closing_value: 198900, churned_count: 17 },
-];
+type DrillDownMode = "involved" | "winners" | "churned";
 
-const MOCK_BRAND: BrandRow[] = [
-  { brand: "genazym", unique_involved: 482, avg_involved_per_sale: 299, avg_opening_price: 846, avg_gap_open_close: 68400 },
-  { brand: "zaidy", unique_involved: 312, avg_involved_per_sale: 186, avg_opening_price: 616, avg_gap_open_close: 42300 },
-];
-
-const brandHebrew = { genazym: "גנזים", zaidy: "זיידי" };
-
+// ─── Helpers ───
+const brandHebrew: Record<string, string> = { genazym: "גנזים", zaidy: "זיידי" };
 const formatNum = (n: number) => n.toLocaleString("he-IL");
 const formatCurrency = (n: number) => `$${n.toLocaleString("he-IL")}`;
 
-export default function OverviewTab({ brand, auctionData, brandData, isLoading }: OverviewTabProps) {
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [panelContext, setPanelContext] = useState<{ title: string; data: AuctionRow | null }>({ title: "", data: null });
+// ─── Aggregation: per-auction stats from customer-level rows ───
+interface AuctionAgg {
+  auction_name: string;
+  auction_number: number;
+  involved: number;
+  winners: number;
+  avg_max_bid: number;
+}
 
-  // Use live data if available, fallback to mock
-  const auctions = useMemo(() => {
-    const source = auctionData?.length ? auctionData : MOCK_AUCTION;
+function aggregateByAuction(rows: CustomerAuctionRow[]): AuctionAgg[] {
+  const map = new Map<string, CustomerAuctionRow[]>();
+  for (const r of rows) {
+    const key = r.auction_name;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(r);
+  }
+  return Array.from(map.entries())
+    .map(([name, rs]) => ({
+      auction_name: name,
+      auction_number: rs[0]?.auction_number ?? 0,
+      involved: rs.length,
+      winners: rs.filter((r) => r.is_winner).length,
+      avg_max_bid: rs.reduce((s, r) => s + r.max_bid, 0) / rs.length,
+    }))
+    .sort((a, b) => a.auction_number - b.auction_number);
+}
+
+// ─── Churn: customers in auction N-1 but NOT in auction N ───
+interface ChurnEntry {
+  auction_name: string;
+  auction_number: number;
+  churned: number;
+  churned_customers: CustomerAuctionRow[];
+}
+
+function computeChurn(rows: CustomerAuctionRow[]): ChurnEntry[] {
+  const auctionMap = new Map<number, Set<string>>();
+  const auctionNames = new Map<number, string>();
+  for (const r of rows) {
+    if (!auctionMap.has(r.auction_number)) auctionMap.set(r.auction_number, new Set());
+    auctionMap.get(r.auction_number)!.add(r.customer_id);
+    auctionNames.set(r.auction_number, r.auction_name);
+  }
+  const numbers = Array.from(auctionMap.keys()).sort((a, b) => a - b);
+  const results: ChurnEntry[] = [];
+  for (let i = 1; i < numbers.length; i++) {
+    const prev = auctionMap.get(numbers[i - 1])!;
+    const curr = auctionMap.get(numbers[i])!;
+    const churnedIds = new Set([...prev].filter((id) => !curr.has(id)));
+    // Get the previous auction data for those who churned
+    const churnedCustomers = rows.filter(
+      (r) => r.auction_number === numbers[i - 1] && churnedIds.has(r.customer_id)
+    );
+    results.push({
+      auction_name: auctionNames.get(numbers[i])!,
+      auction_number: numbers[i],
+      churned: churnedIds.size,
+      churned_customers: churnedCustomers,
+    });
+  }
+  return results;
+}
+
+export default function OverviewTab({ brand, auctionData, isLoading }: OverviewTabProps) {
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [drillMode, setDrillMode] = useState<DrillDownMode>("involved");
+  const [selectedAuction, setSelectedAuction] = useState<string>("");
+  const [selectedChurnEntry, setSelectedChurnEntry] = useState<ChurnEntry | null>(null);
+
+  // ─── Data source ───
+  const allRows = useMemo(() => {
+    const source = auctionData?.length ? auctionData : MOCK_CUSTOMER_AUCTION_DATA;
     return source.filter((r) => r.brand === brand);
   }, [auctionData, brand]);
 
-  const brandSummary = useMemo(() => {
-    const source = brandData?.length ? brandData : MOCK_BRAND;
-    return source.find((r) => r.brand === brand);
-  }, [brandData, brand]);
+  const auctionAggs = useMemo(() => aggregateByAuction(allRows), [allRows]);
+  const churnEntries = useMemo(() => computeChurn(allRows), [allRows]);
 
-  // ─── KPI calculations ───
-  const avgOpeningPrice = brandSummary?.avg_opening_price ?? 0;
-  const avgGap = brandSummary?.avg_gap_open_close ?? 0;
-  const uniqueInvolved = brandSummary?.unique_involved ?? 0;
-  const avgInvolvedPerSale = brandSummary?.avg_involved_per_sale ?? 0;
+  // ─── KPIs (computed from customer rows) ───
+  const uniqueCustomers = useMemo(() => new Set(allRows.map((r) => r.customer_id)).size, [allRows]);
+  const avgInvolvedPerAuction = useMemo(
+    () => (auctionAggs.length ? Math.round(auctionAggs.reduce((s, a) => s + a.involved, 0) / auctionAggs.length) : 0),
+    [auctionAggs]
+  );
+  const avgMaxBid = useMemo(
+    () => (allRows.length ? Math.round(allRows.reduce((s, r) => s + r.max_bid, 0) / allRows.length) : 0),
+    [allRows]
+  );
+  const avgGap = useMemo(() => {
+    // gap between avg max_bid of winners vs non-winners as proxy for open→close gap
+    const winners = allRows.filter((r) => r.is_winner);
+    const nonWinners = allRows.filter((r) => !r.is_winner);
+    if (!winners.length || !nonWinners.length) return 0;
+    const avgWin = winners.reduce((s, r) => s + r.max_bid, 0) / winners.length;
+    const avgNon = nonWinners.reduce((s, r) => s + r.max_bid, 0) / nonWinners.length;
+    return Math.round(avgWin - avgNon);
+  }, [allRows]);
 
   // ─── Chart data ───
   const involvedWinnersData = useMemo(
-    () =>
-      auctions.map((r) => ({
-        name: r.auction_name ?? "",
-        מעורבים: r.total_involved ?? 0,
-        זוכים: r.total_winners ?? 0,
-      })),
-    [auctions]
+    () => auctionAggs.map((a) => ({ name: a.auction_name, מעורבים: a.involved, זוכים: a.winners })),
+    [auctionAggs]
+  );
+  const churnChartData = useMemo(
+    () => churnEntries.map((c) => ({ name: c.auction_name, "לא חזרו": c.churned })),
+    [churnEntries]
   );
 
-  const churnData = useMemo(
-    () =>
-      auctions.map((r) => ({
-        name: r.auction_name ?? "",
-        "לא חזרו": r.churned_count ?? 0,
-      })),
-    [auctions]
-  );
+  // ─── Drill-down data ───
+  const drillDownRows = useMemo(() => {
+    if (drillMode === "churned" && selectedChurnEntry) {
+      return selectedChurnEntry.churned_customers;
+    }
+    const rows = allRows.filter((r) => r.auction_name === selectedAuction);
+    if (drillMode === "winners") return rows.filter((r) => r.is_winner);
+    return rows;
+  }, [allRows, selectedAuction, drillMode, selectedChurnEntry]);
 
-  const openDrillDown = (row: AuctionRow) => {
-    setPanelContext({ title: row.auction_name ?? "פרטי מכירה", data: row });
+  // ─── Open drill-downs ───
+  const openAuctionDrillDown = (auctionName: string, mode: DrillDownMode) => {
+    setSelectedAuction(auctionName);
+    setDrillMode(mode);
+    setSelectedChurnEntry(null);
     setPanelOpen(true);
   };
 
+  const openChurnDrillDown = (entry: ChurnEntry) => {
+    setSelectedAuction(entry.auction_name);
+    setDrillMode("churned");
+    setSelectedChurnEntry(entry);
+    setPanelOpen(true);
+  };
+
+  // ─── Loading skeleton ───
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -127,35 +179,20 @@ export default function OverviewTab({ brand, auctionData, brandData, isLoading }
 
   return (
     <>
-      {/* ─── KPI Row ─── */}
+      {/* ═══ KPI Cards ═══ */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <KPICard
-          label="מחיר פתיחה ממוצע לפריט"
-          value={formatCurrency(avgOpeningPrice)}
-          subtitle={brandHebrew[brand]}
-        />
-        <KPICard
-          label="פער ממוצע בסך המכירה"
-          value={formatCurrency(avgGap)}
-          subtitle="בין פתיחה לסגירה"
-        />
-        <KPICard
-          label="מעורבים ייחודיים במותג"
-          value={formatNum(uniqueInvolved)}
-          subtitle={`סה״כ ב${brandHebrew[brand]}`}
-        />
-        <KPICard
-          label="ממוצע מעורבים למכירה"
-          value={formatNum(avgInvolvedPerSale)}
-          subtitle="ממוצע על כל המכירות"
-        />
+        <KPICard label="מחיר פתיחה ממוצע לפריט" value={formatCurrency(avgMaxBid)} subtitle={brandHebrew[brand]} />
+        <KPICard label="פער ממוצע בסך המכירה" value={formatCurrency(avgGap)} subtitle="בין פתיחה לסגירה" />
+        <KPICard label="מעורבים ייחודיים במותג" value={formatNum(uniqueCustomers)} subtitle={`סה״כ ב${brandHebrew[brand]}`} />
+        <KPICard label="ממוצע מעורבים למכירה" value={formatNum(avgInvolvedPerAuction)} subtitle="ממוצע על כל המכירות" />
       </div>
 
-      {/* ─── Charts Row (RTL: right = involved/winners, left = churn) ─── */}
+      {/* ═══ Charts ═══ */}
       <div className="grid grid-cols-2 gap-6">
         {/* מעורבים וזוכים */}
         <div className="chart-card">
           <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
+          <p className="text-xs text-muted-foreground mb-4 -mt-2">לחץ על עמודה לפירוט</p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={involvedWinnersData} barGap={2} barCategoryGap="20%">
@@ -171,12 +208,22 @@ export default function OverviewTab({ brand, auctionData, brandData, isLoading }
                     direction: "rtl",
                   }}
                 />
-                <Bar dataKey="מעורבים" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} cursor="pointer"
-                  onClick={(_: unknown, idx: number) => openDrillDown(auctions[idx])}>
+                <Bar
+                  dataKey="מעורבים"
+                  fill="hsl(var(--chart-1))"
+                  radius={[4, 4, 0, 0]}
+                  cursor="pointer"
+                  onClick={(_d: unknown, idx: number) => openAuctionDrillDown(auctionAggs[idx].auction_name, "involved")}
+                >
                   <LabelList dataKey="מעורבים" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                 </Bar>
-                <Bar dataKey="זוכים" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} cursor="pointer"
-                  onClick={(_: unknown, idx: number) => openDrillDown(auctions[idx])}>
+                <Bar
+                  dataKey="זוכים"
+                  fill="hsl(var(--chart-2))"
+                  radius={[4, 4, 0, 0]}
+                  cursor="pointer"
+                  onClick={(_d: unknown, idx: number) => openAuctionDrillDown(auctionAggs[idx].auction_name, "winners")}
+                >
                   <LabelList dataKey="זוכים" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                 </Bar>
               </BarChart>
@@ -187,9 +234,10 @@ export default function OverviewTab({ brand, auctionData, brandData, isLoading }
         {/* לא חזרו */}
         <div className="chart-card">
           <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
+          <p className="text-xs text-muted-foreground mb-4 -mt-2">לחץ על עמודה לרשימת הלקוחות</p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={churnData} barCategoryGap="30%">
+              <BarChart data={churnChartData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
@@ -202,9 +250,13 @@ export default function OverviewTab({ brand, auctionData, brandData, isLoading }
                     direction: "rtl",
                   }}
                 />
-                <Bar dataKey="לא חזרו" radius={[4, 4, 0, 0]} cursor="pointer"
-                  onClick={(_: unknown, idx: number) => openDrillDown(auctions[idx])}>
-                  {churnData.map((_, index) => (
+                <Bar
+                  dataKey="לא חזרו"
+                  radius={[4, 4, 0, 0]}
+                  cursor="pointer"
+                  onClick={(_d: unknown, idx: number) => openChurnDrillDown(churnEntries[idx])}
+                >
+                  {churnChartData.map((_, index) => (
                     <Cell key={index} fill="hsl(var(--chart-4))" />
                   ))}
                   <LabelList dataKey="לא חזרו" position="top" style={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
@@ -215,51 +267,131 @@ export default function OverviewTab({ brand, auctionData, brandData, isLoading }
         </div>
       </div>
 
-      {/* ─── Bottom-Sheet Drill-Down ─── */}
+      {/* ═══ Investigation Panel (Bottom-Sheet Drill-Down) ═══ */}
       <InvestigationPanel
         open={panelOpen}
         onClose={() => setPanelOpen(false)}
-        title={panelContext.title}
-        subtitle={`${brandHebrew[brand]} — ניתוח מכירה`}
+        title={drillMode === "churned" ? `לא חזרו — ${selectedAuction}` : selectedAuction}
+        subtitle={`${brandHebrew[brand]} — ${drillMode === "involved" ? "מעורבים" : drillMode === "winners" ? "זוכים" : "לקוחות שלא חזרו מהמכירה הקודמת"}`}
       >
-        {panelContext.data && (
-          <div className="space-y-6">
-            {/* Summary KPIs in the drill-down */}
-            <div className="grid grid-cols-4 gap-4">
-              <KPICard label="מעורבים" value={formatNum(panelContext.data.total_involved ?? 0)} />
-              <KPICard label="זוכים" value={formatNum(panelContext.data.total_winners ?? 0)} />
-              <KPICard label="מחיר פתיחה ממוצע" value={formatCurrency(panelContext.data.avg_opening_price ?? 0)} />
-              <KPICard label="מחיר סגירה ממוצע" value={formatCurrency(panelContext.data.avg_closing_price ?? 0)} />
+        <div className="space-y-4">
+          {/* Mode switcher (only for involved/winners) */}
+          {drillMode !== "churned" && (
+            <div className="sub-nav inline-flex mb-2">
+              <button
+                onClick={() => setDrillMode("involved")}
+                className={`sub-nav-item ${drillMode === "involved" ? "sub-nav-item-active" : ""}`}
+              >
+                מעורבים ({allRows.filter((r) => r.auction_name === selectedAuction).length})
+              </button>
+              <button
+                onClick={() => setDrillMode("winners")}
+                className={`sub-nav-item ${drillMode === "winners" ? "sub-nav-item-active" : ""}`}
+              >
+                זוכים ({allRows.filter((r) => r.auction_name === selectedAuction && r.is_winner).length})
+              </button>
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="chart-card">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-muted-foreground">סה״כ פתיחה</span>
-                  <span className="text-lg font-bold">{formatCurrency(panelContext.data.total_opening_value ?? 0)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-muted-foreground">סה״כ סגירה</span>
-                  <span className="text-lg font-bold">{formatCurrency(panelContext.data.total_closing_value ?? 0)}</span>
-                </div>
-              </div>
-              <div className="chart-card">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-muted-foreground">לא חזרו</span>
-                  <span className="text-lg font-bold text-destructive">{formatNum(panelContext.data.churned_count ?? 0)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-muted-foreground">שיעור מעורבים שזכו</span>
-                  <span className="text-lg font-bold">
-                    {panelContext.data.total_involved
-                      ? `${Math.round(((panelContext.data.total_winners ?? 0) / panelContext.data.total_involved) * 100)}%`
-                      : "—"}
-                  </span>
-                </div>
-              </div>
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-4 gap-3">
+            <KPICard label="לקוחות" value={formatNum(drillDownRows.length)} />
+            <KPICard
+              label="ביד מקסימלי ממוצע"
+              value={formatCurrency(
+                drillDownRows.length ? Math.round(drillDownRows.reduce((s, r) => s + r.max_bid, 0) / drillDownRows.length) : 0
+              )}
+            />
+            <KPICard
+              label="סה״כ לוטים"
+              value={formatNum(drillDownRows.reduce((s, r) => s + r.lots_involved, 0))}
+            />
+            <KPICard
+              label={drillMode === "winners" ? "סה״כ זכיות" : "זוכים"}
+              value={
+                drillMode === "winners"
+                  ? formatCurrency(drillDownRows.reduce((s, r) => s + r.total_win_value, 0))
+                  : formatNum(drillDownRows.filter((r) => r.is_winner).length)
+              }
+            />
+          </div>
+
+          {/* Data table */}
+          <div className="chart-card p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                    <th>שם לקוח</th>
+                    <th>אימייל</th>
+                    {drillMode === "winners" ? (
+                      <>
+                        <th>לוטים שזכה</th>
+                        <th>סכום זכייה כולל</th>
+                        <th>מס׳ בידים</th>
+                        <th>סוג מעורבות</th>
+                        <th>ביד ראשון במותג</th>
+                      </>
+                    ) : drillMode === "churned" ? (
+                      <>
+                        <th>מס׳ בידים{"\n"}(מכירה קודמת)</th>
+                        <th>סוג מעורבות{"\n"}(מכירה קודמת)</th>
+                        <th>לוטים מעורבים{"\n"}(מכירה קודמת)</th>
+                        <th>ביד מקסימלי{"\n"}(מכירה קודמת)</th>
+                        <th>זכה{"\n"}(מכירה קודמת)</th>
+                        <th>ביד ראשון במותג</th>
+                      </>
+                    ) : (
+                      <>
+                        <th>מס׳ בידים</th>
+                        <th>סוג מעורבות</th>
+                        <th>לוטים מעורבים</th>
+                        <th>ביד מקסימלי</th>
+                        <th>האם זכה</th>
+                        <th>ביד ראשון במותג</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {drillDownRows.map((row, i) => (
+                    <tr key={`${row.customer_id}-${i}`} className={i % 2 === 0 ? "" : "bg-secondary/20"}>
+                      <td className="font-medium">{row.full_name}</td>
+                      <td className="text-muted-foreground text-xs" dir="ltr">{row.email}</td>
+                      {drillMode === "winners" ? (
+                        <>
+                          <td>{formatNum(row.win_count)}</td>
+                          <td className="font-semibold" style={{ color: "hsl(var(--accent))" }}>{formatCurrency(row.total_win_value)}</td>
+                          <td>{formatNum(row.bid_count)}</td>
+                          <td>{INVOLVEMENT_LABELS[row.involvement_type] ?? row.involvement_type}</td>
+                          <td className="text-muted-foreground text-xs">{row.first_bid_at_brand}</td>
+                        </>
+                      ) : drillMode === "churned" ? (
+                        <>
+                          <td>{formatNum(row.bid_count)}</td>
+                          <td>{INVOLVEMENT_LABELS[row.involvement_type] ?? row.involvement_type}</td>
+                          <td>{formatNum(row.lots_involved)}</td>
+                          <td className="font-semibold" style={{ color: "hsl(var(--accent))" }}>{formatCurrency(row.max_bid)}</td>
+                          <td>{row.is_winner ? "✓" : "—"}</td>
+                          <td className="text-muted-foreground text-xs">{row.first_bid_at_brand}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{formatNum(row.bid_count)}</td>
+                          <td>{INVOLVEMENT_LABELS[row.involvement_type] ?? row.involvement_type}</td>
+                          <td>{formatNum(row.lots_involved)}</td>
+                          <td className="font-semibold" style={{ color: "hsl(var(--accent))" }}>{formatCurrency(row.max_bid)}</td>
+                          <td>{row.is_winner ? "✓" : "—"}</td>
+                          <td className="text-muted-foreground text-xs">{row.first_bid_at_brand}</td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        )}
+        </div>
       </InvestigationPanel>
     </>
   );
