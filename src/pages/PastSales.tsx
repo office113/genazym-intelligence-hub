@@ -67,6 +67,7 @@ export default function PastSales() {
             brand={brand}
             auctionData={auctionActivity.data as unknown as CustomerAuctionRow[] | undefined}
             isLoading={auctionActivity.isLoading}
+            error={auctionActivity.error as Error | null}
           />
         )}
 
