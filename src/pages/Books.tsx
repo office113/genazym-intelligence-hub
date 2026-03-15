@@ -42,7 +42,7 @@ export default function Books() {
       case "sale":
         return (a.saleNumber - b.saleNumber) * dir;
       case "year":
-        return (a.year - b.year) * dir;
+        return (Number(a.year) - Number(b.year)) * dir;
       case "opening":
         return (a.openingPrice - b.openingPrice) * dir;
       case "final":
