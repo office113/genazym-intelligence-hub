@@ -1,7 +1,7 @@
 import { useState } from "react";
 import OverviewTab from "@/components/past-sales/OverviewTab";
 import { useCustomerAuctionActivity } from "@/hooks/useSupabaseData";
-import type { CustomerAuctionRow } from "@/data/pastSalesMockData";
+import type { CustomerAuctionRow } from "@/components/past-sales/OverviewTab";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
