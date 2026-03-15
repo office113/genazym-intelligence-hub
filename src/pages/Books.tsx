@@ -21,6 +21,7 @@ export default function Books() {
   const search = useBookSearch();
 
   const openBook = (book: BookRecord) => {
+
     setSelectedBook(book);
     setDrillDownOpen(true);
   };
