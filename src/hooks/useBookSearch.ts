@@ -80,7 +80,8 @@ export function useBookSearch() {
       setError(null);
       const { data, error: err } = await supabase
         .from("fact_book_auction_summary")
-        .select("*");
+        .select("*")
+        .range(0, 9999);
       if (cancelled) return;
       if (err) {
         setError(err.message);

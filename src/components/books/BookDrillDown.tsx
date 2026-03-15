@@ -37,27 +37,40 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
     async function fetchBidders() {
       setBiddersLoading(true);
       setBiddersError(null);
-      const { data, error } = await supabase
-        .from("fact_customer_auction_activity")
+
+      // Fetch bids from events table
+      const { data: eventsData, error: eventsErr } = await supabase
+        .from("events")
+        .select("*")
+        .eq("book_id_bidspirit", bookId);
+
+      // Fetch winner from winners table
+      const { data: winnersData, error: winnersErr } = await supabase
+        .from("winners")
         .select("*")
         .eq("book_id_bidspirit", bookId);
 
       if (cancelled) return;
-      if (error) {
-        setBiddersError(error.message);
+
+      if (eventsErr) {
+        setBiddersError(eventsErr.message);
         setBidders([]);
-      } else {
-        setBidders(
-          (data ?? []).map((row: any) => ({
-            customerName: row.customer_name ?? row.bidder_name ?? "—",
-            bidType: row.bid_type ?? "—",
-            bidsOnBook: row.bids_count ?? row.total_bids ?? 0,
-            maxBid: row.max_bid ?? row.highest_bid ?? 0,
-            lastActivityDate: row.last_activity_date ?? row.last_bid_date ?? "",
-            won: row.won === true || row.is_winner === true,
-          }))
-        );
+        setBiddersLoading(false);
+        return;
       }
+
+      const winnerIds = new Set((winnersData ?? []).map((w: any) => w.customer_id ?? w.bidder_id));
+
+      setBidders(
+        (eventsData ?? []).map((row: any) => ({
+          customerName: row.customer_name ?? row.bidder_name ?? row.name ?? "—",
+          bidType: row.bid_type ?? row.type ?? "—",
+          bidsOnBook: row.bids_count ?? 1,
+          maxBid: row.max_bid ?? row.amount ?? row.bid_amount ?? 0,
+          lastActivityDate: row.created_at ?? row.event_date ?? "",
+          won: winnerIds.has(row.customer_id ?? row.bidder_id),
+        }))
+      );
       setBiddersLoading(false);
     }
 
