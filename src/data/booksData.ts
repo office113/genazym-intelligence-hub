@@ -90,7 +90,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B006", lotNumber: 102, title: "תלמוד בבלי - דפוס בומברג",
     descriptionHe: "כרך מדפוס בומברג הנודע, ונציה. מצב משומר היטב.",
     descriptionEn: "Volume from the renowned Bomberg press, Venice. Well-preserved condition.",
-    author: "דניאל בומברג", year: 1523, origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "דניאל בומברג", year: "1523", origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 12000, finalPrice: null, sold: false,
     tags: ["תלמוד", "בומברג", "ונציה", "דפוס מוקדם"],
     communities: ["אשכנז", "איטליה"], uniqueness: ["דפוס בומברג", "שימור מצוין"],
