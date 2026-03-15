@@ -151,7 +151,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B012", lotNumber: 21, title: "תשובות הרמב\"ם - כתב יד",
     descriptionHe: "כתב יד של תשובות הרמב\"ם, כתיבה מזרחית. מאה ה-14 לערך.",
     descriptionEn: "Manuscript of Maimonides' Responsa, Oriental script. Circa 14th century.",
-    author: "רמב\"ם", year: 1350, origin: "מצרים", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
+    author: "רמב\"ם", year: "1350", origin: "מצרים", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
     openingPrice: 40000, finalPrice: 72000, sold: true,
     tags: ["כתב יד", "רמב\"ם", "תשובות", "מזרחי"],
     communities: ["מזרח", "מצרים"], uniqueness: ["כתב יד עתיק", "רמב\"ם"],
