@@ -5,7 +5,7 @@ export interface BookRecord {
   descriptionHe: string;
   descriptionEn: string;
   author: string;
-  year: number;
+  year: string;
   origin: string;
   brand: string;
   saleNumber: number;
@@ -20,6 +20,7 @@ export interface BookRecord {
   involvedCustomers: number;
   winnerName: string | null;
   winnerId: string | null;
+  bookIdBidspirit?: string;
 }
 
 export interface BookBidder {

@@ -41,13 +41,13 @@ function mapRow(row: any): BookRecord {
   ].filter(Boolean);
 
   return {
-    id: row.id ?? `${row.lot_index}-${row.auction_name}`,
+    id: row.book_id_bidspirit ?? `${row.lot_index}-${row.auction_name}`,
     lotNumber: row.lot_index ?? 0,
     title: row.book_name ?? "",
     descriptionHe: row.text_hebrew ?? "",
     descriptionEn: "",
     author: row.author_hebrew ?? "",
-    year: row.tag_year ? Number(row.tag_year) : 0,
+    year: row.tag_year ?? "",
     origin: row.tag_origin ?? "",
     brand: row.brand ?? "",
     saleNumber: 0,
@@ -62,6 +62,7 @@ function mapRow(row: any): BookRecord {
     involvedCustomers: row.unique_bidders_count ?? 0,
     winnerName: row.winner_name ?? null,
     winnerId: null,
+    bookIdBidspirit: row.book_id_bidspirit ?? null,
   };
 }
 
@@ -141,8 +142,13 @@ export function useBookSearch() {
         if (filters.priceTo && price > Number(filters.priceTo)) return false;
       }
 
-      if (filters.yearFrom && book.year < Number(filters.yearFrom)) return false;
-      if (filters.yearTo && book.year > Number(filters.yearTo)) return false;
+      if (filters.yearFrom || filters.yearTo) {
+        const yearNum = parseInt(book.year);
+        if (!isNaN(yearNum)) {
+          if (filters.yearFrom && yearNum < Number(filters.yearFrom)) return false;
+          if (filters.yearTo && yearNum > Number(filters.yearTo)) return false;
+        }
+      }
 
       if (filters.saleNumber && book.saleNumber !== Number(filters.saleNumber)) return false;
 
