@@ -101,7 +101,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B007", lotNumber: 15, title: "סידור עם כוונות האר\"י - דפוס ראשון",
     descriptionHe: "סידור עם כוונות האר\"י הקדוש, דפוס ראשון. פריט נדיר ביותר עם הערות בשולי הדף.",
     descriptionEn: "Prayer book with Kabbalistic intentions of the Arizal, first edition. Extremely rare with marginal notes.",
-    author: "ר' חיים ויטאל", year: 1620, origin: "טורקיה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "ר' חיים ויטאל", year: "1620", origin: "טורקיה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 25000, finalPrice: 42000, sold: true,
     tags: ["קבלה", "סידור", "דפוס ראשון", "האר\"י"],
     communities: ["ספרד", "קבלה"], uniqueness: ["דפוס ראשון", "הערות שוליים"],
