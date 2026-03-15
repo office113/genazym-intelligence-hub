@@ -120,8 +120,32 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
         }
       });
 
+      // הוספת זוכים שלא שמו ביד כלל
+      (winnersData ?? []).forEach((w: any) => {
+        const email = w.customer_email ?? "";
+        if (!email || email === "floor_crowd@aa.co") return;
+        if (!grouped[email]) {
+          grouped[email] = {
+            customerName: customerNames[email] ?? w.winner_name ?? email,
+            customerEmail: email,
+            bidType: "winner",
+            bidsOnBook: 0,
+            maxBid: Number(w.sold_price) || 0,
+            lastActivityDate: w.win_time ?? "",
+            won: true,
+          };
+        }
+      });
+
+      // מיון כרונולוגי
+      const sortedBidders = Object.values(grouped).sort((a, b) => {
+        if (!a.lastActivityDate) return 1;
+        if (!b.lastActivityDate) return -1;
+        return a.lastActivityDate.localeCompare(b.lastActivityDate);
+      });
+
       if (!cancelled) {
-        setBidders(Object.values(grouped));
+        setBidders(sortedBidders);
         setLoadingBidders(false);
       }
     }
