@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import type { BookRecord } from "@/data/booksData";
 
 export interface BookFilters {
   smartSearch: string;
@@ -15,6 +14,37 @@ export interface BookFilters {
   brand: string;
   tags: string[];
   author: string;
+}
+
+export interface BookRecord {
+  id: string;
+  title: string;
+  saleName: string;
+  saleNumber: number;
+  brand: string;
+  author: string;
+  year: string;
+  openingPrice: number;
+  finalPrice: number | null;
+  sold: boolean;
+  tags: string[];
+  communities: string[];
+  uniqueness: string[];
+  origin: string;
+  involvedCustomers: number;
+  winnerName: string | null;
+  winnerEmail: string | null;
+  winnerType: string | null;
+  lotNumber: string;
+  descriptionHe: string;
+  descriptionEn: string;
+  bidsCount: number;
+  earlyBidsCount: number;
+  liveBidsCount: number;
+  maxBid: number | null;
+  upliftPct: number | null;
+  siteLink: string | null;
+  bookIdBidspirit: string;
 }
 
 const defaultFilters: BookFilters = {
@@ -33,36 +63,37 @@ const defaultFilters: BookFilters = {
 };
 
 function mapRow(row: any): BookRecord {
-  const tags: string[] = [
-    row.tag_category,
-    row.tag_community,
-    row.tag_origin,
-    row.tag_uniqueness,
-  ].filter(Boolean);
+  const tags: string[] = [row.tag_category, row.tag_community, row.tag_origin, row.tag_uniqueness].filter(Boolean);
 
   return {
-    id: row.book_id_bidspirit ?? `${row.lot_index}-${row.auction_name}`,
-    lotNumber: row.lot_index ?? 0,
-    title: row.book_name ?? "",
-    descriptionHe: row.text_hebrew ?? "",
-    descriptionEn: "",
-    author: row.author_hebrew ?? "",
-    year: row.tag_year ?? "",
-    origin: row.tag_origin ?? "",
-    brand: row.brand ?? "",
-    saleNumber: 0,
+    id: String(row.book_id_bidspirit ?? row.id),
+    bookIdBidspirit: row.book_id_bidspirit ?? "",
+    title: row.book_name ?? row.head_hebrew ?? "",
     saleName: row.auction_name ?? "",
-    openingPrice: row.opening_price ?? 0,
-    finalPrice: row.sold_price ?? null,
-    sold: row.sold_flag === true || row.sold_flag === "true",
+    saleNumber: Number(String(row.auction_name ?? "").replace(/\D/g, "")) || 0,
+    brand: row.brand ?? "",
+    author: row.author_hebrew ?? row.author_english ?? "",
+    year: row.tag_year ?? "",
+    openingPrice: Number(row.opening_price) || 0,
+    finalPrice: row.sold_price != null ? Number(row.sold_price) : null,
+    sold: row.sold_flag === true,
     tags,
     communities: [],
     uniqueness: [],
-    bidsCount: 0,
-    involvedCustomers: row.unique_bidders_count ?? 0,
+    origin: row.tag_origin ?? "",
+    involvedCustomers: Number(row.unique_bidders_count) || 0,
     winnerName: row.winner_name ?? null,
-    winnerId: null,
-    bookIdBidspirit: row.book_id_bidspirit ?? null,
+    winnerEmail: row.winner_email ?? null,
+    winnerType: row.winner_type ?? null,
+    lotNumber: row.lot_index ?? "",
+    descriptionHe: row.text_hebrew ?? "",
+    descriptionEn: row.text_english ?? "",
+    bidsCount: Number(row.total_bids) || 0,
+    earlyBidsCount: Number(row.early_bids_count) || 0,
+    liveBidsCount: Number(row.live_bids_count) || 0,
+    maxBid: row.max_bid != null ? Number(row.max_bid) : null,
+    upliftPct: row.uplift_pct != null ? Number(row.uplift_pct) : null,
+    siteLink: row.site_link ?? null,
   };
 }
 
@@ -76,48 +107,48 @@ export function useBookSearch() {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchBooks() {
+    async function fetchAllBooks() {
       setLoading(true);
       setError(null);
 
-      const pageSize = 1000;
+      const PAGE_SIZE = 1000;
+      let allData: any[] = [];
       let from = 0;
-      const allRows: any[] = [];
+      let hasMore = true;
 
-      while (true) {
-        const to = from + pageSize - 1;
-        const { data, error: pageError } = await supabase
+      while (hasMore) {
+        const { data, error: err } = await supabase
           .from("fact_book_auction_summary")
           .select("*")
-          .range(from, to);
+          .range(from, from + PAGE_SIZE - 1);
 
         if (cancelled) return;
 
-        if (pageError) {
-          setError(pageError.message);
-          setBooks([]);
+        if (err) {
+          setError(err.message);
           setLoading(false);
           return;
         }
 
-        const pageRows = data ?? [];
-        allRows.push(...pageRows);
-
-        if (pageRows.length < pageSize) break;
-        from += pageSize;
+        allData = [...allData, ...(data ?? [])];
+        hasMore = (data ?? []).length === PAGE_SIZE;
+        from += PAGE_SIZE;
       }
 
-      if (cancelled) return;
-      setBooks(allRows.map(mapRow));
-      setLoading(false);
+      if (!cancelled) {
+        setBooks(allData.map(mapRow));
+        setLoading(false);
+      }
     }
 
-    fetchBooks();
-    return () => { cancelled = true; };
+    fetchAllBooks();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const updateFilter = <K extends keyof BookFilters>(key: K, value: BookFilters[K]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const resetFilters = () => setFilters(defaultFilters);
@@ -136,14 +167,21 @@ export function useBookSearch() {
   }, [filters]);
 
   const results = useMemo(() => {
-    return books.filter(book => {
+    return books.filter((book) => {
       if (filters.smartSearch) {
         const q = filters.smartSearch.toLowerCase();
         const searchable = [
-          book.title, book.descriptionHe, book.descriptionEn,
-          book.author, ...book.tags, ...book.communities,
-          ...book.uniqueness, book.origin, book.brand, book.saleName,
-        ].join(" ").toLowerCase();
+          book.title,
+          book.descriptionHe,
+          book.descriptionEn,
+          book.author,
+          ...book.tags,
+          book.origin,
+          book.brand,
+          book.saleName,
+        ]
+          .join(" ")
+          .toLowerCase();
         if (!searchable.includes(q)) return false;
       }
 
@@ -154,7 +192,7 @@ export function useBookSearch() {
 
       if (filters.freeTextHe) {
         const q = filters.freeTextHe;
-        const heFields = [book.title, book.descriptionHe, book.author, ...book.tags, ...book.communities].join(" ");
+        const heFields = [book.title, book.descriptionHe, book.author, ...book.tags].join(" ");
         if (!heFields.includes(q)) return false;
       }
 
@@ -164,21 +202,16 @@ export function useBookSearch() {
         if (filters.priceTo && price > Number(filters.priceTo)) return false;
       }
 
-      if (filters.yearFrom || filters.yearTo) {
-        const yearNum = parseInt(book.year);
-        if (!isNaN(yearNum)) {
-          if (filters.yearFrom && yearNum < Number(filters.yearFrom)) return false;
-          if (filters.yearTo && yearNum > Number(filters.yearTo)) return false;
-        }
-      }
+      if (filters.yearFrom && Number(book.year) < Number(filters.yearFrom)) return false;
+      if (filters.yearTo && Number(book.year) > Number(filters.yearTo)) return false;
 
       if (filters.saleNumber && book.saleNumber !== Number(filters.saleNumber)) return false;
 
       if (filters.brand && book.brand !== filters.brand) return false;
 
       if (filters.tags.length > 0) {
-        const bookAllTags = [...book.tags, ...book.communities, ...book.uniqueness].map(t => t.toLowerCase());
-        if (!filters.tags.some(ft => bookAllTags.some(bt => bt.includes(ft.toLowerCase())))) return false;
+        const bookAllTags = book.tags.map((t) => t.toLowerCase());
+        if (!filters.tags.some((ft) => bookAllTags.some((bt) => bt.includes(ft.toLowerCase())))) return false;
       }
 
       if (filters.author && !book.author.includes(filters.author)) return false;
@@ -189,20 +222,20 @@ export function useBookSearch() {
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    books.forEach(b => {
-      b.tags.forEach(t => tagSet.add(t));
-      b.communities.forEach(t => tagSet.add(t));
-      b.uniqueness.forEach(t => tagSet.add(t));
-    });
-    return Array.from(tagSet);
+    books.forEach((b) =>
+      b.tags.forEach((t) => {
+        if (t) tagSet.add(t);
+      }),
+    );
+    return Array.from(tagSet).sort();
   }, [books]);
 
   const allAuthors = useMemo(() => {
-    return Array.from(new Set(books.map(b => b.author).filter(Boolean)));
+    return Array.from(new Set(books.map((b) => b.author).filter(Boolean))).sort();
   }, [books]);
 
   const allBrands = useMemo(() => {
-    return Array.from(new Set(books.map(b => b.brand).filter(Boolean)));
+    return Array.from(new Set(books.map((b) => b.brand).filter(Boolean))).sort();
   }, [books]);
 
   return {
