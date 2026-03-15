@@ -37,7 +37,7 @@ export default function Books() {
     switch (sortKey) {
       case "title": return a.title.localeCompare(b.title) * dir;
       case "sale": return (a.saleNumber - b.saleNumber) * dir;
-      case "year": return (a.year - b.year) * dir;
+      case "year": return a.year.localeCompare(b.year) * dir;
       case "opening": return (a.openingPrice - b.openingPrice) * dir;
       case "final": return ((a.finalPrice ?? 0) - (b.finalPrice ?? 0)) * dir;
       default: return 0;

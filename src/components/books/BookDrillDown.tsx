@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { X, BookOpen, Users, Tag, MapPin, Calendar, DollarSign, Hash, Award, ChevronLeft } from "lucide-react";
-import { type BookRecord, bookBidders, type BookBidder } from "@/data/booksData";
+import { useState, useEffect } from "react";
+import { X, BookOpen, Users, Tag, MapPin, Calendar, DollarSign, Hash, Award } from "lucide-react";
+import { type BookRecord } from "@/data/booksData";
+import { supabase } from "@/lib/supabaseClient";
 
 interface BookDrillDownProps {
   book: BookRecord | null;
@@ -8,31 +9,63 @@ interface BookDrillDownProps {
   onClose: () => void;
 }
 
-const bidTypeLabels: Record<string, string> = {
-  early: "מוקדם",
-  live: "חי",
-  winner: "זוכה",
-};
+interface BidderRow {
+  customerName: string;
+  bidType: string;
+  bidsOnBook: number;
+  maxBid: number;
+  lastActivityDate: string;
+  won: boolean;
+}
 
 const bidderSegments = [
   { key: "all", label: "כולם" },
-  { key: "early", label: "מוקדם" },
-  { key: "live", label: "חי" },
-  { key: "winner", label: "זוכה" },
 ];
 
 export default function BookDrillDown({ book, open, onClose }: BookDrillDownProps) {
   const [activeTab, setActiveTab] = useState<"details" | "bidders">("details");
-  const [bidderFilter, setBidderFilter] = useState("all");
+  const [bidders, setBidders] = useState<BidderRow[]>([]);
+  const [biddersLoading, setBiddersLoading] = useState(false);
+  const [biddersError, setBiddersError] = useState<string | null>(null);
+
+  const bookId = book?.bookIdBidspirit ?? book?.id;
+
+  useEffect(() => {
+    if (!open || !bookId) return;
+    let cancelled = false;
+
+    async function fetchBidders() {
+      setBiddersLoading(true);
+      setBiddersError(null);
+      const { data, error } = await supabase
+        .from("fact_customer_auction_activity")
+        .select("*")
+        .eq("book_id_bidspirit", bookId);
+
+      if (cancelled) return;
+      if (error) {
+        setBiddersError(error.message);
+        setBidders([]);
+      } else {
+        setBidders(
+          (data ?? []).map((row: any) => ({
+            customerName: row.customer_name ?? row.bidder_name ?? "—",
+            bidType: row.bid_type ?? "—",
+            bidsOnBook: row.bids_count ?? row.total_bids ?? 0,
+            maxBid: row.max_bid ?? row.highest_bid ?? 0,
+            lastActivityDate: row.last_activity_date ?? row.last_bid_date ?? "",
+            won: row.won === true || row.is_winner === true,
+          }))
+        );
+      }
+      setBiddersLoading(false);
+    }
+
+    fetchBidders();
+    return () => { cancelled = true; };
+  }, [open, bookId]);
 
   if (!open || !book) return null;
-
-  const bidders = bookBidders.filter(b => b.bookId === book.id);
-  const filteredBidders = bidderFilter === "all" ? bidders : bidders.filter(b => b.bidType === bidderFilter);
-
-  const earlyCount = bidders.filter(b => b.bidType === "early").length;
-  const liveCount = bidders.filter(b => b.bidType === "live").length;
-  const winnerCount = bidders.filter(b => b.bidType === "winner").length;
 
   return (
     <>
@@ -77,7 +110,7 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
           ]).map(tab => (
             <button
               key={tab.key}
-              onClick={() => { setActiveTab(tab.key); setBidderFilter("all"); }}
+              onClick={() => setActiveTab(tab.key)}
               className={`sub-nav-item flex items-center gap-2 ${activeTab === tab.key ? "sub-nav-item-active" : ""}`}
             >
               <tab.icon className="w-3.5 h-3.5" />
@@ -114,7 +147,7 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
 
               {/* Status */}
               <div className="flex items-center gap-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full ${book.sold ? "text-white" : ""}`}
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full`}
                   style={book.sold
                     ? { background: "hsl(var(--success))", color: "white" }
                     : { background: "hsl(var(--warning) / 0.15)", color: "hsl(var(--warning))" }
@@ -135,21 +168,25 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
                 <DetailRow icon={Award} label="מותג" value={book.brand} />
                 <DetailRow icon={Hash} label="מכירה" value={book.saleName} />
                 <DetailRow icon={Users} label="מחבר" value={book.author} />
-                <DetailRow icon={Calendar} label="שנת הוצאה" value={String(book.year)} />
+                <DetailRow icon={Calendar} label="שנת הוצאה" value={book.year || "—"} />
                 <DetailRow icon={MapPin} label="ארץ מוצא" value={book.origin} />
                 <DetailRow icon={DollarSign} label="מחיר פתיחה" value={`$${book.openingPrice.toLocaleString()}`} />
               </div>
 
               {/* Descriptions */}
               <div className="space-y-4">
-                <div className="chart-card">
-                  <div className="chart-title">תיאור בעברית</div>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{book.descriptionHe}</p>
-                </div>
-                <div className="chart-card" dir="ltr">
-                  <div className="chart-title text-left">English Description</div>
-                  <p className="text-sm leading-relaxed text-muted-foreground text-left">{book.descriptionEn}</p>
-                </div>
+                {book.descriptionHe && (
+                  <div className="chart-card">
+                    <div className="chart-title">תיאור בעברית</div>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{book.descriptionHe}</p>
+                  </div>
+                )}
+                {book.descriptionEn && (
+                  <div className="chart-card" dir="ltr">
+                    <div className="chart-title text-left">English Description</div>
+                    <p className="text-sm leading-relaxed text-muted-foreground text-left">{book.descriptionEn}</p>
+                  </div>
+                )}
               </div>
 
               {/* Tags */}
@@ -163,94 +200,75 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
 
           {activeTab === "bidders" && (
             <div className="space-y-5">
-              {/* Summary KPIs */}
-              <div className="grid grid-cols-4 gap-4">
-                <div className="kpi-card text-center">
-                  <div className="kpi-value text-xl">{bidders.length}</div>
-                  <div className="kpi-label">מעורבים</div>
+              {biddersLoading && (
+                <div className="text-center py-12 text-muted-foreground">טוען נתוני בידרים...</div>
+              )}
+              {biddersError && (
+                <div className="text-center py-12 text-destructive">
+                  <p className="font-semibold mb-1">שגיאה בטעינת בידרים</p>
+                  <p className="text-sm">{biddersError}</p>
                 </div>
-                <div className="kpi-card text-center">
-                  <div className="kpi-value text-xl">{earlyCount}</div>
-                  <div className="kpi-label">בידי מוקדם</div>
-                </div>
-                <div className="kpi-card text-center">
-                  <div className="kpi-value text-xl">{liveCount}</div>
-                  <div className="kpi-label">בידי חי</div>
-                </div>
-                <div className="kpi-card text-center">
-                  <div className="kpi-value text-xl" style={{ color: "hsl(var(--accent))" }}>{winnerCount}</div>
-                  <div className="kpi-label">זוכה</div>
-                </div>
-              </div>
+              )}
+              {!biddersLoading && !biddersError && (
+                <>
+                  {/* Summary KPIs */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="kpi-card text-center">
+                      <div className="kpi-value text-xl">{bidders.length}</div>
+                      <div className="kpi-label">מעורבים</div>
+                    </div>
+                    <div className="kpi-card text-center">
+                      <div className="kpi-value text-xl">{bidders.filter(b => b.won).length}</div>
+                      <div className="kpi-label">זוכים</div>
+                    </div>
+                    <div className="kpi-card text-center">
+                      <div className="kpi-value text-xl">{bidders.reduce((sum, b) => sum + b.bidsOnBook, 0)}</div>
+                      <div className="kpi-label">סה״כ בידים</div>
+                    </div>
+                  </div>
 
-              {/* Segment Filter */}
-              <div className="sub-nav inline-flex">
-                {bidderSegments.map(seg => (
-                  <button
-                    key={seg.key}
-                    onClick={() => setBidderFilter(seg.key)}
-                    className={`sub-nav-item ${bidderFilter === seg.key ? "sub-nav-item-active" : ""}`}
-                  >
-                    {seg.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Bidders Table */}
-              <div className="chart-card p-0 overflow-hidden">
-                <table className="data-table">
-                  <thead>
-                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                      <th>שם לקוח</th>
-                      <th>סוג ביד</th>
-                      <th>מס׳ בידים</th>
-                      <th>ביד מקסימלי</th>
-                      <th>פעילות אחרונה</th>
-                      <th>זכה</th>
-                      <th>מכירות קודמות</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredBidders.length === 0 ? (
-                      <tr><td colSpan={7} className="text-center text-muted-foreground py-8">אין תוצאות</td></tr>
-                    ) : filteredBidders.map((bidder, i) => (
-                      <tr key={`${bidder.customerId}-${i}`} className="cursor-pointer hover:bg-secondary/50">
-                        <td className="font-semibold">{bidder.customerName}</td>
-                        <td>
-                          <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
-                            bidder.bidType === "winner" ? "text-white" : ""
-                          }`} style={
-                            bidder.bidType === "winner"
-                              ? { background: "hsl(var(--accent))", color: "hsl(var(--primary))" }
-                              : bidder.bidType === "live"
-                                ? { background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }
-                                : { background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }
-                          }>
-                            {bidTypeLabels[bidder.bidType]}
-                          </span>
-                        </td>
-                        <td>{bidder.bidsOnBook}</td>
-                        <td className="font-semibold">${bidder.maxBid.toLocaleString()}</td>
-                        <td className="text-muted-foreground text-xs">{bidder.lastActivityDate}</td>
-                        <td>
-                          {bidder.won ? (
-                            <Award className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="flex gap-1 flex-wrap">
-                            {bidder.previousSalesInvolved.slice(0, 3).map(s => (
-                              <span key={s} className="text-xs px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--secondary))" }}>{s}</span>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  {/* Bidders Table */}
+                  <div className="chart-card p-0 overflow-hidden">
+                    <table className="data-table">
+                      <thead>
+                        <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                          <th>שם לקוח</th>
+                          <th>סוג ביד</th>
+                          <th>מס׳ בידים</th>
+                          <th>ביד מקסימלי</th>
+                          <th>פעילות אחרונה</th>
+                          <th>זכה</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bidders.length === 0 ? (
+                          <tr><td colSpan={6} className="text-center text-muted-foreground py-8">אין בידרים לספר זה</td></tr>
+                        ) : bidders.map((bidder, i) => (
+                          <tr key={i} className="cursor-pointer hover:bg-secondary/50">
+                            <td className="font-semibold">{bidder.customerName}</td>
+                            <td>
+                              <span className="inline-flex px-2 py-0.5 text-xs font-medium rounded-full"
+                                style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}>
+                                {bidder.bidType}
+                              </span>
+                            </td>
+                            <td>{bidder.bidsOnBook}</td>
+                            <td className="font-semibold">{bidder.maxBid ? `$${bidder.maxBid.toLocaleString()}` : "—"}</td>
+                            <td className="text-muted-foreground text-xs">{bidder.lastActivityDate || "—"}</td>
+                            <td>
+                              {bidder.won ? (
+                                <Award className="w-4 h-4" style={{ color: "hsl(var(--accent))" }} />
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

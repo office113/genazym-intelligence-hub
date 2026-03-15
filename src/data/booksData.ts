@@ -5,7 +5,7 @@ export interface BookRecord {
   descriptionHe: string;
   descriptionEn: string;
   author: string;
-  year: number;
+  year: string;
   origin: string;
   brand: string;
   saleNumber: number;
@@ -20,6 +20,7 @@ export interface BookRecord {
   involvedCustomers: number;
   winnerName: string | null;
   winnerId: string | null;
+  bookIdBidspirit?: string;
 }
 
 export interface BookBidder {
@@ -39,7 +40,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B001", lotNumber: 12, title: "כתב יד על קלף - תהלים עם פירוש", 
     descriptionHe: "כתב יד מרשים על קלף עם פירוש ייחודי לספר תהלים, כולל איורים מזרחיים נדירים. מאה ה-15.",
     descriptionEn: "Impressive vellum manuscript with unique commentary on Psalms, featuring rare oriental illustrations. 15th century.",
-    author: "לא ידוע", year: 1480, origin: "תימן", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "לא ידוע", year: "1480", origin: "תימן", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 8000, finalPrice: null, sold: false,
     tags: ["קלף", "תהלים", "מזרחי", "איורים", "כתב יד"],
     communities: ["תימן", "מזרח"], uniqueness: ["כתב יד מקורי", "איורים נדירים"],
@@ -49,7 +50,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B002", lotNumber: 34, title: "הגדה של פסח מאוירת - אמסטרדם 1695",
     descriptionHe: "הגדה נדירה עם חריטות נחושת מקוריות. אחד מהעותקים הבודדים ששרדו בשלמות.",
     descriptionEn: "Rare Haggadah with original copper engravings. One of the few surviving complete copies.",
-    author: "אברהם בר יעקב", year: 1695, origin: "הולנד", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "אברהם בר יעקב", year: "1695", origin: "הולנד", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 15000, finalPrice: null, sold: false,
     tags: ["הגדה", "אמסטרדם", "איורי נחושת", "נדיר"],
     communities: ["אשכנז", "הולנד"], uniqueness: ["חריטות מקוריות", "שלמות מלאה"],
@@ -59,7 +60,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B003", lotNumber: 45, title: "ספר נועם אלימלך - מהדורה ראשונה",
     descriptionHe: "מהדורה ראשונה של הספר הקדוש נועם אלימלך, לבוב תקמ\"ז. מצב טוב מאוד, עם הגהות בכתב יד.",
     descriptionEn: "First edition of the holy book Noam Elimelech, Lvov 1787. Very good condition with handwritten glosses.",
-    author: "ר' אלימלך מליז'ענסק", year: 1787, origin: "פולין", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "ר' אלימלך מליז'ענסק", year: "1787", origin: "פולין", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 20000, finalPrice: null, sold: false,
     tags: ["חסידות", "מהדורה ראשונה", "נדיר מאוד", "הגהות"],
     communities: ["חסידות", "גליציה"], uniqueness: ["מהדורה ראשונה", "הגהות בכתב יד"],
@@ -69,7 +70,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B004", lotNumber: 78, title: "שולחן ערוך - דפוס ראשון, ונציה 1565",
     descriptionHe: "דפוס ראשון של השולחן ערוך, ונציה שכ\"ה. פריט מוזיאלי ביותר.",
     descriptionEn: "First edition of the Shulchan Aruch, Venice 1565. Museum-quality item.",
-    author: "ר' יוסף קארו", year: 1565, origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "ר' יוסף קארו", year: "1565", origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 30000, finalPrice: null, sold: false,
     tags: ["הלכה", "ונציה", "דפוס ראשון", "מוזיאלי"],
     communities: ["ספרד", "איטליה"], uniqueness: ["דפוס ראשון", "פריט מוזיאלי"],
@@ -79,7 +80,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B005", lotNumber: 91, title: "אוסף דפוסי סלאוויטא וזיטאמיר",
     descriptionHe: "אוסף של 12 כרכים מדפוסי סלאוויטא וזיטאמיר. כולל פריטים נדירים ביותר.",
     descriptionEn: "Collection of 12 volumes from Slavita and Zhitomir presses. Includes extremely rare items.",
-    author: "שפירא", year: 1820, origin: "אוקראינה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "שפירא", year: "1820", origin: "אוקראינה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 5000, finalPrice: null, sold: false,
     tags: ["סלאוויטא", "זיטאמיר", "חסידות", "אוסף"],
     communities: ["חסידות", "אוקראינה"], uniqueness: ["אוסף שלם", "דפוס סלאוויטא"],
@@ -89,7 +90,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B006", lotNumber: 102, title: "תלמוד בבלי - דפוס בומברג",
     descriptionHe: "כרך מדפוס בומברג הנודע, ונציה. מצב משומר היטב.",
     descriptionEn: "Volume from the renowned Bomberg press, Venice. Well-preserved condition.",
-    author: "דניאל בומברג", year: 1523, origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "דניאל בומברג", year: "1523", origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 12000, finalPrice: null, sold: false,
     tags: ["תלמוד", "בומברג", "ונציה", "דפוס מוקדם"],
     communities: ["אשכנז", "איטליה"], uniqueness: ["דפוס בומברג", "שימור מצוין"],
@@ -100,7 +101,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B007", lotNumber: 15, title: "סידור עם כוונות האר\"י - דפוס ראשון",
     descriptionHe: "סידור עם כוונות האר\"י הקדוש, דפוס ראשון. פריט נדיר ביותר עם הערות בשולי הדף.",
     descriptionEn: "Prayer book with Kabbalistic intentions of the Arizal, first edition. Extremely rare with marginal notes.",
-    author: "ר' חיים ויטאל", year: 1620, origin: "טורקיה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "ר' חיים ויטאל", year: "1620", origin: "טורקיה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 25000, finalPrice: 42000, sold: true,
     tags: ["קבלה", "סידור", "דפוס ראשון", "האר\"י"],
     communities: ["ספרד", "קבלה"], uniqueness: ["דפוס ראשון", "הערות שוליים"],
@@ -110,7 +111,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B008", lotNumber: 28, title: "ספר הזוהר - מנטובה 1558",
     descriptionHe: "מהדורה מוקדמת של ספר הזוהר, דפוס מנטובה. שלם בכל חלקיו.",
     descriptionEn: "Early edition of the Zohar, Mantua press. Complete in all parts.",
-    author: "ר' שמעון בר יוחאי", year: 1558, origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "ר' שמעון בר יוחאי", year: "1558", origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 18000, finalPrice: 31000, sold: true,
     tags: ["קבלה", "זוהר", "מנטובה", "שלם"],
     communities: ["ספרד", "קבלה", "איטליה"], uniqueness: ["מהדורה מוקדמת", "שלמות"],
@@ -120,7 +121,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B009", lotNumber: 52, title: "מגילת אסתר על קלף - כתב יד מאויר",
     descriptionHe: "מגילת אסתר מאוירת על קלף, עם ציורים מרהיבים בצבעי זהב ותכלת. איטליה, המאה ה-18.",
     descriptionEn: "Illustrated Esther scroll on parchment, with stunning gold and azure paintings. Italy, 18th century.",
-    author: "לא ידוע", year: 1740, origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "לא ידוע", year: "1740", origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 10000, finalPrice: 16500, sold: true,
     tags: ["מגילה", "כתב יד", "איורים", "קלף", "זהב"],
     communities: ["איטליה", "ספרד"], uniqueness: ["איורי זהב", "מגילה שלמה"],
@@ -130,7 +131,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B010", lotNumber: 8, title: "חומש עם רש\"י - דפוס שונצינו",
     descriptionHe: "חומש עם פירוש רש\"י מדפוס שונצינו. אחד הדפוסים העבריים המוקדמים ביותר.",
     descriptionEn: "Pentateuch with Rashi commentary from Soncino press. One of the earliest Hebrew prints.",
-    author: "שלמה שונצינו", year: 1490, origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
+    author: "שלמה שונצינו", year: "1490", origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
     openingPrice: 35000, finalPrice: 58000, sold: true,
     tags: ["חומש", "רש\"י", "שונצינו", "אינקונבולה"],
     communities: ["אשכנז", "איטליה"], uniqueness: ["אינקונבולה", "דפוס שונצינו"],
@@ -140,7 +141,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B011", lotNumber: 63, title: "ספר חובות הלבבות - דפוס נאפולי",
     descriptionHe: "דפוס מוקדם של ספר חובות הלבבות, נאפולי. פריט ביבליוגרפי חשוב.",
     descriptionEn: "Early edition of Chovot HaLevavot, Naples. Important bibliographic item.",
-    author: "ר' בחיי אבן פקודה", year: 1489, origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
+    author: "ר' בחיי אבן פקודה", year: "1489", origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
     openingPrice: 22000, finalPrice: 28000, sold: true,
     tags: ["מוסר", "אינקונבולה", "נאפולי", "ביבליוגרפי"],
     communities: ["ספרד"], uniqueness: ["אינקונבולה", "דפוס נאפולי"],
@@ -150,7 +151,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B012", lotNumber: 21, title: "תשובות הרמב\"ם - כתב יד",
     descriptionHe: "כתב יד של תשובות הרמב\"ם, כתיבה מזרחית. מאה ה-14 לערך.",
     descriptionEn: "Manuscript of Maimonides' Responsa, Oriental script. Circa 14th century.",
-    author: "רמב\"ם", year: 1350, origin: "מצרים", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
+    author: "רמב\"ם", year: "1350", origin: "מצרים", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
     openingPrice: 40000, finalPrice: 72000, sold: true,
     tags: ["כתב יד", "רמב\"ם", "תשובות", "מזרחי"],
     communities: ["מזרח", "מצרים"], uniqueness: ["כתב יד עתיק", "רמב\"ם"],
@@ -160,7 +161,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B013", lotNumber: 5, title: "ספר התניא - מהדורה ראשונה",
     descriptionHe: "מהדורה ראשונה של ספר התניא, סלאוויטא תקנ\"ז. נדיר ביותר.",
     descriptionEn: "First edition of the Tanya, Slavita 1797. Extremely rare.",
-    author: "ר' שניאור זלמן מלאדי", year: 1797, origin: "אוקראינה", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
+    author: "ר' שניאור זלמן מלאדי", year: "1797", origin: "אוקראינה", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
     openingPrice: 50000, finalPrice: 95000, sold: true,
     tags: ["חסידות חב\"ד", "מהדורה ראשונה", "סלאוויטא", "נדיר"],
     communities: ["חב\"ד", "חסידות"], uniqueness: ["מהדורה ראשונה", "פריט מוזיאלי"],
@@ -170,7 +171,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B014", lotNumber: 37, title: "הגדה של פסח - פראג 1526",
     descriptionHe: "הגדה נדירה מדפוס פראג. אחת ההגדות המודפסות הראשונות.",
     descriptionEn: "Rare Haggadah from Prague press. One of the earliest printed Haggadahs.",
-    author: "גרשום כהן", year: 1526, origin: "צ'כיה", brand: "גנזים", saleNumber: 45, saleName: "מכירה #45",
+    author: "גרשום כהן", year: "1526", origin: "צ'כיה", brand: "גנזים", saleNumber: 45, saleName: "מכירה #45",
     openingPrice: 60000, finalPrice: null, sold: false,
     tags: ["הגדה", "פראג", "דפוס מוקדם", "נדיר מאוד"],
     communities: ["אשכנז", "בוהמיה"], uniqueness: ["מהדפוסים הראשונים", "נדירות קיצונית"],
