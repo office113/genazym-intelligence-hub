@@ -65,7 +65,7 @@ export default function PastSales() {
         {activeTab === "overview" && (
           <OverviewTab
             brand={brand}
-            auctionData={auctionActivity.data as CustomerAuctionRow[] | undefined}
+            auctionData={auctionActivity.data as unknown as CustomerAuctionRow[] | undefined}
             isLoading={auctionActivity.isLoading}
           />
         )}
