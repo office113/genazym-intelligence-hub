@@ -111,7 +111,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B008", lotNumber: 28, title: "ספר הזוהר - מנטובה 1558",
     descriptionHe: "מהדורה מוקדמת של ספר הזוהר, דפוס מנטובה. שלם בכל חלקיו.",
     descriptionEn: "Early edition of the Zohar, Mantua press. Complete in all parts.",
-    author: "ר' שמעון בר יוחאי", year: 1558, origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
+    author: "ר' שמעון בר יוחאי", year: "1558", origin: "איטליה", brand: "גנזים", saleNumber: 47, saleName: "מכירה #47",
     openingPrice: 18000, finalPrice: 31000, sold: true,
     tags: ["קבלה", "זוהר", "מנטובה", "שלם"],
     communities: ["ספרד", "קבלה", "איטליה"], uniqueness: ["מהדורה מוקדמת", "שלמות"],
