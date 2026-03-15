@@ -153,13 +153,17 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
     return num ? `${bHeb} ${num}` : name;
   };
 
+  // Chart data — limited to last 7 auctions
+  const recentAggs = useMemo(() => auctionAggs.slice(-7), [auctionAggs]);
+  const recentChurn = useMemo(() => churnEntries.slice(-7), [churnEntries]);
+
   const involvedWinnersData = useMemo(
-    () => auctionAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
-    [auctionAggs, brand]
+    () => recentAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
+    [recentAggs, brand]
   );
   const churnChartData = useMemo(
-    () => churnEntries.map((c) => ({ name: c.auction_name, label: shortLabel(c.auction_name), "לא חזרו": c.churned })),
-    [churnEntries, brand]
+    () => recentChurn.map((c) => ({ name: c.auction_name, label: shortLabel(c.auction_name), "לא חזרו": c.churned })),
+    [recentChurn, brand]
   );
 
   // ─── Drill-down data ───
