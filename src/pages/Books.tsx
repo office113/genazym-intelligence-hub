@@ -21,6 +21,7 @@ export default function Books() {
   const search = useBookSearch();
 
   const openBook = (book: BookRecord) => {
+
     setSelectedBook(book);
     setDrillDownOpen(true);
   };
@@ -56,6 +57,17 @@ export default function Books() {
     <div className="min-h-screen">
       <SubNav tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} title="ספרים" />
       <div className="p-8 animate-fade-in">
+        {search.loading && (
+          <div className="text-center py-16 text-muted-foreground">טוען נתונים...</div>
+        )}
+        {search.error && (
+          <div className="text-center py-16 text-destructive">
+            <p className="font-semibold mb-1">שגיאה בטעינת נתונים</p>
+            <p className="text-sm">{search.error}</p>
+          </div>
+        )}
+        {!search.loading && !search.error && (
+          <>
         {/* Shared Search & Filters */}
         <BookSearchFilters
           filters={search.filters}
@@ -206,6 +218,8 @@ export default function Books() {
               </div>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
 
