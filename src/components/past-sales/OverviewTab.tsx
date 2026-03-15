@@ -157,13 +157,13 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
     return num ? `${bHeb} ${num}` : name;
   };
 
-  // Chart data — SQL semantics: ORDER BY auction_name DESC LIMIT 7, then reverse for display
+  // Chart data — 7 most recent auctions, then reverse for oldest→newest display
   const recentAggs = useMemo(
-    () => [...auctionAggs].sort((a, b) => b.auction_name.localeCompare(a.auction_name)).slice(0, 7).reverse(),
+    () => [...auctionAggs].sort((a, b) => b.auction_number - a.auction_number).slice(0, 7).reverse(),
     [auctionAggs]
   );
   const recentChurn = useMemo(
-    () => [...churnEntries].sort((a, b) => b.auction_name.localeCompare(a.auction_name)).slice(0, 7).reverse(),
+    () => [...churnEntries].sort((a, b) => b.auction_number - a.auction_number).slice(0, 7).reverse(),
     [churnEntries]
   );
 
