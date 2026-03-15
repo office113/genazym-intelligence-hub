@@ -71,7 +71,9 @@ export default function BookDrillDown({ book, open, onClose }: BookDrillDownProp
       if (cancelled) return;
 
       // שליפת שמות לקוחות
-      const emails = [...new Set((eventsData ?? []).map((e: any) => e.customer_email).filter(Boolean))];
+      const eventEmails = (eventsData ?? []).map((e: any) => e.customer_email).filter(Boolean);
+      const winnerEmailsList = (winnersData ?? []).map((w: any) => w.customer_email).filter(Boolean);
+      const emails = [...new Set([...eventEmails, ...winnerEmailsList])];
       let customerNames: Record<string, string> = {};
 
       if (emails.length > 0) {
