@@ -37,7 +37,7 @@ function mapRow(row: any): BookRecord {
     row.tag_category,
     row.tag_community,
     row.tag_origin,
-    row.tag_year,
+    row.tag_uniqueness,
   ].filter(Boolean);
 
   return {
@@ -75,22 +75,43 @@ export function useBookSearch() {
 
   useEffect(() => {
     let cancelled = false;
+
     async function fetchBooks() {
       setLoading(true);
       setError(null);
-      const { data, error: err } = await supabase
-        .from("fact_book_auction_summary")
-        .select("*")
-        .range(0, 9999);
-      if (cancelled) return;
-      if (err) {
-        setError(err.message);
-        setBooks([]);
-      } else {
-        setBooks((data ?? []).map(mapRow));
+
+      const pageSize = 1000;
+      let from = 0;
+      const allRows: any[] = [];
+
+      while (true) {
+        const to = from + pageSize - 1;
+        const { data, error: pageError } = await supabase
+          .from("fact_book_auction_summary")
+          .select("*")
+          .range(from, to);
+
+        if (cancelled) return;
+
+        if (pageError) {
+          setError(pageError.message);
+          setBooks([]);
+          setLoading(false);
+          return;
+        }
+
+        const pageRows = data ?? [];
+        allRows.push(...pageRows);
+
+        if (pageRows.length < pageSize) break;
+        from += pageSize;
       }
+
+      if (cancelled) return;
+      setBooks(allRows.map(mapRow));
       setLoading(false);
     }
+
     fetchBooks();
     return () => { cancelled = true; };
   }, []);
