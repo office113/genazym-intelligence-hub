@@ -161,7 +161,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B013", lotNumber: 5, title: "ספר התניא - מהדורה ראשונה",
     descriptionHe: "מהדורה ראשונה של ספר התניא, סלאוויטא תקנ\"ז. נדיר ביותר.",
     descriptionEn: "First edition of the Tanya, Slavita 1797. Extremely rare.",
-    author: "ר' שניאור זלמן מלאדי", year: 1797, origin: "אוקראינה", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
+    author: "ר' שניאור זלמן מלאדי", year: "1797", origin: "אוקראינה", brand: "גנזים", saleNumber: 46, saleName: "מכירה #46",
     openingPrice: 50000, finalPrice: 95000, sold: true,
     tags: ["חסידות חב\"ד", "מהדורה ראשונה", "סלאוויטא", "נדיר"],
     communities: ["חב\"ד", "חסידות"], uniqueness: ["מהדורה ראשונה", "פריט מוזיאלי"],
