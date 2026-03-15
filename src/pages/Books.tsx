@@ -219,6 +219,8 @@ export default function Books() {
             ))}
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* Drill-down bottom sheet */}
