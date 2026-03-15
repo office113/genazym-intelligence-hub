@@ -141,7 +141,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B011", lotNumber: 63, title: "ספר חובות הלבבות - דפוס נאפולי",
     descriptionHe: "דפוס מוקדם של ספר חובות הלבבות, נאפולי. פריט ביבליוגרפי חשוב.",
     descriptionEn: "Early edition of Chovot HaLevavot, Naples. Important bibliographic item.",
-    author: "ר' בחיי אבן פקודה", year: 1489, origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
+    author: "ר' בחיי אבן פקודה", year: "1489", origin: "איטליה", brand: "זיידי", saleNumber: 35, saleName: "מכירה #35",
     openingPrice: 22000, finalPrice: 28000, sold: true,
     tags: ["מוסר", "אינקונבולה", "נאפולי", "ביבליוגרפי"],
     communities: ["ספרד"], uniqueness: ["אינקונבולה", "דפוס נאפולי"],
