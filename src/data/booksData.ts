@@ -171,7 +171,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B014", lotNumber: 37, title: "הגדה של פסח - פראג 1526",
     descriptionHe: "הגדה נדירה מדפוס פראג. אחת ההגדות המודפסות הראשונות.",
     descriptionEn: "Rare Haggadah from Prague press. One of the earliest printed Haggadahs.",
-    author: "גרשום כהן", year: 1526, origin: "צ'כיה", brand: "גנזים", saleNumber: 45, saleName: "מכירה #45",
+    author: "גרשום כהן", year: "1526", origin: "צ'כיה", brand: "גנזים", saleNumber: 45, saleName: "מכירה #45",
     openingPrice: 60000, finalPrice: null, sold: false,
     tags: ["הגדה", "פראג", "דפוס מוקדם", "נדיר מאוד"],
     communities: ["אשכנז", "בוהמיה"], uniqueness: ["מהדפוסים הראשונים", "נדירות קיצונית"],
