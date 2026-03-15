@@ -157,9 +157,9 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
     return num ? `${bHeb} ${num}` : name;
   };
 
-  // Chart data — all auctions
-  const recentAggs = auctionAggs;
-  const recentChurn = churnEntries;
+  // Chart data — last 7 auctions, oldest→newest
+  const recentAggs = useMemo(() => auctionAggs.slice(-7), [auctionAggs]);
+  const recentChurn = useMemo(() => churnEntries.slice(-7), [churnEntries]);
 
   const involvedWinnersData = useMemo(
     () => recentAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
