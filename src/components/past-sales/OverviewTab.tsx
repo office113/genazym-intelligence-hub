@@ -145,13 +145,21 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
   }, [allRows]);
 
   // ─── Chart data ───
+  // Short display label: "גנזים 21" or "זיידי 7"
+  const shortLabel = (name: string) => {
+    const match = name.match(/(\d+)/);
+    const num = match ? match[1] : "";
+    const bHeb = brandHebrew[brand] || brand;
+    return num ? `${bHeb} ${num}` : name;
+  };
+
   const involvedWinnersData = useMemo(
-    () => auctionAggs.map((a) => ({ name: a.auction_name, מעורבים: a.involved, זוכים: a.winners })),
-    [auctionAggs]
+    () => auctionAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
+    [auctionAggs, brand]
   );
   const churnChartData = useMemo(
-    () => churnEntries.map((c) => ({ name: c.auction_name, "לא חזרו": c.churned })),
-    [churnEntries]
+    () => churnEntries.map((c) => ({ name: c.auction_name, label: shortLabel(c.auction_name), "לא חזרו": c.churned })),
+    [churnEntries, brand]
   );
 
   // ─── Drill-down data ───
