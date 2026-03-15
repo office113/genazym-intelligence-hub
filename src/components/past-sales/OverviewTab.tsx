@@ -145,13 +145,21 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
   }, [allRows]);
 
   // ─── Chart data ───
+  // Short display label: "גנזים 21" or "זיידי 7"
+  const shortLabel = (name: string) => {
+    const match = name.match(/(\d+)/);
+    const num = match ? match[1] : "";
+    const bHeb = brandHebrew[brand] || brand;
+    return num ? `${bHeb} ${num}` : name;
+  };
+
   const involvedWinnersData = useMemo(
-    () => auctionAggs.map((a) => ({ name: a.auction_name, מעורבים: a.involved, זוכים: a.winners })),
-    [auctionAggs]
+    () => auctionAggs.map((a) => ({ name: a.auction_name, label: shortLabel(a.auction_name), מעורבים: a.involved, זוכים: a.winners })),
+    [auctionAggs, brand]
   );
   const churnChartData = useMemo(
-    () => churnEntries.map((c) => ({ name: c.auction_name, "לא חזרו": c.churned })),
-    [churnEntries]
+    () => churnEntries.map((c) => ({ name: c.auction_name, label: shortLabel(c.auction_name), "לא חזרו": c.churned })),
+    [churnEntries, brand]
   );
 
   // ─── Drill-down data ───
@@ -194,20 +202,20 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
         <div className="chart-card">
           <div className="chart-title">מעורבים וזוכים בכל מכירה</div>
           <p className="text-xs text-muted-foreground mb-4 -mt-2">לחץ על עמודה לפירוט</p>
-          <div className="h-72">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={involvedWinnersData} barGap={2} barCategoryGap="20%">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} angle={-30} textAnchor="end" height={50} />
-                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, direction: "rtl" }} />
-                <Bar dataKey="מעורבים" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} cursor="pointer"
+              <BarChart data={involvedWinnersData} barGap={2} barCategoryGap="20%" margin={{ top: 24, right: 8, bottom: 8, left: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} opacity={0.4} />
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))", fontWeight: 500 }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} height={40} interval={0} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={40} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, direction: "rtl", boxShadow: "0 4px 20px hsl(var(--foreground) / 0.08)" }} />
+                <Bar dataKey="מעורבים" fill="hsl(var(--chart-1))" radius={[6, 6, 0, 0]} cursor="pointer"
                   onClick={(_d: unknown, idx: number) => openAuctionDrillDown(auctionAggs[idx].auction_name, "involved")}>
-                  <LabelList dataKey="מעורבים" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <LabelList dataKey="מעורבים" position="top" style={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} offset={6} />
                 </Bar>
-                <Bar dataKey="זוכים" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} cursor="pointer"
+                <Bar dataKey="זוכים" fill="hsl(var(--chart-2))" radius={[6, 6, 0, 0]} cursor="pointer"
                   onClick={(_d: unknown, idx: number) => openAuctionDrillDown(auctionAggs[idx].auction_name, "winners")}>
-                  <LabelList dataKey="זוכים" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <LabelList dataKey="זוכים" position="top" style={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} offset={6} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -218,19 +226,19 @@ export default function OverviewTab({ brand, auctionData, isLoading, error }: Ov
         <div className="chart-card">
           <div className="chart-title">לא חזרו מהמכירה הקודמת</div>
           <p className="text-xs text-muted-foreground mb-4 -mt-2">לחץ על עמודה לרשימת הלקוחות</p>
-          <div className="h-72">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={churnChartData} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} angle={-30} textAnchor="end" height={50} />
-                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, direction: "rtl" }} />
-                <Bar dataKey="לא חזרו" radius={[4, 4, 0, 0]} cursor="pointer"
+              <BarChart data={churnChartData} barCategoryGap="30%" margin={{ top: 24, right: 8, bottom: 8, left: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} opacity={0.4} />
+                <XAxis dataKey="label" tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))", fontWeight: 500 }} tickLine={false} axisLine={{ stroke: "hsl(var(--border))" }} height={40} interval={0} />
+                <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} width={40} />
+                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, direction: "rtl", boxShadow: "0 4px 20px hsl(var(--foreground) / 0.08)" }} />
+                <Bar dataKey="לא חזרו" radius={[6, 6, 0, 0]} cursor="pointer"
                   onClick={(_d: unknown, idx: number) => openChurnDrillDown(churnEntries[idx])}>
                   {churnChartData.map((_, index) => (
                     <Cell key={index} fill="hsl(var(--chart-4))" />
                   ))}
-                  <LabelList dataKey="לא חזרו" position="top" style={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                  <LabelList dataKey="לא חזרו" position="top" style={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }} offset={6} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
