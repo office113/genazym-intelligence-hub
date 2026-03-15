@@ -70,7 +70,7 @@ export const booksDatabase: BookRecord[] = [
     id: "B004", lotNumber: 78, title: "שולחן ערוך - דפוס ראשון, ונציה 1565",
     descriptionHe: "דפוס ראשון של השולחן ערוך, ונציה שכ\"ה. פריט מוזיאלי ביותר.",
     descriptionEn: "First edition of the Shulchan Aruch, Venice 1565. Museum-quality item.",
-    author: "ר' יוסף קארו", year: 1565, origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
+    author: "ר' יוסף קארו", year: "1565", origin: "איטליה", brand: "גנזים", saleNumber: 48, saleName: "מכירה #48",
     openingPrice: 30000, finalPrice: null, sold: false,
     tags: ["הלכה", "ונציה", "דפוס ראשון", "מוזיאלי"],
     communities: ["ספרד", "איטליה"], uniqueness: ["דפוס ראשון", "פריט מוזיאלי"],
