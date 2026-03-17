@@ -92,6 +92,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   const [involvedData, setInvolvedData] = useState<InvolvedBarData[]>([]);
   const [churnData, setChurnData] = useState<ChurnBarData[]>([]);
   const [yearlyTrendsData, setYearlyTrendsData] = useState<YearlyData[]>([]);
+  const [rawActivityData, setRawActivityData] = useState<any[]>([]);
+  const [rawRegsData, setRawRegsData] = useState<any[]>([]);
+  const [rawAuctionsData, setRawAuctionsData] = useState<any[]>([]);
   const [kpis, setKpis] = useState<BrandKPIs>({
     avgOpeningPrice: "—",
     avgUplift: "—",
@@ -137,7 +140,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const regsData = await fetchAllPages(
           "registrations",
           { brand: brand === "genazym" ? "Genazym" : "Zaidy" },
-          "created_at, join_date, approved"
+          "id, full_name, email, created_at, join_date, approved"
         );
         if (cancelled) return;
         console.log('Regs Data Length:', regsData.length);
@@ -346,6 +349,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           setInvolvedData(involved);
           setChurnData(churn);
           setYearlyTrendsData(yearlyTrends);
+          setRawActivityData(activityData);
+          setRawRegsData(regsData);
+          setRawAuctionsData(auctionsData ?? []);
           setKpis({
             avgOpeningPrice: avgOpeningPrice > 0 ? `$${Math.round(avgOpeningPrice).toLocaleString()}` : "—",
             avgUplift: avgUplift !== "—" ? `${avgUplift}%` : "—",
@@ -368,5 +374,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error };
 }

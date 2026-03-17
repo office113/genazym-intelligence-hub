@@ -793,17 +793,115 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   return trendsDrillDownData[key]?.[year] || [];
 }
 
-function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
+function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, brand }: { yearlyTrendsData: YearlyData[]; rawActivityData: any[]; rawRegsData: any[]; rawAuctionsData: any[]; brand: Brand }) {
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = yearlyTrendsData;
 
-  const drillDownCustomers = useMemo(() =>
-    getDrillDownCustomers("genazym", drillDownType, drillDownYear),
-    [drillDownType, drillDownYear]
-  );
+  // Build auction-year lookup
+  const auctionYearMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    rawAuctionsData.forEach((a: any) => {
+      map[a.auction_name] = new Date(a.auction_date).getFullYear();
+    });
+    return map;
+  }, [rawAuctionsData]);
+
+  // Build earliest year per email
+  const earliestYearByEmail = useMemo(() => {
+    const map: Record<string, number> = {};
+    rawActivityData.forEach((r: any) => {
+      const year = auctionYearMap[r.auction_name];
+      if (year === undefined) return;
+      if (map[r.email] === undefined || year < map[r.email]) map[r.email] = year;
+    });
+    return map;
+  }, [rawActivityData, auctionYearMap]);
+
+  const drillDownCustomers = useMemo(() => {
+    const year = drillDownYear;
+
+    if (drillDownType === "registrants") {
+      return rawRegsData
+        .filter((r: any) => {
+          const regDate = new Date(r.join_date || r.created_at);
+          return regDate.getFullYear() === year;
+        })
+        .map((r: any, i: number) => ({
+          id: r.id || `reg-${i}`,
+          name: r.full_name || r.email || "—",
+          registrationDate: (r.join_date || r.created_at || "").slice(0, 10),
+          firstBidDate: "",
+          maxHistoricalBid: 0,
+          totalHistoricalWins: 0,
+          lastActiveSale: "",
+        }));
+    }
+
+    // Get auction names for the target year
+    const yearAuctionNames = new Set(
+      rawAuctionsData
+        .filter((a: any) => new Date(a.auction_date).getFullYear() === year)
+        .map((a: any) => a.auction_name)
+    );
+    const yearEmails = new Set(
+      rawActivityData.filter((r: any) => yearAuctionNames.has(r.auction_name)).map((r: any) => r.email)
+    );
+
+    if (drillDownType === "newInvolved") {
+      // Emails whose earliest year is this year
+      const emails = [...yearEmails].filter(email => earliestYearByEmail[email] === year);
+      return emails.map((email, i) => {
+        const rows = rawActivityData.filter((r: any) => r.email === email);
+        const latest = rows.reduce((best: any, r: any) => {
+          const y = auctionYearMap[r.auction_name] || 0;
+          return y > (auctionYearMap[best?.auction_name] || 0) ? r : best;
+        }, rows[0]);
+        return {
+          id: `ni-${i}`,
+          name: rows[0]?.full_name || email,
+          firstBidDate: rows[0]?.first_bid_at?.slice(0, 10) || "",
+          maxHistoricalBid: Math.max(...rows.map((r: any) => r.max_bid || 0)),
+          totalHistoricalWins: rows.reduce((s: number, r: any) => s + (r.total_win_value || 0), 0),
+          lastActiveSale: latest ? `מכירה ${latest.auction_name}` : "",
+        };
+      });
+    }
+
+    if (drillDownType === "churned") {
+      // Emails in previous year but not in this year
+      const allYears = [...new Set(rawAuctionsData.map((a: any) => new Date(a.auction_date).getFullYear()))].sort();
+      const yearIdx = allYears.indexOf(year);
+      if (yearIdx <= 0) return [];
+      const prevYear = allYears[yearIdx - 1];
+      const prevAuctionNames = new Set(
+        rawAuctionsData.filter((a: any) => new Date(a.auction_date).getFullYear() === prevYear).map((a: any) => a.auction_name)
+      );
+      const prevEmails = new Set(
+        rawActivityData.filter((r: any) => prevAuctionNames.has(r.auction_name)).map((r: any) => r.email)
+      );
+      const churnedEmails = [...prevEmails].filter(email => !yearEmails.has(email));
+      return churnedEmails.map((email, i) => {
+        const rows = rawActivityData.filter((r: any) => r.email === email);
+        const latest = rows.reduce((best: any, r: any) => {
+          const y = auctionYearMap[r.auction_name] || 0;
+          return y > (auctionYearMap[best?.auction_name] || 0) ? r : best;
+        }, rows[0]);
+        return {
+          id: `ch-${i}`,
+          name: rows[0]?.full_name || email,
+          firstBidDate: rows[0]?.first_bid_at?.slice(0, 10) || "",
+          maxHistoricalBid: Math.max(...rows.map((r: any) => r.max_bid || 0)),
+          totalHistoricalWins: rows.reduce((s: number, r: any) => s + (r.total_win_value || 0), 0),
+          lastActiveSale: latest ? `מכירה ${latest.auction_name}` : "",
+        };
+      });
+    }
+
+    return [];
+  }, [drillDownType, drillDownYear, rawActivityData, rawRegsData, rawAuctionsData, auctionYearMap, earliestYearByEmail]);
 
   const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved"; reversed?: boolean }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
@@ -1011,7 +1109,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error } = usePastSales(brand);
+  const { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
@@ -1226,7 +1324,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <TrendsTab yearlyTrendsData={yearlyTrendsData} />
+          <TrendsTab yearlyTrendsData={yearlyTrendsData} rawActivityData={rawActivityData} rawRegsData={rawRegsData} rawAuctionsData={rawAuctionsData} brand={brand} />
         )}
       </div>
 
