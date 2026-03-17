@@ -40,6 +40,20 @@ export interface BrandKPIs {
   avgInvolvedPerSale: string;
 }
 
+export interface YearlyData {
+  year: number;
+  salesCount: number;
+  totalRevenue: number;
+  uniqueInvolved: number;
+  uniqueWinners: number;
+  avgPricePerItem: number;
+  medianPrice: number;
+  booksSold: number;
+  newInvolved: number;
+  newRegistrants: number;
+  churned: number;
+}
+
 function extractSaleNumber(auctionName: string): number {
   const match = auctionName.match(/\d+/);
   return match ? parseInt(match[0]) : 0;
