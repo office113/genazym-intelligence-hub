@@ -289,7 +289,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           const yearAuctionNames = new Set(yearAuctions.map((a: any) => a.auction_name));
 
           // Books for this year
-          const yearBooks = booksData.filter((b: any) => yearAuctionNames.has(b.auction_name));
+          const yearBooks = filteredBooksData.filter((b: any) => yearAuctionNames.has(b.auction_name));
           const yearSoldBooks = yearBooks.filter((b: any) => b.sold_flag);
           const totalRevenue = yearSoldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
           const booksSold = yearSoldBooks.length;
