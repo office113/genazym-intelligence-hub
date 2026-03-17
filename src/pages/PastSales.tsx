@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
-import { usePastSales, SaleRow } from "@/hooks/usePastSales";
+import { usePastSales, SaleRow, YearlyData } from "@/hooks/usePastSales";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart, Cell, LabelList } from "recharts";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -614,19 +614,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
 
 type TrendsBrandFilter = "genazym" | "zaidy" | "both";
 
-interface YearlyData {
-  year: number;
-  salesCount: number;
-  totalRevenue: number;
-  uniqueInvolved: number;
-  uniqueWinners: number;
-  avgPricePerItem: number;
-  medianPrice: number;
-  booksSold: number;
-  newInvolved: number;
-  newRegistrants: number;
-  churned: number;
-}
+// YearlyData type is imported from usePastSales
 
 
 
@@ -805,40 +793,12 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   return trendsDrillDownData[key]?.[year] || [];
 }
 
-function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
+function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
-  const yearlyData = useMemo(() => {
-    const byYear: Record<number, SaleRow[]> = {};
-    pastSalesData.forEach((sale) => {
-      const year = new Date(sale.date).getFullYear();
-      if (!byYear[year]) byYear[year] = [];
-      byYear[year].push(sale);
-    });
-
-    return Object.entries(byYear)
-      .map(([yearStr, sales]) => {
-        const year = parseInt(yearStr);
-        const totalRevenue = sales.reduce((sum, s) => sum + s.revenue, 0);
-        const booksSold = sales.reduce((sum, s) => sum + s.sold, 0);
-        return {
-          year,
-          salesCount: sales.length,
-          totalRevenue,
-          booksSold,
-          uniqueWinners: sales.reduce((sum, s) => sum + s.winners, 0),
-          uniqueInvolved: sales.reduce((sum, s) => sum + s.bidders, 0),
-          newRegistrants: sales.reduce((sum, s) => sum + s.newReg, 0),
-          avgPricePerItem: booksSold > 0 ? Math.round(totalRevenue / booksSold) : 0,
-          medianPrice: 0,
-          newInvolved: 0,
-          churned: 0,
-        } as YearlyData;
-      })
-      .sort((a, b) => a.year - b.year);
-  }, [pastSalesData]);
+  const yearlyData = yearlyTrendsData;
 
   const drillDownCustomers = useMemo(() =>
     getDrillDownCustomers("genazym", drillDownType, drillDownYear),
@@ -1050,7 +1010,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const { pastSalesData, involvedData, churnData, kpis, loading, error } = usePastSales(brand);
+  const { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
@@ -1265,7 +1225,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <TrendsTab pastSalesData={pastSalesData} />
+          <TrendsTab yearlyTrendsData={yearlyTrendsData} />
         )}
       </div>
 

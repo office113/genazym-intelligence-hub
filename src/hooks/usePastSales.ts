@@ -40,6 +40,20 @@ export interface BrandKPIs {
   avgInvolvedPerSale: string;
 }
 
+export interface YearlyData {
+  year: number;
+  salesCount: number;
+  totalRevenue: number;
+  uniqueInvolved: number;
+  uniqueWinners: number;
+  avgPricePerItem: number;
+  medianPrice: number;
+  booksSold: number;
+  newInvolved: number;
+  newRegistrants: number;
+  churned: number;
+}
+
 function extractSaleNumber(auctionName: string): number {
   const match = auctionName.match(/\d+/);
   return match ? parseInt(match[0]) : 0;
@@ -77,6 +91,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   const [pastSalesData, setPastSalesData] = useState<SaleRow[]>([]);
   const [involvedData, setInvolvedData] = useState<InvolvedBarData[]>([]);
   const [churnData, setChurnData] = useState<ChurnBarData[]>([]);
+  const [yearlyTrendsData, setYearlyTrendsData] = useState<YearlyData[]>([]);
   const [kpis, setKpis] = useState<BrandKPIs>({
     avgOpeningPrice: "—",
     avgUplift: "—",
@@ -232,6 +247,79 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           });
         }
 
+        // Yearly Trends Data
+        const auctionsByYear: Record<number, any[]> = {};
+        (auctionsData ?? []).forEach((a: any) => {
+          const year = new Date(a.auction_date).getFullYear();
+          if (!auctionsByYear[year]) auctionsByYear[year] = [];
+          auctionsByYear[year].push(a);
+        });
+
+        const allYears = Object.keys(auctionsByYear).map(Number).sort((a, b) => a - b);
+
+        const yearlyTrends: YearlyData[] = allYears.map((year, yearIdx) => {
+          const yearAuctions = auctionsByYear[year];
+          const yearAuctionNames = new Set(yearAuctions.map((a: any) => a.auction_name));
+
+          // Books for this year
+          const yearBooks = booksData.filter((b: any) => yearAuctionNames.has(b.auction_name));
+          const yearSoldBooks = yearBooks.filter((b: any) => b.sold_flag);
+          const totalRevenue = yearSoldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
+          const booksSold = yearSoldBooks.length;
+
+          // Median price
+          const soldPrices = yearSoldBooks.map((b: any) => Number(b.sold_price) || 0).sort((a: number, b: number) => a - b);
+          let medianPrice = 0;
+          if (soldPrices.length > 0) {
+            const mid = Math.floor(soldPrices.length / 2);
+            medianPrice = soldPrices.length % 2 === 0
+              ? Math.round((soldPrices[mid - 1] + soldPrices[mid]) / 2)
+              : soldPrices[mid];
+          }
+
+          // Activity for this year
+          const yearActivity = activityData.filter((r: any) => yearAuctionNames.has(r.auction_name));
+          const uniqueEmails = new Set(yearActivity.map((r: any) => r.email));
+          const uniqueInvolvedCount = uniqueEmails.size;
+          const uniqueWinnersCount = new Set(yearActivity.filter((r: any) => r.total_wins > 0).map((r: any) => r.email)).size;
+
+          // New involved: first_bid_at falls within this year
+          const newInvolvedCount = yearActivity.filter((r: any) => {
+            if (!r.first_bid_at) return false;
+            const firstBidYear = new Date(r.first_bid_at).getFullYear();
+            return firstBidYear === year;
+          }).reduce((set: Set<string>, r: any) => { set.add(r.email); return set; }, new Set<string>()).size;
+
+          // Churned: in previous year but not this year
+          let churnedCount = 0;
+          if (yearIdx > 0) {
+            const prevYear = allYears[yearIdx - 1];
+            const prevAuctionNames = new Set((auctionsByYear[prevYear] || []).map((a: any) => a.auction_name));
+            const prevEmails = new Set(activityData.filter((r: any) => prevAuctionNames.has(r.auction_name)).map((r: any) => r.email));
+            churnedCount = [...prevEmails].filter(email => !uniqueEmails.has(email)).length;
+          }
+
+          // New registrants
+          const newRegistrantsCount = regsData.filter((r: any) => {
+            const joinDate = new Date(r.join_date || r.approved);
+            return joinDate.getFullYear() === year;
+          }).length;
+
+          return {
+            year,
+            salesCount: yearAuctions.length,
+            totalRevenue,
+            booksSold,
+            medianPrice,
+            uniqueInvolved: uniqueInvolvedCount,
+            uniqueWinners: uniqueWinnersCount,
+            avgPricePerItem: booksSold > 0 ? Math.round(totalRevenue / booksSold) : 0,
+            newInvolved: newInvolvedCount,
+            churned: churnedCount,
+            newRegistrants: newRegistrantsCount,
+          };
+        });
+
         // KPIs
         const uniqueInvolved = new Set(activityData.map((r: any) => r.email)).size;
         const auctionCount = (auctionsData ?? []).length || 1;
@@ -247,6 +335,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           setPastSalesData(sales);
           setInvolvedData(involved);
           setChurnData(churn);
+          setYearlyTrendsData(yearlyTrends);
           setKpis({
             avgOpeningPrice: avgOpeningPrice > 0 ? `$${Math.round(avgOpeningPrice).toLocaleString()}` : "—",
             avgUplift: avgUplift !== "—" ? `${avgUplift}%` : "—",
@@ -269,5 +358,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error };
 }
