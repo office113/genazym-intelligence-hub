@@ -972,7 +972,7 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
         open={drillDownOpen}
         onClose={() => setDrillDownOpen(false)}
         title={`${drillDownTitles[drillDownType]} — ${drillDownYear}`}
-        subtitle={`${brandLabel} | ${drillDownCustomers.length} לקוחות`}
+        subtitle={`${drillDownCustomers.length} לקוחות`}
       >
         <div className="px-10 py-5 border-b border-border/40 shrink-0">
           <div className="grid grid-cols-3 gap-4">
