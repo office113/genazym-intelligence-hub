@@ -144,10 +144,12 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           const auctionActivity = activityByAuction[auction.auction_name] ?? [];
           const auctionBooks = booksByAuction[auction.auction_name] ?? [];
           const winners = auctionActivity.filter((r: any) => r.total_wins > 0).length;
-          const totalRevenue = auctionActivity.reduce(
-            (sum: number, r: any) => sum + (Number(r.total_win_value) || 0),
-            0,
-          );
+
+          // ==========================================
+          // התיקון הקריטי: חישוב הכנסות מתוך הספרים בלבד!
+          // ==========================================
+          const totalRevenue = auctionBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
+
           const totalLots = auctionBooks.length;
           const soldLots = auctionBooks.filter((b: any) => b.sold_flag).length;
 
@@ -221,7 +223,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
               name: r.full_name ?? r.email,
               email: r.email,
               bidsInPrev: r.total_bids,
-              involvementType: r.was_early && r.was_live ? "גם וגם" : r.was_live ? "לייב" : "מוקדם",
+              involvementType: r.was_early && r.was_live ? "גם וגם" : r.was_live ? "מוקדם" : "מוקדם",
               lotsInvolved: r.lots_involved ?? 0,
               maxBidAmount: `$${(r.max_bid ?? 0).toLocaleString()}`,
               wonInPrev: r.total_wins > 0,
