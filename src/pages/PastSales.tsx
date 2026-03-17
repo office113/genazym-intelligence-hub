@@ -793,7 +793,7 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   return trendsDrillDownData[key]?.[year] || [];
 }
 
-function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
+function TrendsTab({ yearlyTrendsData, debugRegsCount, debugRegsError }: { yearlyTrendsData: YearlyData[]; debugRegsCount: number; debugRegsError: string }) {
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
