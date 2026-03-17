@@ -91,6 +91,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   const [pastSalesData, setPastSalesData] = useState<SaleRow[]>([]);
   const [involvedData, setInvolvedData] = useState<InvolvedBarData[]>([]);
   const [churnData, setChurnData] = useState<ChurnBarData[]>([]);
+  const [yearlyTrendsData, setYearlyTrendsData] = useState<YearlyData[]>([]);
   const [kpis, setKpis] = useState<BrandKPIs>({
     avgOpeningPrice: "—",
     avgUplift: "—",
