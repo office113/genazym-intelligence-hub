@@ -1237,7 +1237,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <TrendsTab pastSalesData={pastSalesData} />
+          <TrendsTab yearlyTrendsData={yearlyTrendsData} />
         )}
       </div>
 
