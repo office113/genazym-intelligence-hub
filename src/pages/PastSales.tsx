@@ -829,15 +829,40 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const regDate = new Date(r.join_date || r.created_at);
           return regDate.getFullYear() === year;
         })
-        .map((r: any, i: number) => ({
-          id: r.id || `reg-${i}`,
-          name: r.full_name || r.email || "—",
-          registrationDate: (r.join_date || r.created_at || "").slice(0, 10),
-          firstBidDate: "",
-          maxHistoricalBid: 0,
-          totalHistoricalWins: 0,
-          lastActiveSale: "",
-        }));
+        .map((r: any, i: number) => {
+          // Try to find activity rows for this registrant to enrich data
+          const actRows = rawActivityData.filter((a: any) => a.email === r.email);
+          const firstBid = actRows.length > 0
+            ? actRows.reduce((earliest: string, a: any) => {
+                const d = a.first_bid_at || a.auction_date || "";
+                return d && (!earliest || d < earliest) ? d : earliest;
+              }, "")
+            : "";
+          // Deduplicate wins by auction_name
+          const seenAuctions = new Set<string>();
+          let totalWins = 0;
+          actRows.forEach((a: any) => {
+            if (a.auction_name && !seenAuctions.has(a.auction_name)) {
+              seenAuctions.add(a.auction_name);
+              totalWins += (a.total_win_value || 0);
+            }
+          });
+          const latest = actRows.length > 0 ? actRows.reduce((best: any, a: any) => {
+            const y = auctionYearMap[a.auction_name] || 0;
+            return y > (auctionYearMap[best?.auction_name] || 0) ? a : best;
+          }, actRows[0]) : null;
+          return {
+            id: r.id || `reg-${i}`,
+            name: r.full_name || r.email || "—",
+            email: r.email || "",
+            phone: r.phone || "",
+            registrationDate: (r.join_date || r.created_at || "").slice(0, 10),
+            firstBidDate: firstBid ? firstBid.slice(0, 10) : "",
+            maxHistoricalBid: actRows.length > 0 ? Math.max(...actRows.map((a: any) => a.max_bid || 0)) : 0,
+            totalHistoricalWins: totalWins,
+            lastActiveSale: latest ? `מכירה ${latest.auction_name}` : "",
+          };
+        });
     }
 
     // Get auction names for the target year
