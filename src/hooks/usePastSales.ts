@@ -134,10 +134,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (cancelled) return;
 
         // 4. שליפת נרשמים עם pagination ופילטר מותג
-        const brandFilter2 = brand === "genazym" ? "Genazym" : "Zaidy";
         const regsData = await fetchAllPages(
           "registrations",
-          { brand: brandFilter2 },
+          { brand: brand === "genazym" ? "Genazym" : "Zaidy" },
           "created_at, join_date, approved"
         );
         if (cancelled) return;
