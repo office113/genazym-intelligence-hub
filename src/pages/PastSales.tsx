@@ -697,6 +697,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
             <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
               <tr>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מזהה</th>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("salesWithoutInvolvement")}>
                   מס׳ מכירות אחרונות<br />ברצף ללא מעורבות{sortIcon("salesWithoutInvolvement")}
                 </th>
