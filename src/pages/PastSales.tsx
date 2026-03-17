@@ -614,19 +614,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
 
 type TrendsBrandFilter = "genazym" | "zaidy" | "both";
 
-interface YearlyData {
-  year: number;
-  salesCount: number;
-  totalRevenue: number;
-  uniqueInvolved: number;
-  uniqueWinners: number;
-  avgPricePerItem: number;
-  medianPrice: number;
-  booksSold: number;
-  newInvolved: number;
-  newRegistrants: number;
-  churned: number;
-}
+// YearlyData type is imported from usePastSales
 
 
 
