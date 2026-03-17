@@ -793,7 +793,7 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   return trendsDrillDownData[key]?.[year] || [];
 }
 
-function TrendsTab({ yearlyTrendsData, debugRegsCount, debugRegsError }: { yearlyTrendsData: YearlyData[]; debugRegsCount: number; debugRegsError: string }) {
+function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
@@ -839,7 +839,7 @@ function TrendsTab({ yearlyTrendsData, debugRegsCount, debugRegsError }: { yearl
 
   return (
     <>
-      <div className="bg-red-500 text-white p-4 mb-4 rounded-md font-bold text-lg">DEBUG REGISTRATIONS: Count = {debugRegsCount} | Error = {debugRegsError}</div>
+      
       <div className="chart-card">
         <div className="flex items-center justify-between mb-6" dir="rtl">
           <div>
@@ -1011,7 +1011,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error, debugRegsCount, debugRegsError } = usePastSales(brand);
+  const { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
@@ -1226,7 +1226,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <TrendsTab yearlyTrendsData={yearlyTrendsData} debugRegsCount={debugRegsCount} debugRegsError={debugRegsError} />
+          <TrendsTab yearlyTrendsData={yearlyTrendsData} />
         )}
       </div>
 

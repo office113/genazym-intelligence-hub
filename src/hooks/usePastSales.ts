@@ -100,8 +100,6 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debugRegsCount, setDebugRegsCount] = useState(0);
-  const [debugRegsError, setDebugRegsError] = useState("No Error");
 
   useEffect(() => {
     let cancelled = false;
@@ -135,17 +133,15 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         );
         if (cancelled) return;
 
-        // 4. שליפת נרשמים (temporary debug, no brand filter)
-        const { data: regsDataRaw, error: regsError } = await supabase
-          .from("registrations")
-          .select("created_at, join_date, approved");
-        const regsData = regsDataRaw ?? [];
+        // 4. שליפת נרשמים עם pagination ופילטר מותג
+        const brandFilter2 = brand === "genazym" ? "Genazym" : "Zaidy";
+        const regsData = await fetchAllPages(
+          "registrations",
+          { brand: brandFilter2 },
+          "created_at, join_date, approved"
+        );
         if (cancelled) return;
-
-        console.log('Regs Data Length:', regsData?.length);
-        setDebugRegsCount(regsData ? regsData.length : 0);
-        setDebugRegsError(regsError ? regsError.message : 'No Error');
-        if (regsError) console.error("Registrations Error:", regsError);
+        console.log('Regs Data Length:', regsData.length);
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
@@ -373,5 +369,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error, debugRegsCount, debugRegsError };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error };
 }
