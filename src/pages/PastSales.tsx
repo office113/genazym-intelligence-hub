@@ -376,8 +376,16 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const emailName: Record<string, string> = {};
     const emailMaxBid: Record<string, number> = {};
     const emailTotalWins: Record<string, number> = {};
+    const emailWinCount: Record<string, number> = {};
     const emailEverWon: Record<string, boolean> = {};
     const emailFirstDate: Record<string, string> = {};
+
+    // Build email -> bidspirit_id map from registrations
+    const emailBidspiritId: Record<string, string> = {};
+    rawRegsData.forEach((r: any) => {
+      const email = (r.email || "").trim().toLowerCase();
+      if (email && r.bidspirit_id) emailBidspiritId[email] = r.bidspirit_id;
+    });
 
     rawActivityData.forEach((r: any) => {
       const email = r.email;
