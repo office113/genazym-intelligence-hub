@@ -806,21 +806,13 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
 }
 
 function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
-  const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = useMemo(() => {
-    const filtered = pastSalesData.filter((sale) => {
-      if (brandFilter === "both") return true;
-      return brandFilter === "genazym"
-        ? sale.brand === "Genazym"
-        : sale.brand === "Zaidy";
-    });
-
     const byYear: Record<number, SaleRow[]> = {};
-    filtered.forEach((sale) => {
+    pastSalesData.forEach((sale) => {
       const year = new Date(sale.date).getFullYear();
       if (!byYear[year]) byYear[year] = [];
       byYear[year].push(sale);
@@ -846,20 +838,12 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
         } as YearlyData;
       })
       .sort((a, b) => a.year - b.year);
-  }, [pastSalesData, brandFilter]);
+  }, [pastSalesData]);
 
   const drillDownCustomers = useMemo(() =>
-    getDrillDownCustomers(brandFilter, drillDownType, drillDownYear),
-    [brandFilter, drillDownType, drillDownYear]
+    getDrillDownCustomers("genazym", drillDownType, drillDownYear),
+    [drillDownType, drillDownYear]
   );
-
-  const brandOptions: { key: TrendsBrandFilter; label: string }[] = [
-    { key: "genazym", label: "גנזים" },
-    { key: "zaidy", label: "זיידי" },
-    { key: "both", label: "שניהם יחד" },
-  ];
-
-  const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
   const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved"; reversed?: boolean }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
