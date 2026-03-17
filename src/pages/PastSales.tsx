@@ -925,7 +925,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           return y > (auctionYearMap[best?.auction_name] || 0) ? r : best;
         }, rows[0]);
         const firstBid = rows.reduce((earliest: string, r: any) => {
-          const d = r.first_bid_at || r.auction_date || "";
+          const d = r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
         let totalWins = 0;
