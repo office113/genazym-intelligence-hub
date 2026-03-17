@@ -453,7 +453,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       if (r.auction_name) emailAuctions[email].add(r.auction_name);
       emailMaxBid[email] = Math.max(emailMaxBid[email], r.max_bid || 0);
       if (r.was_winner) {
-        emailTotalWins[email] += (r.max_bid || 0);
+        emailTotalWins[email] += (r.total_win_value || 0);
         emailWinCount[email] = (emailWinCount[email] || 0) + 1;
         emailEverWon[email] = true;
       }
