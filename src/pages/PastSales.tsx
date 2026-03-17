@@ -517,7 +517,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     customers.sort((a, b) => b.maxHistoricalBid - a.maxHistoricalBid);
 
     return { customers, latestSale: latestSaleLabel };
-  }, [rawActivityData, rawAuctionsData, rawRegsData]);
+  }, [rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData]);
 
   const [search, setSearch] = useState("");
   const [minMaxBid, setMinMaxBid] = useState("");
