@@ -141,6 +141,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         );
         if (cancelled) return;
 
+        console.log('Sample Activity Row:', activityData[0]);
+        console.log('Sample Reg Row:', regsData[0]);
+
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
         activityData.forEach((row: any) => {
