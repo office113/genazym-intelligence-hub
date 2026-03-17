@@ -395,6 +395,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
         emailName[email] = r.full_name || email;
         emailMaxBid[email] = 0;
         emailTotalWins[email] = 0;
+        emailWinCount[email] = 0;
         emailEverWon[email] = false;
         emailFirstDate[email] = "";
       }
