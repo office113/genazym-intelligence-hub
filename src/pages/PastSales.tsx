@@ -834,7 +834,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const actRows = rawActivityData.filter((a: any) => a.email === r.email);
           const firstBid = actRows.length > 0
             ? actRows.reduce((earliest: string, a: any) => {
-                const d = a.first_bid_at || a.auction_date || "";
+                const d = a.auction_date || "";
                 return d && (!earliest || d < earliest) ? d : earliest;
               }, "")
             : "";
