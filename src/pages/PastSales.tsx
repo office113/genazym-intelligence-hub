@@ -1205,7 +1205,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
                 </tr>
               ))}
               {drillDownCustomers.length === 0 && (
-                <tr><td colSpan={drillDownType === "registrants" ? 6 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
+                <tr><td colSpan={drillDownType === "registrants" ? 8 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
               )}
             </tbody>
           </table>
