@@ -887,13 +887,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const d = r.first_bid_at || r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
-        // Deduplicate wins by auction_name
-        const seenAuctions = new Set<string>();
+        // Sum max_bid only for rows where was_winner is true
         let totalWins = 0;
         rows.forEach((r: any) => {
-          if (r.auction_name && !seenAuctions.has(r.auction_name)) {
-            seenAuctions.add(r.auction_name);
-            totalWins += (r.total_win_value || 0);
+          if (r.was_winner) {
+            totalWins += (r.max_bid || 0);
           }
         });
         return {
