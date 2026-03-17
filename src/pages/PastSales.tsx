@@ -426,9 +426,9 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       }
     });
 
-    // Emails in the latest auction
+    // Emails in the latest auction (normalized)
     const latestAuctionEmails = new Set(
-      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => r.email)
+      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => (r.email || "").trim().toLowerCase())
     );
 
     // The 3 sales before the latest (for returning customer logic)
