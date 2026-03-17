@@ -834,7 +834,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const actRows = rawActivityData.filter((a: any) => a.email === r.email);
           const firstBid = actRows.length > 0
             ? actRows.reduce((earliest: string, a: any) => {
-                const d = a.first_bid_at || a.auction_date || "";
+                const d = a.auction_date || "";
                 return d && (!earliest || d < earliest) ? d : earliest;
               }, "")
             : "";
@@ -884,7 +884,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
         }, rows[0]);
         // First bid date: use first_bid_at or earliest auction_date
         const firstBid = rows.reduce((earliest: string, r: any) => {
-          const d = r.first_bid_at || r.auction_date || "";
+          const d = r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
         // Sum max_bid only for rows where was_winner is true
@@ -925,7 +925,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           return y > (auctionYearMap[best?.auction_name] || 0) ? r : best;
         }, rows[0]);
         const firstBid = rows.reduce((earliest: string, r: any) => {
-          const d = r.first_bid_at || r.auction_date || "";
+          const d = r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
         let totalWins = 0;
