@@ -800,6 +800,24 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
 
 type TrendsBrandFilter = "genazym" | "zaidy" | "both";
 
+  const parallelBrandLabelMain = brand === "zaidy" ? "G" : "Z";
+  const renderIdCell = (c: RetentionCustomer) => {
+    if (c.bidspiritId) {
+      if (c.idSource === "parallel") {
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="tabular-nums">{c.bidspiritId}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
+              {parallelBrandLabelMain}
+            </span>
+          </span>
+        );
+      }
+      return <span className="tabular-nums">{c.bidspiritId}</span>;
+    }
+    return <span className="text-muted-foreground/60 text-[11px] cursor-help border-b border-dashed border-muted-foreground/30" title={c.email}>חסר רישום</span>;
+  };
+
 
 
 
