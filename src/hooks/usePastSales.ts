@@ -134,10 +134,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (cancelled) return;
 
         // 4. שליפת נרשמים עם pagination ופילטר מותג
-        const brandFilter2 = brand === "genazym" ? "Genazym" : "Zaidy";
         const regsData = await fetchAllPages(
           "registrations",
-          { brand: brandFilter2 },
+          { brand: brand === "genazym" ? "Genazym" : "Zaidy" },
           "created_at, join_date, approved"
         );
         if (cancelled) return;
@@ -310,11 +309,11 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           }
 
           // New registrants
-          const newRegistrantsCount = regsData.filter((r: any) => {
-            const joinDate = new Date(r.created_at || r.join_date || r.approved);
-            if (isNaN(joinDate.getTime())) return false;
-            return joinDate.getFullYear() === year;
+          const count = regsData.filter((r: any) => {
+            const regDate = new Date(r.join_date || r.created_at);
+            return regDate.getFullYear() === year;
           }).length;
+          const newRegistrantsCount = count;
 
           return {
             year,
