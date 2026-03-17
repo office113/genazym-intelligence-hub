@@ -339,7 +339,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
       }
       return <span className="tabular-nums">{c.bidspiritId}</span>;
     }
-    return <span className="text-muted-foreground/60 text-[11px]">חסר רישום</span>;
+    return <span className="text-muted-foreground/60 text-[11px] cursor-help border-b border-dashed border-muted-foreground/30" title={c.email}>חסר רישום</span>;
   };
 
   return (
