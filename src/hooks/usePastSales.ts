@@ -132,13 +132,19 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const activityData = await fetchAllPages("fact_customer_auction_activity", { brand: brandFilter });
         if (cancelled) return;
 
-        // 3. שליפת ספרים עם pagination
+        // 3. שליפת ספרים עם pagination - כולל brand=NULL למכירות ישנות
         const booksData = await fetchAllPages(
           "fact_book_auction_summary",
-          { brand: brandFilter },
-          "auction_name, sold_flag, sold_price, opening_price",
+          {},
+          "auction_name, sold_flag, sold_price, opening_price, brand",
+          `brand.eq.${brandFilter},brand.is.null`,
         );
         if (cancelled) return;
+
+        // סינון ספרים רק למכירות של המותג הנוכחי (לפי auction_name מתוך auctions table)
+        const validAuctionNames = new Set((auctionsData ?? []).map((a: any) => a.auction_name));
+        const filteredBooksData = booksData.filter((b: any) => validAuctionNames.has(b.auction_name));
+        console.log(`Books fetched: ${booksData.length}, after filtering to valid auctions: ${filteredBooksData.length}, auction names in books:`, [...new Set(booksData.map((b: any) => b.auction_name))].sort());
 
         // 4. שליפת נרשמים עם pagination ופילטר מותג
         const regsData = await fetchAllPages(
