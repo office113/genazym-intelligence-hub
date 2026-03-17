@@ -453,6 +453,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
       const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
+      const emailLower = email.toLowerCase();
       customers.push({
         id: `ret-${email}`,
         name: emailName[email],
@@ -460,12 +461,14 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
         salesWithoutInvolvement,
         maxHistoricalBid: emailMaxBid[email],
         totalHistoricalWins: emailTotalWins[email],
+        winCount: emailWinCount[email] || 0,
         salesInvolved,
         lastActiveSale,
         isReturning,
         inLatestSale: inLatest,
         everWon: emailEverWon[email],
         firstBidDate: emailFirstDate[email] ? emailFirstDate[email].slice(0, 10) : "",
+        bidspiritId: emailBidspiritId[emailLower] || "",
       });
     }
 
