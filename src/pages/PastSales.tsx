@@ -467,10 +467,10 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
   // Only show customers NOT involved in latest sale (salesWithoutInvolvement >= 1)
   const baseCustomers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 1), [allCustomers]);
 
-  const kpi1Customers = useMemo(() => data.customers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [data, significantWinnerThreshold]);
-  const kpi2Customers = useMemo(() => data.customers.filter(c => c.isReturning), [data]);
-  const kpi3Customers = useMemo(() => data.customers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [data, highBidAbsentThreshold]);
-  const kpi4Customers = useMemo(() => data.customers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [data]);
+  const kpi1Customers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [allCustomers, significantWinnerThreshold]);
+  const kpi2Customers = useMemo(() => allCustomers.filter(c => c.isReturning), [allCustomers]);
+  const kpi3Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [allCustomers, highBidAbsentThreshold]);
+  const kpi4Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [allCustomers]);
 
   const kpiConfigs = [
     { title: "זוכים משמעותיים שנעלמו", customers: kpi1Customers, desc: `לא מעורבים ב-3 מכירות אחרונות, סך זכיות מעל $${significantWinnerThreshold.toLocaleString()}` },
