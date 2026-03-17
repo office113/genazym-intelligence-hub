@@ -630,6 +630,24 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     setCustomerPanelOpen(true);
   };
 
+  const parallelBrandLabelMain = brand === "zaidy" ? "G" : "Z";
+  const renderIdCell = (c: RetentionCustomer) => {
+    if (c.bidspiritId) {
+      if (c.idSource === "parallel") {
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="tabular-nums">{c.bidspiritId}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
+              {parallelBrandLabelMain}
+            </span>
+          </span>
+        );
+      }
+      return <span className="tabular-nums">{c.bidspiritId}</span>;
+    }
+    return <span className="text-muted-foreground/60 text-[11px] cursor-help border-b border-dashed border-muted-foreground/30" title={c.email}>חסר רישום</span>;
+  };
+
   return (
     <>
       <div className="mb-6 flex items-center gap-3">
@@ -697,6 +715,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
             <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
               <tr>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+                <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מזהה</th>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45] cursor-pointer hover:text-foreground select-none" onClick={() => toggleSort("salesWithoutInvolvement")}>
                   מס׳ מכירות אחרונות<br />ברצף ללא מעורבות{sortIcon("salesWithoutInvolvement")}
                 </th>
@@ -716,6 +735,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
               {filtered.map((c, idx) => (
                 <tr key={c.id} className={`cursor-pointer transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`} onClick={() => handleRowClick(c)}>
                   <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>
                   <td className="px-5 py-3 text-[13px] tabular-nums text-center">
                     <span className={c.salesWithoutInvolvement >= 3 ? "text-destructive font-semibold" : ""}>{c.salesWithoutInvolvement}</span>
                   </td>
@@ -726,7 +746,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות בהתאם לסינון</td></tr>
+                <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות בהתאם לסינון</td></tr>
               )}
             </tbody>
           </table>
@@ -798,7 +818,6 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
 
 type TrendsBrandFilter = "genazym" | "zaidy" | "both";
 
-// YearlyData type is imported from usePastSales
 
 
 
