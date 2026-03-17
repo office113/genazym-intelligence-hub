@@ -668,7 +668,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
                 </div>
               </div>
             </div>
-            <RetentionDrillDownTable customers={kpiConfigs[kpiPanelIndex].customers} />
+            <RetentionDrillDownTable customers={kpiConfigs[kpiPanelIndex].customers} kpiIndex={kpiPanelIndex} brand={brand} />
           </>
         )}
       </InvestigationPanel>
