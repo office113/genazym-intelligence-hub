@@ -1267,7 +1267,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error } = usePastSales(brand);
+  const { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
