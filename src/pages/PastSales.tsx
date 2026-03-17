@@ -311,6 +311,7 @@ interface RetentionCustomer {
   everWon: boolean;
   firstBidDate: string;
   bidspiritId: string;
+  idSource: "current" | "parallel" | "none";
 }
 
 // Mock data removed — retention customers are now computed from real activity data
