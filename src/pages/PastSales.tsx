@@ -402,7 +402,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     });
 
     rawActivityData.forEach((r: any) => {
-      const email = r.email;
+      const email = (r.email || "").trim().toLowerCase();
       if (!email) return;
       if (!emailAuctions[email]) {
         emailAuctions[email] = new Set();
