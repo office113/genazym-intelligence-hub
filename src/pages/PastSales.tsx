@@ -323,6 +323,25 @@ type SortDir = "asc" | "desc";
 function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: RetentionCustomer[]; kpiIndex?: number; brand?: Brand }) {
   const isDetailedKpi = kpiIndex === 0 || kpiIndex === 1 || kpiIndex === 2 || kpiIndex === 3;
   const idLabel = brand === "zaidy" ? "מזהה זיידי" : "מזהה גנזים";
+  const parallelBrandLabel = brand === "zaidy" ? "G" : "Z";
+
+  const renderIdCell = (c: RetentionCustomer) => {
+    if (c.bidspiritId) {
+      if (c.idSource === "parallel") {
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="tabular-nums">{c.bidspiritId}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
+              {parallelBrandLabel}
+            </span>
+          </span>
+        );
+      }
+      return <span className="tabular-nums">{c.bidspiritId}</span>;
+    }
+    return <span className="text-muted-foreground/60 text-[11px]">חסר רישום</span>;
+  };
+
   return (
     <div className="flex-1 overflow-auto">
       <table className="w-full text-sm" dir="rtl">
@@ -345,7 +364,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
           {customers.map((c, idx) => (
             <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
               <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
-              {isDetailedKpi && <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.bidspiritId || "—"}</td>}
+              {isDetailedKpi && <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>}
               <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] tabular-nums">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.salesInvolved}</td>}
