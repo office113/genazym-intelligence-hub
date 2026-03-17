@@ -497,17 +497,30 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
       const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
-      // Smart ID mapping: current brand -> parallel brand -> fallback
-      let bidspiritId = emailBidspiritId[email] || "";
-      let idSource: "current" | "parallel" | "none" = bidspiritId ? "current" : "none";
-      if (!bidspiritId && parallelEmailBidspiritId[email]) {
+      // Smart ID mapping: manual -> current brand -> parallel brand -> fallback
+      let bidspiritId = "";
+      let idSource: "current" | "parallel" | "none" = "none";
+      const manualId = MANUAL_EMAIL_TO_ID[email];
+      if (manualId) {
+        bidspiritId = manualId;
+        idSource = "current";
+      } else if (emailBidspiritId[email]) {
+        bidspiritId = emailBidspiritId[email];
+        idSource = "current";
+      } else if (parallelEmailBidspiritId[email]) {
         bidspiritId = parallelEmailBidspiritId[email];
         idSource = "parallel";
       }
 
+      // Name recovery: prefer registration name over activity name
+      let displayName = emailName[email];
+      if (bidspiritId && idToName[bidspiritId]) {
+        displayName = idToName[bidspiritId];
+      }
+
       customers.push({
         id: `ret-${email}`,
-        name: emailName[email],
+        name: displayName,
         email,
         salesWithoutInvolvement,
         maxHistoricalBid: emailMaxBid[email],
