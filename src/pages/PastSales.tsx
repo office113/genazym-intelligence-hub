@@ -385,6 +385,11 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
   );
 }
 
+// Manual email-to-ID mapping for cases where bidding email ≠ registration email
+const MANUAL_EMAIL_TO_ID: Record<string, string> = {
+  "6767493@gmail.com": "6650",
+};
+
 function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[]; rawRegsData: any[]; parallelRegsData: any[] }) {
   // Compute retention data from real activity data
   const { customers: allCustomers, latestSale } = useMemo(() => {
@@ -405,6 +410,12 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const emailWinCount: Record<string, number> = {};
     const emailEverWon: Record<string, boolean> = {};
     const emailFirstDate: Record<string, string> = {};
+
+    // Build bidspirit_id -> full_name lookup from registrations (for name recovery)
+    const idToName: Record<string, string> = {};
+    rawRegsData.forEach((r: any) => {
+      if (r.bidspirit_id && r.full_name) idToName[String(r.bidspirit_id)] = r.full_name;
+    });
 
     // Build email -> bidspirit_id map from current brand registrations (normalized)
     const emailBidspiritId: Record<string, string> = {};
@@ -486,17 +497,30 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
       const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
-      // Smart ID mapping: current brand -> parallel brand -> fallback
-      let bidspiritId = emailBidspiritId[email] || "";
-      let idSource: "current" | "parallel" | "none" = bidspiritId ? "current" : "none";
-      if (!bidspiritId && parallelEmailBidspiritId[email]) {
+      // Smart ID mapping: manual -> current brand -> parallel brand -> fallback
+      let bidspiritId = "";
+      let idSource: "current" | "parallel" | "none" = "none";
+      const manualId = MANUAL_EMAIL_TO_ID[email];
+      if (manualId) {
+        bidspiritId = manualId;
+        idSource = "current";
+      } else if (emailBidspiritId[email]) {
+        bidspiritId = emailBidspiritId[email];
+        idSource = "current";
+      } else if (parallelEmailBidspiritId[email]) {
         bidspiritId = parallelEmailBidspiritId[email];
         idSource = "parallel";
       }
 
+      // Name recovery: prefer registration name over activity name
+      let displayName = emailName[email];
+      if (bidspiritId && idToName[bidspiritId]) {
+        displayName = idToName[bidspiritId];
+      }
+
       customers.push({
         id: `ret-${email}`,
-        name: emailName[email],
+        name: displayName,
         email,
         salesWithoutInvolvement,
         maxHistoricalBid: emailMaxBid[email],
