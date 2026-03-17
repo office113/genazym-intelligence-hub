@@ -100,6 +100,8 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugRegsCount, setDebugRegsCount] = useState(0);
+  const [debugRegsError, setDebugRegsError] = useState("No Error");
 
   useEffect(() => {
     let cancelled = false;
@@ -133,31 +135,17 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         );
         if (cancelled) return;
 
-        // 4. שליפת נרשמים עם pagination
-        // Debug: try fetching without brand filter first to check if data exists
-        let regsData: any[] = [];
-        try {
-          regsData = await fetchAllPages(
-            "registrations",
-            { brand: brandFilter },
-            "email, brand, join_date, approved, created_at",
-          );
-        } catch (regsError: any) {
-          console.error('Registrations fetch error:', regsError);
-        }
+        // 4. שליפת נרשמים (temporary debug, no brand filter)
+        const { data: regsDataRaw, error: regsError } = await supabase
+          .from("registrations")
+          .select("created_at, join_date, approved");
+        const regsData = regsDataRaw ?? [];
         if (cancelled) return;
 
         console.log('Regs Data Length:', regsData?.length);
-        console.log('Sample Reg Row:', regsData?.[0]);
-        if (regsData.length === 0) {
-          // Try without brand filter to debug
-          try {
-            const allRegs = await fetchAllPages("registrations", {}, "email, brand, created_at");
-            console.log('All Regs (no brand filter):', allRegs.length, 'Sample:', allRegs[0]);
-          } catch (e) {
-            console.error('All regs fetch failed:', e);
-          }
-        }
+        setDebugRegsCount(regsData ? regsData.length : 0);
+        setDebugRegsError(regsError ? regsError.message : 'No Error');
+        if (regsError) console.error("Registrations Error:", regsError);
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
@@ -385,5 +373,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error, debugRegsCount, debugRegsError };
 }
