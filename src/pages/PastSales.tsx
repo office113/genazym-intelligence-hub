@@ -717,6 +717,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
               {filtered.map((c, idx) => (
                 <tr key={c.id} className={`cursor-pointer transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`} onClick={() => handleRowClick(c)}>
                   <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                  <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>
                   <td className="px-5 py-3 text-[13px] tabular-nums text-center">
                     <span className={c.salesWithoutInvolvement >= 3 ? "text-destructive font-semibold" : ""}>{c.salesWithoutInvolvement}</span>
                   </td>
