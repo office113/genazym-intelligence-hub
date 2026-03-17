@@ -535,8 +535,11 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
   const significantWinnerThreshold = brand === "genazym" ? 20000 : 10000;
   const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
 
+  // Exclude customers registered only in the parallel brand (keep current-brand and unregistered)
+  const brandFilteredCustomers = useMemo(() => allCustomers.filter(c => c.idSource !== "parallel"), [allCustomers]);
+
   // Only show customers NOT involved in latest sale for the churn table
-  const baseCustomers = useMemo(() => allCustomers.filter(c => !c.inLatestSale), [allCustomers]);
+  const baseCustomers = useMemo(() => brandFilteredCustomers.filter(c => !c.inLatestSale), [brandFilteredCustomers]);
 
   const kpi1Customers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [allCustomers, significantWinnerThreshold]);
   const kpi2Customers = useMemo(() => allCustomers.filter(c => c.isReturning), [allCustomers]);
