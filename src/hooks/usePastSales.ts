@@ -160,7 +160,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const regsData = await fetchAllPages(
           "registrations",
           { brand: brand === "genazym" ? "Genazym" : "Zaidy" },
-          "id, full_name, email, phone, created_at, join_date, approved"
+          "id, full_name, email, phone, created_at, join_date, approved, bidspirit_id"
         );
         if (cancelled) return;
         console.log('Regs Data Length:', regsData.length);

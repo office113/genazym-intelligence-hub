@@ -330,10 +330,13 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
             {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">{idLabel}</th>}
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מקסימום ביד<br />היסטורי</th>
-            <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
-            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירות</th>}
-            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">זכיות</th>}
-            {!isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ זכיות<br />היסטורי</th>}
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">סה״כ זכיות ($)</th>}
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירות מעורב</th>}
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">פריטים שזכה</th>}
+            {!isKpi1 && <>
+              <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
+              <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ זכיות<br />היסטורי</th>
+            </>}
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירה אחרונה<br />שהיה מעורב בה</th>
           </tr>
         </thead>
@@ -343,10 +346,13 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
               <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
               {isKpi1 && <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.bidspiritId || "—"}</td>}
               <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
-              <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.firstBidDate}</td>
+              {isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
               {isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.salesInvolved}</td>}
               {isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.winCount > 0 ? c.winCount : "—"}</td>}
-              {!isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
+              {!isKpi1 && <>
+                <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.firstBidDate}</td>
+                <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>
+              </>}
               <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.lastActiveSale}</td>
             </tr>
           ))}
