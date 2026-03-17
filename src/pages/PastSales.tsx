@@ -306,6 +306,7 @@ interface RetentionCustomer {
   salesInvolved: number;
   lastActiveSale: string;
   isReturning: boolean;
+  inLatestSale: boolean;
   everWon: boolean;
   firstBidDate: string;
 }
