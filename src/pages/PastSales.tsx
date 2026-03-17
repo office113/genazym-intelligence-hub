@@ -339,7 +339,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
       }
       return <span className="tabular-nums">{c.bidspiritId}</span>;
     }
-    return <span className="text-muted-foreground/60 text-[11px]">חסר רישום</span>;
+    return <span className="text-muted-foreground/60 text-[11px] cursor-help border-b border-dashed border-muted-foreground/30" title={c.email}>חסר רישום</span>;
   };
 
   return (
@@ -535,13 +535,16 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
   const significantWinnerThreshold = brand === "genazym" ? 20000 : 10000;
   const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
 
-  // Only show customers NOT involved in latest sale for the churn table
-  const baseCustomers = useMemo(() => allCustomers.filter(c => !c.inLatestSale), [allCustomers]);
+  // Exclude customers registered only in the parallel brand (keep current-brand and unregistered)
+  const brandFilteredCustomers = useMemo(() => allCustomers.filter(c => c.idSource !== "parallel"), [allCustomers]);
 
-  const kpi1Customers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [allCustomers, significantWinnerThreshold]);
-  const kpi2Customers = useMemo(() => allCustomers.filter(c => c.isReturning), [allCustomers]);
-  const kpi3Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [allCustomers, highBidAbsentThreshold]);
-  const kpi4Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [allCustomers]);
+  // Only show customers NOT involved in latest sale for the churn table
+  const baseCustomers = useMemo(() => brandFilteredCustomers.filter(c => !c.inLatestSale), [brandFilteredCustomers]);
+
+  const kpi1Customers = useMemo(() => brandFilteredCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [brandFilteredCustomers, significantWinnerThreshold]);
+  const kpi2Customers = useMemo(() => brandFilteredCustomers.filter(c => c.isReturning), [brandFilteredCustomers]);
+  const kpi3Customers = useMemo(() => brandFilteredCustomers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [brandFilteredCustomers, highBidAbsentThreshold]);
+  const kpi4Customers = useMemo(() => brandFilteredCustomers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [brandFilteredCustomers]);
 
   const kpiConfigs = [
     { title: "זוכים משמעותיים שנעלמו", customers: kpi1Customers, desc: `לא מעורבים ב-3 מכירות אחרונות, סך זכיות מעל $${significantWinnerThreshold.toLocaleString()}` },
