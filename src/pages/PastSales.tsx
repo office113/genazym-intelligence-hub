@@ -648,7 +648,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
         open={customerPanelOpen}
         onClose={() => setCustomerPanelOpen(false)}
         title={selectedCustomer?.name || ""}
-        subtitle={selectedCustomer ? `${data.latestSale} | ${brandLabel}` : ""}
+        subtitle={selectedCustomer ? `${latestSale} | ${brandLabel}` : ""}
       >
         {selectedCustomer && (
           <>
