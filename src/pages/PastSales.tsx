@@ -838,13 +838,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
                 return d && (!earliest || d < earliest) ? d : earliest;
               }, "")
             : "";
-          // Deduplicate wins by auction_name
-          const seenAuctions = new Set<string>();
+          // Sum max_bid only for rows where was_winner is true
           let totalWins = 0;
           actRows.forEach((a: any) => {
-            if (a.auction_name && !seenAuctions.has(a.auction_name)) {
-              seenAuctions.add(a.auction_name);
-              totalWins += (a.total_win_value || 0);
+            if (a.was_winner) {
+              totalWins += (a.max_bid || 0);
             }
           });
           const latest = actRows.length > 0 ? actRows.reduce((best: any, a: any) => {
