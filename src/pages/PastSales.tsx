@@ -519,7 +519,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
     <>
       <div className="mb-6 flex items-center gap-3">
         <span className="text-sm text-muted-foreground">מכירת ייחוס:</span>
-        <span className="text-sm font-semibold text-foreground">{data.latestSale}</span>
+        <span className="text-sm font-semibold text-foreground">{latestSale}</span>
         <span className="text-xs text-muted-foreground mr-2">({brandLabel})</span>
       </div>
 
