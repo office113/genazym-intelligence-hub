@@ -805,40 +805,12 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
   return trendsDrillDownData[key]?.[year] || [];
 }
 
-function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
+function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
-  const yearlyData = useMemo(() => {
-    const byYear: Record<number, SaleRow[]> = {};
-    pastSalesData.forEach((sale) => {
-      const year = new Date(sale.date).getFullYear();
-      if (!byYear[year]) byYear[year] = [];
-      byYear[year].push(sale);
-    });
-
-    return Object.entries(byYear)
-      .map(([yearStr, sales]) => {
-        const year = parseInt(yearStr);
-        const totalRevenue = sales.reduce((sum, s) => sum + s.revenue, 0);
-        const booksSold = sales.reduce((sum, s) => sum + s.sold, 0);
-        return {
-          year,
-          salesCount: sales.length,
-          totalRevenue,
-          booksSold,
-          uniqueWinners: sales.reduce((sum, s) => sum + s.winners, 0),
-          uniqueInvolved: sales.reduce((sum, s) => sum + s.bidders, 0),
-          newRegistrants: sales.reduce((sum, s) => sum + s.newReg, 0),
-          avgPricePerItem: booksSold > 0 ? Math.round(totalRevenue / booksSold) : 0,
-          medianPrice: 0,
-          newInvolved: 0,
-          churned: 0,
-        } as YearlyData;
-      })
-      .sort((a, b) => a.year - b.year);
-  }, [pastSalesData]);
+  const yearlyData = yearlyTrendsData;
 
   const drillDownCustomers = useMemo(() =>
     getDrillDownCustomers("genazym", drillDownType, drillDownYear),
