@@ -50,6 +50,29 @@ function formatSaleLabel(auctionName: string): string {
   return num ? `#${num}` : auctionName;
 }
 
+async function fetchAllPages(table: string, filters: Record<string, string>, select = "*") {
+  let allData: any[] = [];
+  let from = 0;
+  const PAGE_SIZE = 1000;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = (supabase.from(table) as any).select(select).range(from, from + PAGE_SIZE - 1);
+    Object.entries(filters).forEach(([key, value]) => {
+      query = query.eq(key, value);
+    });
+
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+
+    allData = [...allData, ...(data ?? [])];
+    hasMore = (data ?? []).length === PAGE_SIZE;
+    from += PAGE_SIZE;
+  }
+
+  return allData;
+}
+
 export function usePastSales(brand: "genazym" | "zaidy") {
   const [pastSalesData, setPastSalesData] = useState<SaleRow[]>([]);
   const [involvedData, setInvolvedData] = useState<InvolvedBarData[]>([]);
@@ -73,7 +96,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
       try {
         const brandFilter = brand === "genazym" ? "Genazym" : "Zaidy";
 
-        // 1. שליפת מכירות מטבלת auctions
+        // 1. שליפת מכירות
         const { data: auctionsData, error: auctionsErr } = await supabase
           .from("auctions")
           .select("*")
@@ -83,43 +106,35 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (auctionsErr) throw new Error(auctionsErr.message);
         if (cancelled) return;
 
-        // 2. שליפת נתוני לקוחות לפי מכירה מ-fact_customer_auction_activity
-        const { data: activityData, error: activityErr } = await supabase
-          .from("fact_customer_auction_activity")
-          .select("*")
-          .eq("brand", brandFilter);
-
-        if (activityErr) throw new Error(activityErr.message);
+        // 2. שליפת כל נתוני הפעילות עם pagination
+        const activityData = await fetchAllPages("fact_customer_auction_activity", { brand: brandFilter });
         if (cancelled) return;
 
-        // 3. שליפת נתוני ספרים מ-fact_book_auction_summary
-        const { data: booksData, error: booksErr } = await supabase
-          .from("fact_book_auction_summary")
-          .select("auction_name, sold_flag, sold_price, opening_price")
-          .eq("brand", brandFilter);
-
-        if (booksErr) throw new Error(booksErr.message);
+        // 3. שליפת ספרים עם pagination
+        const booksData = await fetchAllPages(
+          "fact_book_auction_summary",
+          { brand: brandFilter },
+          "auction_name, sold_flag, sold_price, opening_price",
+        );
         if (cancelled) return;
 
-        // 4. שליפת נרשמים מטבלת registrations
-        const { data: regsData, error: regsErr } = await supabase
-          .from("registrations")
-          .select("email, brand, join_date, approved")
-          .eq("brand", brandFilter);
-
-        if (regsErr) throw new Error(regsErr.message);
+        // 4. שליפת נרשמים עם pagination
+        const regsData = await fetchAllPages(
+          "registrations",
+          { brand: brandFilter },
+          "email, brand, join_date, approved",
+        );
         if (cancelled) return;
 
-        // קיבוץ activity לפי auction_name
+        // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
-        (activityData ?? []).forEach((row: any) => {
+        activityData.forEach((row: any) => {
           if (!activityByAuction[row.auction_name]) activityByAuction[row.auction_name] = [];
           activityByAuction[row.auction_name].push(row);
         });
 
-        // קיבוץ ספרים לפי auction_name
         const booksByAuction: Record<string, any[]> = {};
-        (booksData ?? []).forEach((row: any) => {
+        booksData.forEach((row: any) => {
           if (!booksByAuction[row.auction_name]) booksByAuction[row.auction_name] = [];
           booksByAuction[row.auction_name].push(row);
         });
@@ -128,8 +143,6 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const sales: SaleRow[] = (auctionsData ?? []).map((auction: any) => {
           const auctionActivity = activityByAuction[auction.auction_name] ?? [];
           const auctionBooks = booksByAuction[auction.auction_name] ?? [];
-
-          const involved = auctionActivity.filter((r: any) => r.total_bids > 0).length;
           const winners = auctionActivity.filter((r: any) => r.total_wins > 0).length;
           const totalRevenue = auctionActivity.reduce(
             (sum: number, r: any) => sum + (Number(r.total_win_value) || 0),
@@ -138,11 +151,10 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           const totalLots = auctionBooks.length;
           const soldLots = auctionBooks.filter((b: any) => b.sold_flag).length;
 
-          // נרשמים חדשים בחלון 28 יום לפני המכירה
           const auctionDate = new Date(auction.auction_date);
           const windowStart = new Date(auctionDate);
           windowStart.setDate(windowStart.getDate() - 28);
-          const newRegs = (regsData ?? []).filter((r: any) => {
+          const newRegs = regsData.filter((r: any) => {
             const joinDate = new Date(r.join_date || r.approved);
             return joinDate >= windowStart && joinDate <= auctionDate;
           }).length;
@@ -156,29 +168,26 @@ export function usePastSales(brand: "genazym" | "zaidy") {
             unsold: totalLots - soldLots,
             revenue: totalRevenue,
             winners,
-            bidders: involved,
+            bidders: auctionActivity.length,
             newReg: newRegs,
             auctionName: auction.auction_name,
             brand: auction.brand,
           };
         });
 
-        // בניית involvedData (5 מכירות אחרונות)
+        // 5 מכירות אחרונות לגרפים
         const last5Auctions = [...(auctionsData ?? [])]
           .sort((a: any, b: any) => extractSaleNumber(a.auction_name) - extractSaleNumber(b.auction_name))
           .slice(-5);
 
         const involved: InvolvedBarData[] = last5Auctions.map((auction: any) => {
           const auctionActivity = activityByAuction[auction.auction_name] ?? [];
-          const involvedCustomers = auctionActivity.filter((r: any) => r.total_bids > 0);
-          const winnerCustomers = involvedCustomers.filter((r: any) => r.total_wins > 0);
-
           return {
             sale: formatSaleLabel(auction.auction_name),
             saleNumber: extractSaleNumber(auction.auction_name),
-            involved: involvedCustomers.length,
-            winners: winnerCustomers.length,
-            customers: involvedCustomers.map((r: any) => ({
+            involved: auctionActivity.length,
+            winners: auctionActivity.filter((r: any) => r.total_wins > 0).length,
+            customers: auctionActivity.map((r: any) => ({
               name: r.full_name ?? r.email,
               email: r.email,
               status: r.total_wins > 0 ? "זוכה" : "מעורב",
@@ -193,19 +202,13 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           };
         });
 
-        // בניית churnData — לקוחות שהיו במכירה הקודמת ולא חזרו
+        // נטישה
         const churn: ChurnBarData[] = [];
         for (let i = 1; i < last5Auctions.length; i++) {
           const currAuction = last5Auctions[i];
           const prevAuction = last5Auctions[i - 1];
-
-          const currEmails = new Set(
-            (activityByAuction[currAuction.auction_name] ?? [])
-              .filter((r: any) => r.total_bids > 0)
-              .map((r: any) => r.email),
-          );
-          const prevActive = (activityByAuction[prevAuction.auction_name] ?? []).filter((r: any) => r.total_bids > 0);
-
+          const currEmails = new Set((activityByAuction[currAuction.auction_name] ?? []).map((r: any) => r.email));
+          const prevActive = activityByAuction[prevAuction.auction_name] ?? [];
           const notReturned = prevActive.filter((r: any) => !currEmails.has(r.email));
 
           churn.push({
@@ -227,18 +230,12 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           });
         }
 
-        // חישוב KPIs
-        const allActivity = activityData ?? [];
-        const activeCustomers = allActivity.filter((r: any) => r.total_bids > 0);
-        const uniqueInvolved = new Set(activeCustomers.map((r: any) => r.email)).size;
+        // KPIs
+        const uniqueInvolved = new Set(activityData.map((r: any) => r.email)).size;
         const auctionCount = (auctionsData ?? []).length || 1;
-
-        const allBooks = booksData ?? [];
-        const soldBooks = allBooks.filter((b: any) => b.sold_flag);
-        const totalRevenue = activeCustomers.reduce((sum: number, r: any) => sum + (Number(r.total_win_value) || 0), 0);
-        const totalOpening = allBooks.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
-        const avgOpeningPrice = allBooks.length > 0 ? totalOpening / allBooks.length : 0;
-
+        const soldBooks = booksData.filter((b: any) => b.sold_flag);
+        const totalOpening = booksData.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
+        const avgOpeningPrice = booksData.length > 0 ? totalOpening / booksData.length : 0;
         const totalSoldRevenue = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
         const totalSoldOpening = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
         const avgUplift =
