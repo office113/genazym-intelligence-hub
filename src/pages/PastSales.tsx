@@ -310,36 +310,7 @@ interface RetentionCustomer {
   firstBidDate: string;
 }
 
-const genazymRetentionCustomers: RetentionCustomer[] = [
-  { id: "RC01", name: "אברהם גולדשטיין", email: "a.goldstein@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 52000, totalHistoricalWins: 185000, salesInvolved: 12, lastActiveSale: "מכירה #43", isReturning: false, everWon: true, firstBidDate: "2019-04-12" },
-  { id: "RC02", name: "יצחק לוי", email: "y.levi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 35000, totalHistoricalWins: 340000, salesInvolved: 18, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2018-09-03" },
-  { id: "RC03", name: "משה כהן", email: "m.cohen@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 68000, totalHistoricalWins: 92000, salesInvolved: 8, lastActiveSale: "מכירה #45", isReturning: false, everWon: true, firstBidDate: "2020-06-15" },
-  { id: "RC04", name: "דוד פרידמן", email: "d.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2022-01-20" },
-  { id: "RC05", name: "שלמה רוזנברג", email: "s.rosenberg@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 120000, totalHistoricalWins: 520000, salesInvolved: 22, lastActiveSale: "מכירה #44", isReturning: false, everWon: true, firstBidDate: "2017-11-08" },
-  { id: "RC06", name: "חיים ויסמן", email: "c.weisman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 28000, totalHistoricalWins: 78000, salesInvolved: 9, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2020-03-22" },
-  { id: "RC07", name: "נתן שטרן", email: "n.stern@email.com", salesWithoutInvolvement: 5, maxHistoricalBid: 45000, totalHistoricalWins: 290000, salesInvolved: 15, lastActiveSale: "מכירה #42", isReturning: false, everWon: true, firstBidDate: "2018-07-14" },
-  { id: "RC08", name: "אליהו ברגר", email: "e.berger@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 12000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #45", isReturning: false, everWon: false, firstBidDate: "2021-10-30" },
-  { id: "RC09", name: "רפאל דיאמנט", email: "r.diamant@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 8500, totalHistoricalWins: 42000, salesInvolved: 7, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2021-05-17" },
-  { id: "RC10", name: "שמואל פרידמן", email: "s.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 78000, totalHistoricalWins: 0, salesInvolved: 11, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2019-12-01" },
-  { id: "RC11", name: "יעקב מלר", email: "y.maler@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 32000, totalHistoricalWins: 125000, salesInvolved: 14, lastActiveSale: "מכירה #43", isReturning: false, everWon: true, firstBidDate: "2018-02-28" },
-  { id: "RC12", name: "מנחם פלדמן", email: "m.feldman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 55000, totalHistoricalWins: 210000, salesInvolved: 16, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2017-08-05" },
-];
-
-const zaidiRetentionCustomers: RetentionCustomer[] = [
-  { id: "RZ01", name: "רפאל מזרחי", email: "r.mizrachi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 12000, totalHistoricalWins: 48000, salesInvolved: 8, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2020-09-11" },
-  { id: "RZ02", name: "עמוס בן דוד", email: "a.bendavid@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 18000, totalHistoricalWins: 62000, salesInvolved: 10, lastActiveSale: "מכירה #44", isReturning: false, everWon: true, firstBidDate: "2019-05-22" },
-  { id: "RZ03", name: "נתן אזולאי", email: "n.azoulay@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 8500, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #45", isReturning: false, everWon: false, firstBidDate: "2021-08-14" },
-  { id: "RZ04", name: "גד שמעוני", email: "g.shimoni@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 31000, salesInvolved: 7, lastActiveSale: "מכירה #46", isReturning: false, everWon: true, firstBidDate: "2020-12-03" },
-  { id: "RZ05", name: "אריה כץ", email: "a.katz@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 22000, totalHistoricalWins: 85000, salesInvolved: 12, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2019-01-16" },
-  { id: "RZ06", name: "פנחס נחמן", email: "p.nachman@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 5200, totalHistoricalWins: 0, salesInvolved: 3, lastActiveSale: "מכירה #43", isReturning: false, everWon: false, firstBidDate: "2022-06-30" },
-  { id: "RZ07", name: "בנימין שרף", email: "b.sharaf@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 11000, totalHistoricalWins: 24000, salesInvolved: 6, lastActiveSale: "מכירה #45", isReturning: false, everWon: true, firstBidDate: "2021-03-09" },
-  { id: "RZ08", name: "יהודה אלבז", email: "y.elbaz@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 14000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2022-04-18" },
-];
-
-const brandRetentionData: Record<Brand, { customers: RetentionCustomer[]; latestSale: string }> = {
-  genazym: { customers: genazymRetentionCustomers, latestSale: "מכירה #47" },
-  zaidy: { customers: zaidiRetentionCustomers, latestSale: "מכירה #47" },
-};
+// Mock data removed — retention customers are now computed from real activity data
 
 type SortField = "salesWithoutInvolvement" | "maxHistoricalBid" | "totalHistoricalWins" | "salesInvolved";
 type SortDir = "asc" | "desc";
