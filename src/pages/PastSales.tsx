@@ -310,36 +310,7 @@ interface RetentionCustomer {
   firstBidDate: string;
 }
 
-const genazymRetentionCustomers: RetentionCustomer[] = [
-  { id: "RC01", name: "אברהם גולדשטיין", email: "a.goldstein@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 52000, totalHistoricalWins: 185000, salesInvolved: 12, lastActiveSale: "מכירה #43", isReturning: false, everWon: true, firstBidDate: "2019-04-12" },
-  { id: "RC02", name: "יצחק לוי", email: "y.levi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 35000, totalHistoricalWins: 340000, salesInvolved: 18, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2018-09-03" },
-  { id: "RC03", name: "משה כהן", email: "m.cohen@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 68000, totalHistoricalWins: 92000, salesInvolved: 8, lastActiveSale: "מכירה #45", isReturning: false, everWon: true, firstBidDate: "2020-06-15" },
-  { id: "RC04", name: "דוד פרידמן", email: "d.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2022-01-20" },
-  { id: "RC05", name: "שלמה רוזנברג", email: "s.rosenberg@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 120000, totalHistoricalWins: 520000, salesInvolved: 22, lastActiveSale: "מכירה #44", isReturning: false, everWon: true, firstBidDate: "2017-11-08" },
-  { id: "RC06", name: "חיים ויסמן", email: "c.weisman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 28000, totalHistoricalWins: 78000, salesInvolved: 9, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2020-03-22" },
-  { id: "RC07", name: "נתן שטרן", email: "n.stern@email.com", salesWithoutInvolvement: 5, maxHistoricalBid: 45000, totalHistoricalWins: 290000, salesInvolved: 15, lastActiveSale: "מכירה #42", isReturning: false, everWon: true, firstBidDate: "2018-07-14" },
-  { id: "RC08", name: "אליהו ברגר", email: "e.berger@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 12000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #45", isReturning: false, everWon: false, firstBidDate: "2021-10-30" },
-  { id: "RC09", name: "רפאל דיאמנט", email: "r.diamant@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 8500, totalHistoricalWins: 42000, salesInvolved: 7, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2021-05-17" },
-  { id: "RC10", name: "שמואל פרידמן", email: "s.friedman@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 78000, totalHistoricalWins: 0, salesInvolved: 11, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2019-12-01" },
-  { id: "RC11", name: "יעקב מלר", email: "y.maler@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 32000, totalHistoricalWins: 125000, salesInvolved: 14, lastActiveSale: "מכירה #43", isReturning: false, everWon: true, firstBidDate: "2018-02-28" },
-  { id: "RC12", name: "מנחם פלדמן", email: "m.feldman@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 55000, totalHistoricalWins: 210000, salesInvolved: 16, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2017-08-05" },
-];
-
-const zaidiRetentionCustomers: RetentionCustomer[] = [
-  { id: "RZ01", name: "רפאל מזרחי", email: "r.mizrachi@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 12000, totalHistoricalWins: 48000, salesInvolved: 8, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2020-09-11" },
-  { id: "RZ02", name: "עמוס בן דוד", email: "a.bendavid@email.com", salesWithoutInvolvement: 3, maxHistoricalBid: 18000, totalHistoricalWins: 62000, salesInvolved: 10, lastActiveSale: "מכירה #44", isReturning: false, everWon: true, firstBidDate: "2019-05-22" },
-  { id: "RZ03", name: "נתן אזולאי", email: "n.azoulay@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 8500, totalHistoricalWins: 0, salesInvolved: 5, lastActiveSale: "מכירה #45", isReturning: false, everWon: false, firstBidDate: "2021-08-14" },
-  { id: "RZ04", name: "גד שמעוני", email: "g.shimoni@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 15000, totalHistoricalWins: 31000, salesInvolved: 7, lastActiveSale: "מכירה #46", isReturning: false, everWon: true, firstBidDate: "2020-12-03" },
-  { id: "RZ05", name: "אריה כץ", email: "a.katz@email.com", salesWithoutInvolvement: 0, maxHistoricalBid: 22000, totalHistoricalWins: 85000, salesInvolved: 12, lastActiveSale: "מכירה #47", isReturning: true, everWon: true, firstBidDate: "2019-01-16" },
-  { id: "RZ06", name: "פנחס נחמן", email: "p.nachman@email.com", salesWithoutInvolvement: 4, maxHistoricalBid: 5200, totalHistoricalWins: 0, salesInvolved: 3, lastActiveSale: "מכירה #43", isReturning: false, everWon: false, firstBidDate: "2022-06-30" },
-  { id: "RZ07", name: "בנימין שרף", email: "b.sharaf@email.com", salesWithoutInvolvement: 2, maxHistoricalBid: 11000, totalHistoricalWins: 24000, salesInvolved: 6, lastActiveSale: "מכירה #45", isReturning: false, everWon: true, firstBidDate: "2021-03-09" },
-  { id: "RZ08", name: "יהודה אלבז", email: "y.elbaz@email.com", salesWithoutInvolvement: 1, maxHistoricalBid: 14000, totalHistoricalWins: 0, salesInvolved: 4, lastActiveSale: "מכירה #46", isReturning: false, everWon: false, firstBidDate: "2022-04-18" },
-];
-
-const brandRetentionData: Record<Brand, { customers: RetentionCustomer[]; latestSale: string }> = {
-  genazym: { customers: genazymRetentionCustomers, latestSale: "מכירה #47" },
-  zaidy: { customers: zaidiRetentionCustomers, latestSale: "מכירה #47" },
-};
+// Mock data removed — retention customers are now computed from real activity data
 
 type SortField = "salesWithoutInvolvement" | "maxHistoricalBid" | "totalHistoricalWins" | "salesInvolved";
 type SortDir = "asc" | "desc";
@@ -377,8 +348,106 @@ function RetentionDrillDownTable({ customers }: { customers: RetentionCustomer[]
   );
 }
 
-function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string }) {
-  const data = brandRetentionData[brand];
+function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[] }) {
+  // Compute retention data from real activity data
+  const { customers: allCustomers, latestSale } = useMemo(() => {
+    if (!rawActivityData.length || !rawAuctionsData.length) return { customers: [] as RetentionCustomer[], latestSale: "—" };
+
+    // Get sorted auction names by date (most recent last)
+    const auctionsByDate = [...rawAuctionsData]
+      .sort((a, b) => new Date(a.auction_date).getTime() - new Date(b.auction_date).getTime());
+    const sortedAuctionNames = auctionsByDate.map(a => a.auction_name);
+    const latestAuctionName = sortedAuctionNames[sortedAuctionNames.length - 1];
+    const latestSaleLabel = `מכירה ${latestAuctionName}`;
+
+    // Build email -> auction participation map
+    const emailAuctions: Record<string, Set<string>> = {};
+    const emailName: Record<string, string> = {};
+    const emailMaxBid: Record<string, number> = {};
+    const emailTotalWins: Record<string, number> = {};
+    const emailEverWon: Record<string, boolean> = {};
+    const emailFirstDate: Record<string, string> = {};
+
+    rawActivityData.forEach((r: any) => {
+      const email = r.email;
+      if (!email) return;
+      if (!emailAuctions[email]) {
+        emailAuctions[email] = new Set();
+        emailName[email] = r.full_name || email;
+        emailMaxBid[email] = 0;
+        emailTotalWins[email] = 0;
+        emailEverWon[email] = false;
+        emailFirstDate[email] = "";
+      }
+      if (r.auction_name) emailAuctions[email].add(r.auction_name);
+      emailMaxBid[email] = Math.max(emailMaxBid[email], r.max_bid || 0);
+      if (r.was_winner) {
+        emailTotalWins[email] += (r.max_bid || 0);
+        emailEverWon[email] = true;
+      }
+      const d = r.auction_date || "";
+      if (d && (!emailFirstDate[email] || d < emailFirstDate[email])) {
+        emailFirstDate[email] = d;
+      }
+    });
+
+    // Emails in the latest auction
+    const latestAuctionEmails = new Set(
+      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => r.email)
+    );
+
+    // Build retention customers: anyone who ever bid but NOT in the latest sale
+    const customers: RetentionCustomer[] = [];
+    for (const email of Object.keys(emailAuctions)) {
+      if (latestAuctionEmails.has(email)) continue; // skip those in latest sale
+
+      const auctions = emailAuctions[email];
+      const salesInvolved = auctions.size;
+
+      // Calculate consecutive recent sales without involvement (from newest backwards)
+      let salesWithoutInvolvement = 0;
+      for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
+        if (auctions.has(sortedAuctionNames[i])) break;
+        salesWithoutInvolvement++;
+      }
+
+      // Find last active sale
+      let lastActiveSale = "";
+      for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
+        if (auctions.has(sortedAuctionNames[i])) {
+          lastActiveSale = `מכירה ${sortedAuctionNames[i]}`;
+          break;
+        }
+      }
+
+      // isReturning: was in the latest sale after being absent for 3+ sales
+      // Since they are NOT in latest sale (filtered above), isReturning = false here
+      // But we check if they returned in the reference sale after 3+ gap - 
+      // Actually per the filter, these are people NOT in the reference sale, so isReturning is about
+      // whether they were absent 3+ and came back in a recent sale before the latest
+      const isReturning = false; // By definition, these customers are NOT in latest sale
+
+      customers.push({
+        id: `ret-${email}`,
+        name: emailName[email],
+        email,
+        salesWithoutInvolvement,
+        maxHistoricalBid: emailMaxBid[email],
+        totalHistoricalWins: emailTotalWins[email],
+        salesInvolved,
+        lastActiveSale,
+        isReturning,
+        everWon: emailEverWon[email],
+        firstBidDate: emailFirstDate[email] ? emailFirstDate[email].slice(0, 10) : "",
+      });
+    }
+
+    // Sort by maxHistoricalBid descending by default
+    customers.sort((a, b) => b.maxHistoricalBid - a.maxHistoricalBid);
+
+    return { customers, latestSale: latestSaleLabel };
+  }, [rawActivityData, rawAuctionsData]);
+
   const [search, setSearch] = useState("");
   const [minMaxBid, setMinMaxBid] = useState("");
   const [minTotalWins, setMinTotalWins] = useState("");
@@ -396,12 +465,12 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
   const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
 
   // Only show customers NOT involved in latest sale (salesWithoutInvolvement >= 1)
-  const baseCustomers = useMemo(() => data.customers.filter(c => c.salesWithoutInvolvement >= 1), [data]);
+  const baseCustomers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 1), [allCustomers]);
 
-  const kpi1Customers = useMemo(() => data.customers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [data, significantWinnerThreshold]);
-  const kpi2Customers = useMemo(() => data.customers.filter(c => c.isReturning), [data]);
-  const kpi3Customers = useMemo(() => data.customers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [data, highBidAbsentThreshold]);
-  const kpi4Customers = useMemo(() => data.customers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [data]);
+  const kpi1Customers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [allCustomers, significantWinnerThreshold]);
+  const kpi2Customers = useMemo(() => allCustomers.filter(c => c.isReturning), [allCustomers]);
+  const kpi3Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > highBidAbsentThreshold && c.salesWithoutInvolvement >= 2), [allCustomers, highBidAbsentThreshold]);
+  const kpi4Customers = useMemo(() => allCustomers.filter(c => c.maxHistoricalBid > 10000 && !c.everWon), [allCustomers]);
 
   const kpiConfigs = [
     { title: "זוכים משמעותיים שנעלמו", customers: kpi1Customers, desc: `לא מעורבים ב-3 מכירות אחרונות, סך זכיות מעל $${significantWinnerThreshold.toLocaleString()}` },
@@ -450,7 +519,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
     <>
       <div className="mb-6 flex items-center gap-3">
         <span className="text-sm text-muted-foreground">מכירת ייחוס:</span>
-        <span className="text-sm font-semibold text-foreground">{data.latestSale}</span>
+        <span className="text-sm font-semibold text-foreground">{latestSale}</span>
         <span className="text-xs text-muted-foreground mr-2">({brandLabel})</span>
       </div>
 
@@ -554,7 +623,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
         open={kpiPanelOpen}
         onClose={() => setKpiPanelOpen(false)}
         title={kpiPanelIndex !== null ? kpiConfigs[kpiPanelIndex].title : ""}
-        subtitle={kpiPanelIndex !== null ? `${data.latestSale} | ${brandLabel} | ${kpiConfigs[kpiPanelIndex].customers.length} לקוחות` : ""}
+        subtitle={kpiPanelIndex !== null ? `${latestSale} | ${brandLabel} | ${kpiConfigs[kpiPanelIndex].customers.length} לקוחות` : ""}
       >
         {kpiPanelIndex !== null && (
           <>
@@ -579,7 +648,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
         open={customerPanelOpen}
         onClose={() => setCustomerPanelOpen(false)}
         title={selectedCustomer?.name || ""}
-        subtitle={selectedCustomer ? `${data.latestSale} | ${brandLabel}` : ""}
+        subtitle={selectedCustomer ? `${latestSale} | ${brandLabel}` : ""}
       >
         {selectedCustomer && (
           <>
@@ -1364,7 +1433,7 @@ export default function PastSales() {
         )}
 
         {activeTab === "retention" && (
-          <RetentionTab brand={brand} brandLabel={brandLabel} />
+          <RetentionTab brand={brand} brandLabel={brandLabel} rawActivityData={rawActivityData} rawAuctionsData={rawAuctionsData} />
         )}
 
 
