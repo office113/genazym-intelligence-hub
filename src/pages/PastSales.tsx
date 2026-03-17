@@ -839,7 +839,7 @@ function TrendsTab({ yearlyTrendsData }: { yearlyTrendsData: YearlyData[] }) {
 
   return (
     <>
-      <div className="bg-red-500 text-white p-4 mb-4 rounded-md font-bold text-lg">DEBUG REGISTRATIONS: Count = {debugRegsCount} | Error = {debugRegsError}</div>
+      
       <div className="chart-card">
         <div className="flex items-center justify-between mb-6" dir="rtl">
           <div>
