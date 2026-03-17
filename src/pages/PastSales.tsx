@@ -1226,7 +1226,7 @@ export default function PastSales() {
 
 
         {activeTab === "trends" && (
-          <TrendsTab yearlyTrendsData={yearlyTrendsData} debugRegsCount={debugRegsCount} debugRegsError={debugRegsError} />
+          <TrendsTab yearlyTrendsData={yearlyTrendsData} />
         )}
       </div>
 

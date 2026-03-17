@@ -369,5 +369,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error, debugRegsCount, debugRegsError };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, kpis, loading, error };
 }
