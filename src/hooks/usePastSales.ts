@@ -347,9 +347,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         // KPIs
         const uniqueInvolved = new Set(activityData.map((r: any) => r.email)).size;
         const auctionCount = (auctionsData ?? []).length || 1;
-        const soldBooks = booksData.filter((b: any) => b.sold_flag);
-        const totalOpening = booksData.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
-        const avgOpeningPrice = booksData.length > 0 ? totalOpening / booksData.length : 0;
+        const soldBooks = filteredBooksData.filter((b: any) => b.sold_flag);
+        const totalOpening = filteredBooksData.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
+        const avgOpeningPrice = filteredBooksData.length > 0 ? totalOpening / filteredBooksData.length : 0;
         const totalSoldRevenue = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
         const totalSoldOpening = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
         const avgUplift =
