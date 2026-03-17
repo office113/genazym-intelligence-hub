@@ -385,6 +385,11 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
   );
 }
 
+// Manual email-to-ID mapping for cases where bidding email ≠ registration email
+const MANUAL_EMAIL_TO_ID: Record<string, string> = {
+  "6767493@gmail.com": "6650",
+};
+
 function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[]; rawRegsData: any[]; parallelRegsData: any[] }) {
   // Compute retention data from real activity data
   const { customers: allCustomers, latestSale } = useMemo(() => {
@@ -405,6 +410,12 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const emailWinCount: Record<string, number> = {};
     const emailEverWon: Record<string, boolean> = {};
     const emailFirstDate: Record<string, string> = {};
+
+    // Build bidspirit_id -> full_name lookup from registrations (for name recovery)
+    const idToName: Record<string, string> = {};
+    rawRegsData.forEach((r: any) => {
+      if (r.bidspirit_id && r.full_name) idToName[String(r.bidspirit_id)] = r.full_name;
+    });
 
     // Build email -> bidspirit_id map from current brand registrations (normalized)
     const emailBidspiritId: Record<string, string> = {};
