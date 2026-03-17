@@ -64,7 +64,7 @@ function formatSaleLabel(auctionName: string): string {
   return num ? `#${num}` : auctionName;
 }
 
-async function fetchAllPages(table: string, filters: Record<string, string>, select = "*") {
+async function fetchAllPages(table: string, filters: Record<string, string>, select = "*", orFilter?: string) {
   let allData: any[] = [];
   let from = 0;
   const PAGE_SIZE = 1000;
@@ -72,9 +72,13 @@ async function fetchAllPages(table: string, filters: Record<string, string>, sel
 
   while (hasMore) {
     let query = (supabase.from(table) as any).select(select).range(from, from + PAGE_SIZE - 1);
-    Object.entries(filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
-    });
+    if (orFilter) {
+      query = query.or(orFilter);
+    } else {
+      Object.entries(filters).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+    }
 
     const { data, error } = await query;
     if (error) throw new Error(error.message);
