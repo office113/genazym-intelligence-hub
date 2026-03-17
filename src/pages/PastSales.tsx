@@ -402,7 +402,31 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const latestAuctionName = sortedAuctionNames[sortedAuctionNames.length - 1];
     const latestSaleLabel = `מכירה ${latestAuctionName}`;
 
-    // Build email -> auction participation map
+    // The brand-specific ID column name
+    const currentIdCol = brand === "genazym" ? "genazym_id" : "zaidy_id";
+    const parallelIdCol = brand === "genazym" ? "zaidy_id" : "genazym_id";
+
+    // Build bidspirit_id -> full_name lookup from registrations (for name recovery)
+    const idToName: Record<string, string> = {};
+    rawRegsData.forEach((r: any) => {
+      if (r.bidspirit_id && r.full_name) idToName[String(r.bidspirit_id)] = r.full_name;
+    });
+    // Also add parallel brand names for cross-reference
+    parallelRegsData.forEach((r: any) => {
+      if (r.bidspirit_id && r.full_name) {
+        const key = String(r.bidspirit_id);
+        if (!idToName[key]) idToName[key] = r.full_name;
+      }
+    });
+
+    // Build email -> bidspirit_id map from current brand registrations (normalized) — fallback only
+    const emailBidspiritId: Record<string, string> = {};
+    rawRegsData.forEach((r: any) => {
+      const email = (r.email || "").trim().toLowerCase();
+      if (email && r.bidspirit_id) emailBidspiritId[email] = String(r.bidspirit_id);
+    });
+
+    // Aggregate per-email activity
     const emailAuctions: Record<string, Set<string>> = {};
     const emailName: Record<string, string> = {};
     const emailMaxBid: Record<string, number> = {};
@@ -410,26 +434,9 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const emailWinCount: Record<string, number> = {};
     const emailEverWon: Record<string, boolean> = {};
     const emailFirstDate: Record<string, string> = {};
-
-    // Build bidspirit_id -> full_name lookup from registrations (for name recovery)
-    const idToName: Record<string, string> = {};
-    rawRegsData.forEach((r: any) => {
-      if (r.bidspirit_id && r.full_name) idToName[String(r.bidspirit_id)] = r.full_name;
-    });
-
-    // Build email -> bidspirit_id map from current brand registrations (normalized)
-    const emailBidspiritId: Record<string, string> = {};
-    rawRegsData.forEach((r: any) => {
-      const email = (r.email || "").trim().toLowerCase();
-      if (email && r.bidspirit_id) emailBidspiritId[email] = String(r.bidspirit_id);
-    });
-
-    // Build email -> bidspirit_id map from parallel brand registrations (normalized)
-    const parallelEmailBidspiritId: Record<string, string> = {};
-    parallelRegsData.forEach((r: any) => {
-      const email = (r.email || "").trim().toLowerCase();
-      if (email && r.bidspirit_id) parallelEmailBidspiritId[email] = String(r.bidspirit_id);
-    });
+    // Direct IDs from activity data (use the best non-null value across rows)
+    const emailDirectId: Record<string, string> = {};
+    const emailParallelId: Record<string, string> = {};
 
     rawActivityData.forEach((r: any) => {
       const email = (r.email || "").trim().toLowerCase();
@@ -454,6 +461,11 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       if (d && (!emailFirstDate[email] || d < emailFirstDate[email])) {
         emailFirstDate[email] = d;
       }
+      // Capture direct IDs from activity rows
+      const directVal = r[currentIdCol];
+      if (directVal && !emailDirectId[email]) emailDirectId[email] = String(directVal);
+      const parallelVal = r[parallelIdCol];
+      if (parallelVal && !emailParallelId[email]) emailParallelId[email] = String(parallelVal);
     });
 
     // Emails in the latest auction (normalized)
@@ -462,18 +474,16 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     );
 
     // The 3 sales before the latest (for returning customer logic)
-    const last3SaleNames = sortedAuctionNames.slice(-4, -1); // 3 sales before latest
-    const last3Set = new Set(last3SaleNames);
-    const priorToLast3Names = new Set(sortedAuctionNames.slice(0, -4)); // all sales before those 3
+    const last3SaleNames = sortedAuctionNames.slice(-4, -1);
+    const priorToLast3Names = new Set(sortedAuctionNames.slice(0, -4));
 
-    // Build retention customers: ALL customers who ever bid
+    // Build retention customers
     const customers: RetentionCustomer[] = [];
     for (const email of Object.keys(emailAuctions)) {
       const inLatest = latestAuctionEmails.has(email);
       const auctions = emailAuctions[email];
       const salesInvolved = auctions.size;
 
-      // Calculate consecutive recent sales without involvement (from newest backwards)
       let salesWithoutInvolvement = 0;
       if (!inLatest) {
         for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
@@ -482,7 +492,6 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
         }
       }
 
-      // Find last active sale
       let lastActiveSale = "";
       for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
         if (auctions.has(sortedAuctionNames[i])) {
@@ -491,24 +500,32 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
         }
       }
 
-      // isReturning: active in the latest sale, NOT active in any of the last 3 sales,
-      // but had at least one activity record prior to those 3
       const inAnyLast3 = last3SaleNames.some(s => auctions.has(s));
       const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
       const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
-      // Smart ID mapping: manual -> current brand -> parallel brand -> fallback
+      // === NEW ID RESOLUTION LOGIC ===
+      // Priority 1: Direct ID from activity data (current brand column)
+      // Priority 2: Manual email mapping
+      // Priority 3: Normalized email match in current brand registrations
+      // Priority 4: Fallback — "חסר רישום"
       let bidspiritId = "";
       let idSource: "current" | "parallel" | "none" = "none";
-      const manualId = MANUAL_EMAIL_TO_ID[email];
-      if (manualId) {
-        bidspiritId = manualId;
+
+      if (emailDirectId[email]) {
+        // Direct ID from the activity table — most reliable
+        bidspiritId = emailDirectId[email];
+        idSource = "current";
+      } else if (MANUAL_EMAIL_TO_ID[email]) {
+        bidspiritId = MANUAL_EMAIL_TO_ID[email];
         idSource = "current";
       } else if (emailBidspiritId[email]) {
         bidspiritId = emailBidspiritId[email];
         idSource = "current";
-      } else if (parallelEmailBidspiritId[email]) {
-        bidspiritId = parallelEmailBidspiritId[email];
+      }
+      // If no current-brand ID at all, but has a parallel-brand ID → cross-brand customer
+      if (!bidspiritId && emailParallelId[email]) {
+        bidspiritId = emailParallelId[email];
         idSource = "parallel";
       }
 
@@ -541,7 +558,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     customers.sort((a, b) => b.maxHistoricalBid - a.maxHistoricalBid);
 
     return { customers, latestSale: latestSaleLabel };
-  }, [rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData]);
+  }, [rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData, brand]);
 
   const [search, setSearch] = useState("");
   const [minMaxBid, setMinMaxBid] = useState("");
