@@ -348,8 +348,106 @@ function RetentionDrillDownTable({ customers }: { customers: RetentionCustomer[]
   );
 }
 
-function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string }) {
-  const data = brandRetentionData[brand];
+function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[] }) {
+  // Compute retention data from real activity data
+  const { customers: allCustomers, latestSale } = useMemo(() => {
+    if (!rawActivityData.length || !rawAuctionsData.length) return { customers: [] as RetentionCustomer[], latestSale: "—" };
+
+    // Get sorted auction names by date (most recent last)
+    const auctionsByDate = [...rawAuctionsData]
+      .sort((a, b) => new Date(a.auction_date).getTime() - new Date(b.auction_date).getTime());
+    const sortedAuctionNames = auctionsByDate.map(a => a.auction_name);
+    const latestAuctionName = sortedAuctionNames[sortedAuctionNames.length - 1];
+    const latestSaleLabel = `מכירה ${latestAuctionName}`;
+
+    // Build email -> auction participation map
+    const emailAuctions: Record<string, Set<string>> = {};
+    const emailName: Record<string, string> = {};
+    const emailMaxBid: Record<string, number> = {};
+    const emailTotalWins: Record<string, number> = {};
+    const emailEverWon: Record<string, boolean> = {};
+    const emailFirstDate: Record<string, string> = {};
+
+    rawActivityData.forEach((r: any) => {
+      const email = r.email;
+      if (!email) return;
+      if (!emailAuctions[email]) {
+        emailAuctions[email] = new Set();
+        emailName[email] = r.full_name || email;
+        emailMaxBid[email] = 0;
+        emailTotalWins[email] = 0;
+        emailEverWon[email] = false;
+        emailFirstDate[email] = "";
+      }
+      if (r.auction_name) emailAuctions[email].add(r.auction_name);
+      emailMaxBid[email] = Math.max(emailMaxBid[email], r.max_bid || 0);
+      if (r.was_winner) {
+        emailTotalWins[email] += (r.max_bid || 0);
+        emailEverWon[email] = true;
+      }
+      const d = r.auction_date || "";
+      if (d && (!emailFirstDate[email] || d < emailFirstDate[email])) {
+        emailFirstDate[email] = d;
+      }
+    });
+
+    // Emails in the latest auction
+    const latestAuctionEmails = new Set(
+      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => r.email)
+    );
+
+    // Build retention customers: anyone who ever bid but NOT in the latest sale
+    const customers: RetentionCustomer[] = [];
+    for (const email of Object.keys(emailAuctions)) {
+      if (latestAuctionEmails.has(email)) continue; // skip those in latest sale
+
+      const auctions = emailAuctions[email];
+      const salesInvolved = auctions.size;
+
+      // Calculate consecutive recent sales without involvement (from newest backwards)
+      let salesWithoutInvolvement = 0;
+      for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
+        if (auctions.has(sortedAuctionNames[i])) break;
+        salesWithoutInvolvement++;
+      }
+
+      // Find last active sale
+      let lastActiveSale = "";
+      for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
+        if (auctions.has(sortedAuctionNames[i])) {
+          lastActiveSale = `מכירה ${sortedAuctionNames[i]}`;
+          break;
+        }
+      }
+
+      // isReturning: was in the latest sale after being absent for 3+ sales
+      // Since they are NOT in latest sale (filtered above), isReturning = false here
+      // But we check if they returned in the reference sale after 3+ gap - 
+      // Actually per the filter, these are people NOT in the reference sale, so isReturning is about
+      // whether they were absent 3+ and came back in a recent sale before the latest
+      const isReturning = false; // By definition, these customers are NOT in latest sale
+
+      customers.push({
+        id: `ret-${email}`,
+        name: emailName[email],
+        email,
+        salesWithoutInvolvement,
+        maxHistoricalBid: emailMaxBid[email],
+        totalHistoricalWins: emailTotalWins[email],
+        salesInvolved,
+        lastActiveSale,
+        isReturning,
+        everWon: emailEverWon[email],
+        firstBidDate: emailFirstDate[email] ? emailFirstDate[email].slice(0, 10) : "",
+      });
+    }
+
+    // Sort by maxHistoricalBid descending by default
+    customers.sort((a, b) => b.maxHistoricalBid - a.maxHistoricalBid);
+
+    return { customers, latestSale: latestSaleLabel };
+  }, [rawActivityData, rawAuctionsData]);
+
   const [search, setSearch] = useState("");
   const [minMaxBid, setMinMaxBid] = useState("");
   const [minTotalWins, setMinTotalWins] = useState("");
@@ -367,7 +465,7 @@ function RetentionTab({ brand, brandLabel }: { brand: Brand; brandLabel: string 
   const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
 
   // Only show customers NOT involved in latest sale (salesWithoutInvolvement >= 1)
-  const baseCustomers = useMemo(() => data.customers.filter(c => c.salesWithoutInvolvement >= 1), [data]);
+  const baseCustomers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 1), [allCustomers]);
 
   const kpi1Customers = useMemo(() => data.customers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [data, significantWinnerThreshold]);
   const kpi2Customers = useMemo(() => data.customers.filter(c => c.isReturning), [data]);
