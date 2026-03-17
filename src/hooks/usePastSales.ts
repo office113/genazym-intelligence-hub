@@ -134,17 +134,30 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (cancelled) return;
 
         // 4. שליפת נרשמים עם pagination
-        const regsData = await fetchAllPages(
-          "registrations",
-          { brand: brandFilter },
-          "email, brand, join_date, approved, created_at",
-        );
+        // Debug: try fetching without brand filter first to check if data exists
+        let regsData: any[] = [];
+        try {
+          regsData = await fetchAllPages(
+            "registrations",
+            { brand: brandFilter },
+            "email, brand, join_date, approved, created_at",
+          );
+        } catch (regsError: any) {
+          console.error('Registrations fetch error:', regsError);
+        }
         if (cancelled) return;
 
-        console.log('Sample Activity Row:', activityData[0]);
-        console.log(`Registrations fetched: ${regsData.length} rows`);
-        console.log('Sample Reg Row:', regsData[0]);
-        if (regsData.length === 0) console.error('Registrations Error: No data returned. Check brand filter or table permissions.');
+        console.log('Regs Data Length:', regsData?.length);
+        console.log('Sample Reg Row:', regsData?.[0]);
+        if (regsData.length === 0) {
+          // Try without brand filter to debug
+          try {
+            const allRegs = await fetchAllPages("registrations", {}, "email, brand, created_at");
+            console.log('All Regs (no brand filter):', allRegs.length, 'Sample:', allRegs[0]);
+          } catch (e) {
+            console.error('All regs fetch failed:', e);
+          }
+        }
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
