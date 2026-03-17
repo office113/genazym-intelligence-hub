@@ -1433,7 +1433,7 @@ export default function PastSales() {
         )}
 
         {activeTab === "retention" && (
-          <RetentionTab brand={brand} brandLabel={brandLabel} />
+          <RetentionTab brand={brand} brandLabel={brandLabel} rawActivityData={rawActivityData} rawAuctionsData={rawAuctionsData} />
         )}
 
 
