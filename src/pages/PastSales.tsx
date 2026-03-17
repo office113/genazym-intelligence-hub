@@ -320,7 +320,7 @@ type SortDir = "asc" | "desc";
 
 // Common drill-down table for KPI and row drill-downs
 function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: RetentionCustomer[]; kpiIndex?: number; brand?: Brand }) {
-  const isDetailedKpi = kpiIndex === 0 || kpiIndex === 1 || kpiIndex === 3;
+  const isDetailedKpi = kpiIndex === 0 || kpiIndex === 1 || kpiIndex === 2 || kpiIndex === 3;
   const idLabel = brand === "zaidy" ? "מזהה זיידי" : "מזהה גנזים";
   return (
     <div className="flex-1 overflow-auto">
