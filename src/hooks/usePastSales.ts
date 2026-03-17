@@ -312,7 +312,8 @@ export function usePastSales(brand: "genazym" | "zaidy") {
 
           // New registrants
           const newRegistrantsCount = regsData.filter((r: any) => {
-            const joinDate = new Date(r.created_at || r.join_date);
+            const joinDate = new Date(r.created_at || r.join_date || r.approved);
+            if (isNaN(joinDate.getTime())) return false;
             return joinDate.getFullYear() === year;
           }).length;
 
