@@ -64,7 +64,7 @@ function formatSaleLabel(auctionName: string): string {
   return num ? `#${num}` : auctionName;
 }
 
-async function fetchAllPages(table: string, filters: Record<string, string>, select = "*") {
+async function fetchAllPages(table: string, filters: Record<string, string>, select = "*", orFilter?: string) {
   let allData: any[] = [];
   let from = 0;
   const PAGE_SIZE = 1000;
@@ -72,9 +72,13 @@ async function fetchAllPages(table: string, filters: Record<string, string>, sel
 
   while (hasMore) {
     let query = (supabase.from(table) as any).select(select).range(from, from + PAGE_SIZE - 1);
-    Object.entries(filters).forEach(([key, value]) => {
-      query = query.eq(key, value);
-    });
+    if (orFilter) {
+      query = query.or(orFilter);
+    } else {
+      Object.entries(filters).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+    }
 
     const { data, error } = await query;
     if (error) throw new Error(error.message);
@@ -128,13 +132,19 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const activityData = await fetchAllPages("fact_customer_auction_activity", { brand: brandFilter });
         if (cancelled) return;
 
-        // 3. שליפת ספרים עם pagination
+        // 3. שליפת ספרים עם pagination - כולל brand=NULL למכירות ישנות
         const booksData = await fetchAllPages(
           "fact_book_auction_summary",
-          { brand: brandFilter },
-          "auction_name, sold_flag, sold_price, opening_price",
+          {},
+          "auction_name, sold_flag, sold_price, opening_price, brand",
+          `brand.eq.${brandFilter},brand.is.null`,
         );
         if (cancelled) return;
+
+        // סינון ספרים רק למכירות של המותג הנוכחי (לפי auction_name מתוך auctions table)
+        const validAuctionNames = new Set((auctionsData ?? []).map((a: any) => a.auction_name));
+        const filteredBooksData = booksData.filter((b: any) => validAuctionNames.has(b.auction_name));
+        console.log(`Books fetched: ${booksData.length}, after filtering to valid auctions: ${filteredBooksData.length}, auction names in books:`, [...new Set(booksData.map((b: any) => b.auction_name))].sort());
 
         // 4. שליפת נרשמים עם pagination ופילטר מותג
         const regsData = await fetchAllPages(
@@ -153,9 +163,10 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         });
 
         const booksByAuction: Record<string, any[]> = {};
-        booksData.forEach((row: any) => {
+        filteredBooksData.forEach((row: any) => {
           if (!booksByAuction[row.auction_name]) booksByAuction[row.auction_name] = [];
           booksByAuction[row.auction_name].push(row);
+
         });
 
         // בניית pastSalesData
@@ -278,7 +289,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           const yearAuctionNames = new Set(yearAuctions.map((a: any) => a.auction_name));
 
           // Books for this year
-          const yearBooks = booksData.filter((b: any) => yearAuctionNames.has(b.auction_name));
+          const yearBooks = filteredBooksData.filter((b: any) => yearAuctionNames.has(b.auction_name));
           const yearSoldBooks = yearBooks.filter((b: any) => b.sold_flag);
           const totalRevenue = yearSoldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
           const booksSold = yearSoldBooks.length;
@@ -336,9 +347,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         // KPIs
         const uniqueInvolved = new Set(activityData.map((r: any) => r.email)).size;
         const auctionCount = (auctionsData ?? []).length || 1;
-        const soldBooks = booksData.filter((b: any) => b.sold_flag);
-        const totalOpening = booksData.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
-        const avgOpeningPrice = booksData.length > 0 ? totalOpening / booksData.length : 0;
+        const soldBooks = filteredBooksData.filter((b: any) => b.sold_flag);
+        const totalOpening = filteredBooksData.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
+        const avgOpeningPrice = filteredBooksData.length > 0 ? totalOpening / filteredBooksData.length : 0;
         const totalSoldRevenue = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.sold_price) || 0), 0);
         const totalSoldOpening = soldBooks.reduce((sum: number, b: any) => sum + (Number(b.opening_price) || 0), 0);
         const avgUplift =
