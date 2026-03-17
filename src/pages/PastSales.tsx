@@ -306,6 +306,7 @@ interface RetentionCustomer {
   salesInvolved: number;
   lastActiveSale: string;
   isReturning: boolean;
+  inLatestSale: boolean;
   everWon: boolean;
   firstBidDate: string;
 }
@@ -396,19 +397,25 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
       rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => r.email)
     );
 
-    // Build retention customers: anyone who ever bid but NOT in the latest sale
+    // The 3 sales before the latest (for returning customer logic)
+    const last3SaleNames = sortedAuctionNames.slice(-4, -1); // 3 sales before latest
+    const last3Set = new Set(last3SaleNames);
+    const priorToLast3Names = new Set(sortedAuctionNames.slice(0, -4)); // all sales before those 3
+
+    // Build retention customers: ALL customers who ever bid
     const customers: RetentionCustomer[] = [];
     for (const email of Object.keys(emailAuctions)) {
-      if (latestAuctionEmails.has(email)) continue; // skip those in latest sale
-
+      const inLatest = latestAuctionEmails.has(email);
       const auctions = emailAuctions[email];
       const salesInvolved = auctions.size;
 
       // Calculate consecutive recent sales without involvement (from newest backwards)
       let salesWithoutInvolvement = 0;
-      for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
-        if (auctions.has(sortedAuctionNames[i])) break;
-        salesWithoutInvolvement++;
+      if (!inLatest) {
+        for (let i = sortedAuctionNames.length - 1; i >= 0; i--) {
+          if (auctions.has(sortedAuctionNames[i])) break;
+          salesWithoutInvolvement++;
+        }
       }
 
       // Find last active sale
@@ -420,12 +427,11 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
         }
       }
 
-      // isReturning: was in the latest sale after being absent for 3+ sales
-      // Since they are NOT in latest sale (filtered above), isReturning = false here
-      // But we check if they returned in the reference sale after 3+ gap - 
-      // Actually per the filter, these are people NOT in the reference sale, so isReturning is about
-      // whether they were absent 3+ and came back in a recent sale before the latest
-      const isReturning = false; // By definition, these customers are NOT in latest sale
+      // isReturning: active in the latest sale, NOT active in any of the last 3 sales,
+      // but had at least one activity record prior to those 3
+      const inAnyLast3 = last3SaleNames.some(s => auctions.has(s));
+      const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
+      const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
       customers.push({
         id: `ret-${email}`,
@@ -437,6 +443,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
         salesInvolved,
         lastActiveSale,
         isReturning,
+        inLatestSale: inLatest,
         everWon: emailEverWon[email],
         firstBidDate: emailFirstDate[email] ? emailFirstDate[email].slice(0, 10) : "",
       });
@@ -464,8 +471,8 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
   const significantWinnerThreshold = brand === "genazym" ? 20000 : 10000;
   const highBidAbsentThreshold = brand === "genazym" ? 50000 : 10000;
 
-  // Only show customers NOT involved in latest sale (salesWithoutInvolvement >= 1)
-  const baseCustomers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 1), [allCustomers]);
+  // Only show customers NOT involved in latest sale for the churn table
+  const baseCustomers = useMemo(() => allCustomers.filter(c => !c.inLatestSale), [allCustomers]);
 
   const kpi1Customers = useMemo(() => allCustomers.filter(c => c.salesWithoutInvolvement >= 3 && c.totalHistoricalWins > significantWinnerThreshold), [allCustomers, significantWinnerThreshold]);
   const kpi2Customers = useMemo(() => allCustomers.filter(c => c.isReturning), [allCustomers]);
