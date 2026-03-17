@@ -623,7 +623,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: {
         open={kpiPanelOpen}
         onClose={() => setKpiPanelOpen(false)}
         title={kpiPanelIndex !== null ? kpiConfigs[kpiPanelIndex].title : ""}
-        subtitle={kpiPanelIndex !== null ? `${data.latestSale} | ${brandLabel} | ${kpiConfigs[kpiPanelIndex].customers.length} לקוחות` : ""}
+        subtitle={kpiPanelIndex !== null ? `${latestSale} | ${brandLabel} | ${kpiConfigs[kpiPanelIndex].customers.length} לקוחות` : ""}
       >
         {kpiPanelIndex !== null && (
           <>
