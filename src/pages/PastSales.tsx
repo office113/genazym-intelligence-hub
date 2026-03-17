@@ -359,7 +359,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
   );
 }
 
-function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[] }) {
+function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, rawRegsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[]; rawRegsData: any[] }) {
   // Compute retention data from real activity data
   const { customers: allCustomers, latestSale } = useMemo(() => {
     if (!rawActivityData.length || !rawAuctionsData.length) return { customers: [] as RetentionCustomer[], latestSale: "—" };
