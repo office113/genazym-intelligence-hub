@@ -1175,7 +1175,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
               <tr>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
                 {drillDownType === "registrants" && (
-                  <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך הרשמה</th>
+                  <>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">טלפון</th>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך הרשמה</th>
+                  </>
                 )}
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מקסימום ביד<br />היסטורי</th>
@@ -1188,7 +1192,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
                 <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
                   <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
                   {drillDownType === "registrants" && (
-                    <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.registrationDate || "—"}</td>
+                    <>
+                      <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.email || "—"}</td>
+                      <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.phone || "—"}</td>
+                      <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.registrationDate || "—"}</td>
+                    </>
                   )}
                   <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.firstBidDate}</td>
                   <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
@@ -1197,7 +1205,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
                 </tr>
               ))}
               {drillDownCustomers.length === 0 && (
-                <tr><td colSpan={drillDownType === "registrants" ? 6 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
+                <tr><td colSpan={drillDownType === "registrants" ? 8 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
               )}
             </tbody>
           </table>
