@@ -260,6 +260,18 @@ export function usePastSales(brand: "genazym" | "zaidy") {
 
         const allYears = Object.keys(auctionsByYear).map(Number).sort((a, b) => a - b);
 
+        // Build lookup: earliest auction_date per email across all activity
+        const earliestAuctionByEmail: Record<string, number> = {};
+        activityData.forEach((r: any) => {
+          const auctionEntry = (auctionsData ?? []).find((a: any) => a.auction_name === r.auction_name);
+          if (!auctionEntry) return;
+          const auctionYear = new Date(auctionEntry.auction_date).getFullYear();
+          const prev = earliestAuctionByEmail[r.email];
+          if (prev === undefined || auctionYear < prev) {
+            earliestAuctionByEmail[r.email] = auctionYear;
+          }
+        });
+
         const yearlyTrends: YearlyData[] = allYears.map((year, yearIdx) => {
           const yearAuctions = auctionsByYear[year];
           const yearAuctionNames = new Set(yearAuctions.map((a: any) => a.auction_name));
@@ -286,12 +298,8 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           const uniqueInvolvedCount = uniqueEmails.size;
           const uniqueWinnersCount = new Set(yearActivity.filter((r: any) => r.total_wins > 0).map((r: any) => r.email)).size;
 
-          // New involved: first_bid_at falls within this year
-          const newInvolvedCount = yearActivity.filter((r: any) => {
-            if (!r.first_bid_at) return false;
-            const firstBidYear = new Date(r.first_bid_at).getFullYear();
-            return firstBidYear === year;
-          }).reduce((set: Set<string>, r: any) => { set.add(r.email); return set; }, new Set<string>()).size;
+          // New involved: earliest auction year for this email matches current year
+          const newInvolvedCount = [...uniqueEmails].filter(email => earliestAuctionByEmail[email] === year).length;
 
           // Churned: in previous year but not this year
           let churnedCount = 0;
@@ -304,7 +312,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
 
           // New registrants
           const newRegistrantsCount = regsData.filter((r: any) => {
-            const joinDate = new Date(r.join_date || r.approved);
+            const joinDate = new Date(r.created_at || r.join_date);
             return joinDate.getFullYear() === year;
           }).length;
 
