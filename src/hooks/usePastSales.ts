@@ -111,9 +111,19 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   useEffect(() => {
     let cancelled = false;
 
+    // Reset all data immediately on brand change to prevent stale data
+    setLoading(true);
+    setError(null);
+    setPastSalesData([]);
+    setInvolvedData([]);
+    setChurnData([]);
+    setYearlyTrendsData([]);
+    setRawActivityData([]);
+    setRawRegsData([]);
+    setRawAuctionsData([]);
+    setKpis({ avgOpeningPrice: "—", avgUplift: "—", uniqueInvolved: "—", avgInvolvedPerSale: "—" });
+
     async function fetchData() {
-      setLoading(true);
-      setError(null);
 
       try {
         const brandFilter = brand === "genazym" ? "Genazym" : "Zaidy";
