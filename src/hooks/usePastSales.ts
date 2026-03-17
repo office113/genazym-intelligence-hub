@@ -137,7 +137,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const regsData = await fetchAllPages(
           "registrations",
           { brand: brandFilter },
-          "email, brand, join_date, approved",
+          "email, brand, join_date, approved, created_at",
         );
         if (cancelled) return;
 
