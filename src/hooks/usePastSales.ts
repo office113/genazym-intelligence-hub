@@ -100,8 +100,6 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [debugRegsCount, setDebugRegsCount] = useState(0);
-  const [debugRegsError, setDebugRegsError] = useState("No Error");
 
   useEffect(() => {
     let cancelled = false;
