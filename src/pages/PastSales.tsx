@@ -303,12 +303,14 @@ interface RetentionCustomer {
   salesWithoutInvolvement: number;
   maxHistoricalBid: number;
   totalHistoricalWins: number;
+  winCount: number;
   salesInvolved: number;
   lastActiveSale: string;
   isReturning: boolean;
   inLatestSale: boolean;
   everWon: boolean;
   firstBidDate: string;
+  bidspiritId: string;
 }
 
 // Mock data removed — retention customers are now computed from real activity data
