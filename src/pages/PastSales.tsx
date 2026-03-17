@@ -880,26 +880,10 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
   return (
     <>
       <div className="chart-card">
-        {/* Local brand filter */}
         <div className="flex items-center justify-between mb-6" dir="rtl">
           <div>
             <div className="chart-title mb-0">מגמות שנתיות</div>
             <p className="text-xs text-muted-foreground mt-1">6 שנים אחרונות כולל השנה הנוכחית</p>
-          </div>
-          <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
-            {brandOptions.map(opt => (
-              <button
-                key={opt.key}
-                onClick={() => setBrandFilter(opt.key)}
-                className={`px-4 py-2 text-[12px] font-semibold rounded-md transition-all ${
-                  brandFilter === opt.key
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
           </div>
         </div>
 
