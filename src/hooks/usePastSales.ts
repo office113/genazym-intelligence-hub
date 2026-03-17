@@ -408,5 +408,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, kpis, loading, error };
 }
