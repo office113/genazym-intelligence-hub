@@ -884,12 +884,26 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const y = auctionYearMap[r.auction_name] || 0;
           return y > (auctionYearMap[best?.auction_name] || 0) ? r : best;
         }, rows[0]);
+        // First bid date: use first_bid_at or earliest auction_date
+        const firstBid = rows.reduce((earliest: string, r: any) => {
+          const d = r.first_bid_at || r.auction_date || "";
+          return d && (!earliest || d < earliest) ? d : earliest;
+        }, "");
+        // Deduplicate wins by auction_name
+        const seenAuctions = new Set<string>();
+        let totalWins = 0;
+        rows.forEach((r: any) => {
+          if (r.auction_name && !seenAuctions.has(r.auction_name)) {
+            seenAuctions.add(r.auction_name);
+            totalWins += (r.total_win_value || 0);
+          }
+        });
         return {
           id: `ni-${i}`,
           name: rows[0]?.full_name || email,
-          firstBidDate: rows[0]?.first_bid_at?.slice(0, 10) || "",
+          firstBidDate: firstBid ? firstBid.slice(0, 10) : "",
           maxHistoricalBid: Math.max(...rows.map((r: any) => r.max_bid || 0)),
-          totalHistoricalWins: rows.reduce((s: number, r: any) => s + (r.total_win_value || 0), 0),
+          totalHistoricalWins: totalWins,
           lastActiveSale: latest ? `מכירה ${latest.auction_name}` : "",
         };
       });
