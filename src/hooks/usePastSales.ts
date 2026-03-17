@@ -163,9 +163,10 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         });
 
         const booksByAuction: Record<string, any[]> = {};
-        booksData.forEach((row: any) => {
+        filteredBooksData.forEach((row: any) => {
           if (!booksByAuction[row.auction_name]) booksByAuction[row.auction_name] = [];
           booksByAuction[row.auction_name].push(row);
+
         });
 
         // בניית pastSalesData
