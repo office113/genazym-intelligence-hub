@@ -167,6 +167,16 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (cancelled) return;
         console.log('Regs Data Length:', regsData.length);
 
+        // 4b. Fetch parallel brand registrations for cross-brand ID recovery
+        const parallelBrandFilter = brand === "genazym" ? "Zaidy" : "Genazym";
+        const parallelRegs = await fetchAllPages(
+          "registrations",
+          { brand: parallelBrandFilter },
+          "id, full_name, email, phone, created_at, join_date, approved, bidspirit_id"
+        );
+        if (cancelled) return;
+        console.log('Parallel Regs Data Length:', parallelRegs.length);
+
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
         activityData.forEach((row: any) => {
