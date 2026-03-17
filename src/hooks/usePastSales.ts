@@ -142,7 +142,9 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         if (cancelled) return;
 
         console.log('Sample Activity Row:', activityData[0]);
+        console.log(`Registrations fetched: ${regsData.length} rows`);
         console.log('Sample Reg Row:', regsData[0]);
+        if (regsData.length === 0) console.error('Registrations Error: No data returned. Check brand filter or table permissions.');
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
