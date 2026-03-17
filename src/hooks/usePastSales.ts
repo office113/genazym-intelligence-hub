@@ -98,6 +98,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   const [yearlyTrendsData, setYearlyTrendsData] = useState<YearlyData[]>([]);
   const [rawActivityData, setRawActivityData] = useState<any[]>([]);
   const [rawRegsData, setRawRegsData] = useState<any[]>([]);
+  const [parallelRegsData, setParallelRegsData] = useState<any[]>([]);
   const [rawAuctionsData, setRawAuctionsData] = useState<any[]>([]);
   const [kpis, setKpis] = useState<BrandKPIs>({
     avgOpeningPrice: "—",
@@ -120,6 +121,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     setYearlyTrendsData([]);
     setRawActivityData([]);
     setRawRegsData([]);
+    setParallelRegsData([]);
     setRawAuctionsData([]);
     setKpis({ avgOpeningPrice: "—", avgUplift: "—", uniqueInvolved: "—", avgInvolvedPerSale: "—" });
 
@@ -164,6 +166,16 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         );
         if (cancelled) return;
         console.log('Regs Data Length:', regsData.length);
+
+        // 4b. Fetch parallel brand registrations for cross-brand ID recovery
+        const parallelBrandFilter = brand === "genazym" ? "Zaidy" : "Genazym";
+        const parallelRegs = await fetchAllPages(
+          "registrations",
+          { brand: parallelBrandFilter },
+          "id, full_name, email, phone, created_at, join_date, approved, bidspirit_id"
+        );
+        if (cancelled) return;
+        console.log('Parallel Regs Data Length:', parallelRegs.length);
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
@@ -372,6 +384,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           setYearlyTrendsData(yearlyTrends);
           setRawActivityData(activityData);
           setRawRegsData(regsData);
+          setParallelRegsData(parallelRegs);
           setRawAuctionsData(auctionsData ?? []);
           setKpis({
             avgOpeningPrice: avgOpeningPrice > 0 ? `$${Math.round(avgOpeningPrice).toLocaleString()}` : "—",
@@ -395,5 +408,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, kpis, loading, error };
 }

@@ -311,6 +311,7 @@ interface RetentionCustomer {
   everWon: boolean;
   firstBidDate: string;
   bidspiritId: string;
+  idSource: "current" | "parallel" | "none";
 }
 
 // Mock data removed — retention customers are now computed from real activity data
@@ -322,6 +323,25 @@ type SortDir = "asc" | "desc";
 function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: RetentionCustomer[]; kpiIndex?: number; brand?: Brand }) {
   const isDetailedKpi = kpiIndex === 0 || kpiIndex === 1 || kpiIndex === 2 || kpiIndex === 3;
   const idLabel = brand === "zaidy" ? "מזהה זיידי" : "מזהה גנזים";
+  const parallelBrandLabel = brand === "zaidy" ? "G" : "Z";
+
+  const renderIdCell = (c: RetentionCustomer) => {
+    if (c.bidspiritId) {
+      if (c.idSource === "parallel") {
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="tabular-nums">{c.bidspiritId}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
+              {parallelBrandLabel}
+            </span>
+          </span>
+        );
+      }
+      return <span className="tabular-nums">{c.bidspiritId}</span>;
+    }
+    return <span className="text-muted-foreground/60 text-[11px]">חסר רישום</span>;
+  };
+
   return (
     <div className="flex-1 overflow-auto">
       <table className="w-full text-sm" dir="rtl">
@@ -344,7 +364,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
           {customers.map((c, idx) => (
             <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
               <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
-              {isDetailedKpi && <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.bidspiritId || "—"}</td>}
+              {isDetailedKpi && <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>}
               <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] tabular-nums">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.salesInvolved}</td>}
@@ -365,7 +385,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
   );
 }
 
-function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, rawRegsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[]; rawRegsData: any[] }) {
+function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData }: { brand: Brand; brandLabel: string; rawActivityData: any[]; rawAuctionsData: any[]; rawRegsData: any[]; parallelRegsData: any[] }) {
   // Compute retention data from real activity data
   const { customers: allCustomers, latestSale } = useMemo(() => {
     if (!rawActivityData.length || !rawAuctionsData.length) return { customers: [] as RetentionCustomer[], latestSale: "—" };
@@ -386,15 +406,22 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     const emailEverWon: Record<string, boolean> = {};
     const emailFirstDate: Record<string, string> = {};
 
-    // Build email -> bidspirit_id map from registrations
+    // Build email -> bidspirit_id map from current brand registrations (normalized)
     const emailBidspiritId: Record<string, string> = {};
     rawRegsData.forEach((r: any) => {
       const email = (r.email || "").trim().toLowerCase();
-      if (email && r.bidspirit_id) emailBidspiritId[email] = r.bidspirit_id;
+      if (email && r.bidspirit_id) emailBidspiritId[email] = String(r.bidspirit_id);
+    });
+
+    // Build email -> bidspirit_id map from parallel brand registrations (normalized)
+    const parallelEmailBidspiritId: Record<string, string> = {};
+    parallelRegsData.forEach((r: any) => {
+      const email = (r.email || "").trim().toLowerCase();
+      if (email && r.bidspirit_id) parallelEmailBidspiritId[email] = String(r.bidspirit_id);
     });
 
     rawActivityData.forEach((r: any) => {
-      const email = r.email;
+      const email = (r.email || "").trim().toLowerCase();
       if (!email) return;
       if (!emailAuctions[email]) {
         emailAuctions[email] = new Set();
@@ -418,9 +445,9 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       }
     });
 
-    // Emails in the latest auction
+    // Emails in the latest auction (normalized)
     const latestAuctionEmails = new Set(
-      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => r.email)
+      rawActivityData.filter((r: any) => r.auction_name === latestAuctionName).map((r: any) => (r.email || "").trim().toLowerCase())
     );
 
     // The 3 sales before the latest (for returning customer logic)
@@ -459,7 +486,14 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
       const hadPriorActivity = [...auctions].some(a => priorToLast3Names.has(a));
       const isReturning = inLatest && !inAnyLast3 && hadPriorActivity;
 
-      const emailLower = email.toLowerCase();
+      // Smart ID mapping: current brand -> parallel brand -> fallback
+      let bidspiritId = emailBidspiritId[email] || "";
+      let idSource: "current" | "parallel" | "none" = bidspiritId ? "current" : "none";
+      if (!bidspiritId && parallelEmailBidspiritId[email]) {
+        bidspiritId = parallelEmailBidspiritId[email];
+        idSource = "parallel";
+      }
+
       customers.push({
         id: `ret-${email}`,
         name: emailName[email],
@@ -474,7 +508,8 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
         inLatestSale: inLatest,
         everWon: emailEverWon[email],
         firstBidDate: emailFirstDate[email] ? emailFirstDate[email].slice(0, 10) : "",
-        bidspiritId: emailBidspiritId[emailLower] || "",
+        bidspiritId,
+        idSource,
       });
     }
 
@@ -482,7 +517,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
     customers.sort((a, b) => b.maxHistoricalBid - a.maxHistoricalBid);
 
     return { customers, latestSale: latestSaleLabel };
-  }, [rawActivityData, rawAuctionsData, rawRegsData]);
+  }, [rawActivityData, rawAuctionsData, rawRegsData, parallelRegsData]);
 
   const [search, setSearch] = useState("");
   const [minMaxBid, setMinMaxBid] = useState("");
@@ -1267,7 +1302,7 @@ export default function PastSales() {
   const [involvedSearch, setInvolvedSearch] = useState("");
   const [involvedFilter, setInvolvedFilter] = useState<string>("all");
 
-  const { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, rawAuctionsData, kpis, loading, error } = usePastSales(brand);
+  const { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, kpis, loading, error } = usePastSales(brand);
   const brandLabel = brand === "genazym" ? "גנזים" : "זיידי";
 
   const openSaleDrawer = (sale: any) => {
@@ -1477,7 +1512,7 @@ export default function PastSales() {
         )}
 
         {activeTab === "retention" && (
-          <RetentionTab brand={brand} brandLabel={brandLabel} rawActivityData={rawActivityData} rawAuctionsData={rawAuctionsData} rawRegsData={rawRegsData} />
+          <RetentionTab brand={brand} brandLabel={brandLabel} rawActivityData={rawActivityData} rawAuctionsData={rawAuctionsData} rawRegsData={rawRegsData} parallelRegsData={parallelRegsData} />
         )}
 
 
