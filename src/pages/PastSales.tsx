@@ -884,7 +884,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
         }, rows[0]);
         // First bid date: use first_bid_at or earliest auction_date
         const firstBid = rows.reduce((earliest: string, r: any) => {
-          const d = r.first_bid_at || r.auction_date || "";
+          const d = r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
         // Sum max_bid only for rows where was_winner is true
