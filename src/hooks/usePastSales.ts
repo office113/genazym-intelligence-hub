@@ -137,12 +137,14 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const regsData = await fetchAllPages(
           "registrations",
           { brand: brandFilter },
-          "email, brand, join_date, approved",
+          "email, brand, join_date, approved, created_at",
         );
         if (cancelled) return;
 
         console.log('Sample Activity Row:', activityData[0]);
+        console.log(`Registrations fetched: ${regsData.length} rows`);
         console.log('Sample Reg Row:', regsData[0]);
+        if (regsData.length === 0) console.error('Registrations Error: No data returned. Check brand filter or table permissions.');
 
         // קיבוץ לפי auction_name
         const activityByAuction: Record<string, any[]> = {};
@@ -312,7 +314,8 @@ export function usePastSales(brand: "genazym" | "zaidy") {
 
           // New registrants
           const newRegistrantsCount = regsData.filter((r: any) => {
-            const joinDate = new Date(r.created_at || r.join_date);
+            const joinDate = new Date(r.created_at || r.join_date || r.approved);
+            if (isNaN(joinDate.getTime())) return false;
             return joinDate.getFullYear() === year;
           }).length;
 
