@@ -838,13 +838,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
                 return d && (!earliest || d < earliest) ? d : earliest;
               }, "")
             : "";
-          // Deduplicate wins by auction_name
-          const seenAuctions = new Set<string>();
+          // Sum max_bid only for rows where was_winner is true
           let totalWins = 0;
           actRows.forEach((a: any) => {
-            if (a.auction_name && !seenAuctions.has(a.auction_name)) {
-              seenAuctions.add(a.auction_name);
-              totalWins += (a.total_win_value || 0);
+            if (a.was_winner) {
+              totalWins += (a.max_bid || 0);
             }
           });
           const latest = actRows.length > 0 ? actRows.reduce((best: any, a: any) => {
@@ -889,13 +887,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const d = r.first_bid_at || r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
-        // Deduplicate wins by auction_name
-        const seenAuctions = new Set<string>();
+        // Sum max_bid only for rows where was_winner is true
         let totalWins = 0;
         rows.forEach((r: any) => {
-          if (r.auction_name && !seenAuctions.has(r.auction_name)) {
-            seenAuctions.add(r.auction_name);
-            totalWins += (r.total_win_value || 0);
+          if (r.was_winner) {
+            totalWins += (r.max_bid || 0);
           }
         });
         return {
@@ -932,12 +928,10 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
           const d = r.first_bid_at || r.auction_date || "";
           return d && (!earliest || d < earliest) ? d : earliest;
         }, "");
-        const seenAuctions = new Set<string>();
         let totalWins = 0;
         rows.forEach((r: any) => {
-          if (r.auction_name && !seenAuctions.has(r.auction_name)) {
-            seenAuctions.add(r.auction_name);
-            totalWins += (r.total_win_value || 0);
+          if (r.was_winner) {
+            totalWins += (r.max_bid || 0);
           }
         });
         return {
