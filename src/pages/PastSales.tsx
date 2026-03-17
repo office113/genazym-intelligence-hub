@@ -319,16 +319,21 @@ type SortField = "salesWithoutInvolvement" | "maxHistoricalBid" | "totalHistoric
 type SortDir = "asc" | "desc";
 
 // Common drill-down table for KPI and row drill-downs
-function RetentionDrillDownTable({ customers }: { customers: RetentionCustomer[] }) {
+function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: RetentionCustomer[]; kpiIndex?: number; brand?: Brand }) {
+  const isKpi1 = kpiIndex === 0;
+  const idLabel = brand === "zaidy" ? "מזהה זיידי" : "מזהה גנזים";
   return (
     <div className="flex-1 overflow-auto">
       <table className="w-full text-sm" dir="rtl">
         <thead className="sticky top-0 z-10 bg-card border-b-2 border-border/50">
           <tr>
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">{idLabel}</th>}
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מקסימום ביד<br />היסטורי</th>
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
-            <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ זכיות<br />היסטורי</th>
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירות</th>}
+            {isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">זכיות</th>}
+            {!isKpi1 && <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מס׳ זכיות<br />היסטורי</th>}
             <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מכירה אחרונה<br />שהיה מעורב בה</th>
           </tr>
         </thead>
@@ -336,14 +341,17 @@ function RetentionDrillDownTable({ customers }: { customers: RetentionCustomer[]
           {customers.map((c, idx) => (
             <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
               <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+              {isKpi1 && <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.bidspiritId || "—"}</td>}
               <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
               <td className="px-5 py-3 text-[13px] text-muted-foreground tabular-nums whitespace-nowrap">{c.firstBidDate}</td>
-              <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>
+              {isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.salesInvolved}</td>}
+              {isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.winCount > 0 ? c.winCount : "—"}</td>}
+              {!isKpi1 && <td className="px-5 py-3 text-[13px] tabular-nums text-center">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
               <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.lastActiveSale}</td>
             </tr>
           ))}
           {customers.length === 0 && (
-            <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
+            <tr><td colSpan={isKpi1 ? 7 : 5} className="px-5 py-10 text-center text-muted-foreground text-sm">לא נמצאו לקוחות</td></tr>
           )}
         </tbody>
       </table>
