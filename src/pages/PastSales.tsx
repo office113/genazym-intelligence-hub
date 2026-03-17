@@ -1175,7 +1175,11 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
               <tr>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">שם לקוח</th>
                 {drillDownType === "registrants" && (
-                  <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך הרשמה</th>
+                  <>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">אימייל</th>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">טלפון</th>
+                    <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך הרשמה</th>
+                  </>
                 )}
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">תאריך ביד<br />ראשון</th>
                 <th className="text-right text-[11px] font-bold text-muted-foreground px-5 py-3.5 leading-[1.45]">מקסימום ביד<br />היסטורי</th>
