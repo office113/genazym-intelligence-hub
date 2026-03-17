@@ -806,21 +806,13 @@ function getDrillDownCustomers(brandFilter: TrendsBrandFilter, type: "registrant
 }
 
 function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
-  const [brandFilter, setBrandFilter] = useState<TrendsBrandFilter>("genazym");
   const [drillDownOpen, setDrillDownOpen] = useState(false);
   const [drillDownType, setDrillDownType] = useState<"registrants" | "churned" | "newInvolved">("registrants");
   const [drillDownYear, setDrillDownYear] = useState<number>(currentYear);
 
   const yearlyData = useMemo(() => {
-    const filtered = pastSalesData.filter((sale) => {
-      if (brandFilter === "both") return true;
-      return brandFilter === "genazym"
-        ? sale.brand === "Genazym"
-        : sale.brand === "Zaidy";
-    });
-
     const byYear: Record<number, SaleRow[]> = {};
-    filtered.forEach((sale) => {
+    pastSalesData.forEach((sale) => {
       const year = new Date(sale.date).getFullYear();
       if (!byYear[year]) byYear[year] = [];
       byYear[year].push(sale);
@@ -846,20 +838,12 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
         } as YearlyData;
       })
       .sort((a, b) => a.year - b.year);
-  }, [pastSalesData, brandFilter]);
+  }, [pastSalesData]);
 
   const drillDownCustomers = useMemo(() =>
-    getDrillDownCustomers(brandFilter, drillDownType, drillDownYear),
-    [brandFilter, drillDownType, drillDownYear]
+    getDrillDownCustomers("genazym", drillDownType, drillDownYear),
+    [drillDownType, drillDownYear]
   );
-
-  const brandOptions: { key: TrendsBrandFilter; label: string }[] = [
-    { key: "genazym", label: "גנזים" },
-    { key: "zaidy", label: "זיידי" },
-    { key: "both", label: "שניהם יחד" },
-  ];
-
-  const brandLabel = brandFilter === "genazym" ? "גנזים" : brandFilter === "zaidy" ? "זיידי" : "שניהם יחד";
 
   const metricRows: { label: string; key: keyof YearlyData; format: (v: number) => string; drillType?: "registrants" | "churned" | "newInvolved"; reversed?: boolean }[] = [
     { label: "מס׳ מכירות בשנה", key: "salesCount", format: v => v.toLocaleString() },
@@ -896,26 +880,10 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
   return (
     <>
       <div className="chart-card">
-        {/* Local brand filter */}
         <div className="flex items-center justify-between mb-6" dir="rtl">
           <div>
             <div className="chart-title mb-0">מגמות שנתיות</div>
             <p className="text-xs text-muted-foreground mt-1">6 שנים אחרונות כולל השנה הנוכחית</p>
-          </div>
-          <div className="flex items-center gap-0.5 bg-secondary/40 rounded-lg p-0.5 border border-border/40">
-            {brandOptions.map(opt => (
-              <button
-                key={opt.key}
-                onClick={() => setBrandFilter(opt.key)}
-                className={`px-4 py-2 text-[12px] font-semibold rounded-md transition-all ${
-                  brandFilter === opt.key
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -1004,7 +972,7 @@ function TrendsTab({ pastSalesData }: { pastSalesData: SaleRow[] }) {
         open={drillDownOpen}
         onClose={() => setDrillDownOpen(false)}
         title={`${drillDownTitles[drillDownType]} — ${drillDownYear}`}
-        subtitle={`${brandLabel} | ${drillDownCustomers.length} לקוחות`}
+        subtitle={`${drillDownCustomers.length} לקוחות`}
       >
         <div className="px-10 py-5 border-b border-border/40 shrink-0">
           <div className="grid grid-cols-3 gap-4">
