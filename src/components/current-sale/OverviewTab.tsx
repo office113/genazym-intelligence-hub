@@ -9,15 +9,7 @@ import { differenceInDays, parseISO } from "date-fns";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
-// Auto-detect current sale: latest sale with a future date
-function detectCurrentSale() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const futureSales = salesList
-    .filter(s => parseISO(s.date) >= today)
-    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
-  return futureSales.length > 0 ? futureSales[0] : salesList[0];
-}
+// detectCurrentSale is now inline in the component using the derived salesList
 
 function calcCurrentDX(saleDate: string): number {
   const today = new Date();
