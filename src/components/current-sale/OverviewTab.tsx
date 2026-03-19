@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { allSaleSnapshots, salesList, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
