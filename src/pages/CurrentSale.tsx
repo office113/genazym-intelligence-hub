@@ -22,7 +22,7 @@ export default function CurrentSale() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
 
-  const { rawActivityData, rawAuctionsData, pastSalesData, loading, error } = usePastSales(brand);
+  const { rawActivityData, rawAuctionsData, dailySnapshots, pastSalesData, loading, error } = usePastSales(brand);
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
@@ -121,7 +121,7 @@ export default function CurrentSale() {
 
       <div className="p-8 animate-fade-in">
         {(activeTab === "overview" || activeTab === "byDX" || activeTab === "bySale") && (
-          <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} />
+          <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} dailySnapshots={dailySnapshots} rawAuctionsData={rawAuctionsData} />
         )}
 
         {activeTab === "pace" && (

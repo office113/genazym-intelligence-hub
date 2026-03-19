@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { allSaleSnapshots, salesList, drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,15 +9,7 @@ import { differenceInDays, parseISO } from "date-fns";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
-// Auto-detect current sale: latest sale with a future date
-function detectCurrentSale() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const futureSales = salesList
-    .filter(s => parseISO(s.date) >= today)
-    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
-  return futureSales.length > 0 ? futureSales[0] : salesList[0];
-}
+// detectCurrentSale is now inline in the component using the derived salesList
 
 function calcCurrentDX(saleDate: string): number {
   const today = new Date();
@@ -88,20 +80,61 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode }) {
+export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], rawAuctionsData = [] }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode; dailySnapshots?: any[]; rawAuctionsData?: any[] }) {
+
+  // Map rawAuctionsData to salesList format
+  const salesList = useMemo(() => {
+    const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
+    return rawAuctionsData
+      .filter((a: any) => a.brand === brandFilter)
+      .map((a: any) => {
+        const num = a.auction_name?.match(/\d+/)?.[0] || "";
+        return {
+          id: a.auction_name,
+          name: `מכירה #${num}`,
+          brand: selectedBrand,
+          date: a.auction_date,
+          isCurrent: false, // will be detected dynamically
+        };
+      })
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [rawAuctionsData, selectedBrand]);
+
+  // Map dailySnapshots to SaleSnapshot format
+  const allSaleSnapshots: SaleSnapshot[] = useMemo(() => {
+    return dailySnapshots.map((s: any) => {
+      const num = s.auction_name?.match(/\d+/)?.[0] || "";
+      return {
+        saleId: s.auction_name,
+        saleName: `מכירה #${num}`,
+        brand: selectedBrand,
+        saleDate: s.auction_date || "",
+        totalLots: s.total_lots || 0,
+        dx: s.dx ?? 0,
+        earlyBids: s.early_bids_cum || 0,
+        uniqueBidders: s.unique_bidders_cum || 0,
+        lotsWithBids: s.lots_with_bids_cum || 0,
+        lotsBidPct: s.pct_lots_with_bids || 0,
+        guaranteedPrice: s.guaranteed_price || 0,
+        newRegistrants28d: s.new_registrations_28d || 0,
+        newBidders: s.new_bidders_28d || 0,
+        newBiddersFromOtherBrand: s.new_bidders_from_other_brand || 0,
+      } as SaleSnapshot;
+    });
+  }, [dailySnapshots, selectedBrand]);
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
+    if (!salesList.length) return { id: "", name: "—", brand: selectedBrand, date: new Date().toISOString().slice(0, 10), isCurrent: false };
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const futureSales = salesList
       .filter(s => s.brand === selectedBrand && parseISO(s.date) >= today)
       .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
     if (futureSales.length > 0) return futureSales[0];
-    // Fallback: latest sale of this brand
     const brandSales = salesList.filter(s => s.brand === selectedBrand).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
     return brandSales[0] || salesList[0];
-  }, [selectedBrand]);
+  }, [selectedBrand, salesList]);
 
   const currentSaleId = currentSale.id;
   const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);

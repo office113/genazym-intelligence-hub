@@ -100,6 +100,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
   const [rawRegsData, setRawRegsData] = useState<any[]>([]);
   const [parallelRegsData, setParallelRegsData] = useState<any[]>([]);
   const [rawAuctionsData, setRawAuctionsData] = useState<any[]>([]);
+  const [dailySnapshots, setDailySnapshots] = useState<any[]>([]);
   const [kpis, setKpis] = useState<BrandKPIs>({
     avgOpeningPrice: "—",
     avgUplift: "—",
@@ -123,6 +124,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     setRawRegsData([]);
     setParallelRegsData([]);
     setRawAuctionsData([]);
+    setDailySnapshots([]);
     setKpis({ avgOpeningPrice: "—", avgUplift: "—", uniqueInvolved: "—", avgInvolvedPerSale: "—" });
 
     async function fetchData() {
@@ -157,6 +159,14 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const validAuctionNames = new Set((auctionsData ?? []).map((a: any) => a.auction_name));
         const filteredBooksData = booksData.filter((b: any) => validAuctionNames.has(b.auction_name));
         console.log(`Books fetched: ${booksData.length}, after filtering to valid auctions: ${filteredBooksData.length}, auction names in books:`, [...new Set(booksData.map((b: any) => b.auction_name))].sort());
+
+        // 3b. שליפת daily snapshots
+        const snapshotsData = await fetchAllPages(
+          "fact_auction_daily_snapshot",
+          { brand: brandFilter }
+        );
+        if (cancelled) return;
+        console.log('Daily Snapshots fetched:', snapshotsData.length);
 
         // 4. שליפת נרשמים עם pagination ופילטר מותג
         const regsData = await fetchAllPages(
@@ -386,6 +396,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           setRawRegsData(regsData);
           setParallelRegsData(parallelRegs);
           setRawAuctionsData(auctionsData ?? []);
+          setDailySnapshots(snapshotsData);
           setKpis({
             avgOpeningPrice: avgOpeningPrice > 0 ? `$${Math.round(avgOpeningPrice).toLocaleString()}` : "—",
             avgUplift: avgUplift !== "—" ? `${avgUplift}%` : "—",
@@ -408,5 +419,5 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     };
   }, [brand]);
 
-  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, kpis, loading, error };
+  return { pastSalesData, involvedData, churnData, yearlyTrendsData, rawActivityData, rawRegsData, parallelRegsData, rawAuctionsData, dailySnapshots, kpis, loading, error };
 }
