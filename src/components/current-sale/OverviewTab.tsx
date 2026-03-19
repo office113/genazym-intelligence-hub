@@ -125,16 +125,16 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {
+    if (!salesList.length) return { id: "", name: "—", brand: selectedBrand, date: new Date().toISOString().slice(0, 10), isCurrent: false };
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const futureSales = salesList
       .filter(s => s.brand === selectedBrand && parseISO(s.date) >= today)
       .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
     if (futureSales.length > 0) return futureSales[0];
-    // Fallback: latest sale of this brand
     const brandSales = salesList.filter(s => s.brand === selectedBrand).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
     return brandSales[0] || salesList[0];
-  }, [selectedBrand]);
+  }, [selectedBrand, salesList]);
 
   const currentSaleId = currentSale.id;
   const autoDX = useMemo(() => calcCurrentDX(currentSale.date), [currentSale.date]);
