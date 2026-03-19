@@ -121,7 +121,7 @@ export default function CurrentSale() {
 
       <div className="p-8 animate-fade-in">
         {(activeTab === "overview" || activeTab === "byDX" || activeTab === "bySale") && (
-          <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} />
+          <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} dailySnapshots={dailySnapshots} rawAuctionsData={rawAuctionsData} />
         )}
 
         {activeTab === "pace" && (
