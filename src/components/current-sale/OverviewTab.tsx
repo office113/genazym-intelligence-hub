@@ -158,6 +158,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
   //  MODE 1: By D-X Day — filtered by brand
   // ════════════════════════════════════
   const mode1Data = useMemo(() => {
+    if (!currentSaleId || !salesList.length) return { currentSnap: undefined, pastSnapshots: [], pastSales: [], avg: () => 0, median: () => 0 };
     const currentSnap = getSnapshot(currentSaleId, selectedDX);
     const pastSales = salesList
       .filter(s => s.id !== currentSaleId && s.brand === selectedBrand)
@@ -177,13 +178,14 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
     };
 
     return { currentSnap, pastSnapshots, pastSales, avg, median };
-  }, [selectedDX, selectedBrand, currentSaleId]);
+  }, [selectedDX, selectedBrand, currentSaleId, salesList, allSaleSnapshots]);
 
   // ════════════════════════════════════
   //  MODE 2: By Single Sale
   // ════════════════════════════════════
   const mode2Data = useMemo(() => {
-    const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0];
+    const fallbackSale = { id: "", name: "—", brand: selectedBrand, date: "", isCurrent: false };
+    const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0] || fallbackSale;
     const saleSnapshots = allSaleSnapshots
       .filter(s => s.saleId === selectedSale.id)
       .sort((a, b) => b.dx - a.dx); // D-30 first
@@ -235,6 +237,10 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
 
   // DX options
   const dxOptions = Array.from({ length: 31 }, (_, i) => 30 - i);
+
+  if (!salesList.length) {
+    return <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>;
+  }
 
   return (
     <div className="space-y-6">
