@@ -88,7 +88,48 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
   );
 }
 
-export default function OverviewTab({ selectedBrand, mode }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode }) {
+export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], rawAuctionsData = [] }: { selectedBrand: "גנזים" | "זיידי"; mode: DisplayMode; dailySnapshots?: any[]; rawAuctionsData?: any[] }) {
+
+  // Map rawAuctionsData to salesList format
+  const salesList = useMemo(() => {
+    const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
+    return rawAuctionsData
+      .filter((a: any) => a.brand === brandFilter)
+      .map((a: any) => {
+        const num = a.auction_name?.match(/\d+/)?.[0] || "";
+        return {
+          id: a.auction_name,
+          name: `מכירה #${num}`,
+          brand: selectedBrand,
+          date: a.auction_date,
+          isCurrent: false, // will be detected dynamically
+        };
+      })
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [rawAuctionsData, selectedBrand]);
+
+  // Map dailySnapshots to SaleSnapshot format
+  const allSaleSnapshots: SaleSnapshot[] = useMemo(() => {
+    return dailySnapshots.map((s: any) => {
+      const num = s.auction_name?.match(/\d+/)?.[0] || "";
+      return {
+        saleId: s.auction_name,
+        saleName: `מכירה #${num}`,
+        brand: selectedBrand,
+        saleDate: s.auction_date || "",
+        totalLots: s.total_lots || 0,
+        dx: s.dx ?? 0,
+        earlyBids: s.early_bids_cum || 0,
+        uniqueBidders: s.unique_bidders_cum || 0,
+        lotsWithBids: s.lots_with_bids_cum || 0,
+        lotsBidPct: s.pct_lots_with_bids || 0,
+        guaranteedPrice: s.guaranteed_price || 0,
+        newRegistrants28d: s.new_registrations_28d || 0,
+        newBidders: s.new_bidders_28d || 0,
+        newBiddersFromOtherBrand: s.new_bidders_from_other_brand || 0,
+      } as SaleSnapshot;
+    });
+  }, [dailySnapshots, selectedBrand]);
 
   // Detect current sale per selected brand
   const currentSale = useMemo(() => {

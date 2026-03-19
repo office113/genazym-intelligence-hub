@@ -124,6 +124,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
     setRawRegsData([]);
     setParallelRegsData([]);
     setRawAuctionsData([]);
+    setDailySnapshots([]);
     setKpis({ avgOpeningPrice: "—", avgUplift: "—", uniqueInvolved: "—", avgInvolvedPerSale: "—" });
 
     async function fetchData() {
