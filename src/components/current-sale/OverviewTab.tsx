@@ -158,6 +158,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
   //  MODE 1: By D-X Day — filtered by brand
   // ════════════════════════════════════
   const mode1Data = useMemo(() => {
+    if (!currentSaleId || !salesList.length) return { currentSnap: undefined, pastSnapshots: [], pastSales: [], avg: () => 0, median: () => 0 };
     const currentSnap = getSnapshot(currentSaleId, selectedDX);
     const pastSales = salesList
       .filter(s => s.id !== currentSaleId && s.brand === selectedBrand)
@@ -177,7 +178,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
     };
 
     return { currentSnap, pastSnapshots, pastSales, avg, median };
-  }, [selectedDX, selectedBrand, currentSaleId]);
+  }, [selectedDX, selectedBrand, currentSaleId, salesList, allSaleSnapshots]);
 
   // ════════════════════════════════════
   //  MODE 2: By Single Sale
