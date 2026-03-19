@@ -238,6 +238,10 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
   // DX options
   const dxOptions = Array.from({ length: 31 }, (_, i) => 30 - i);
 
+  if (!salesList.length) {
+    return <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* ═══ TOP CONTROLS ═══ */}
