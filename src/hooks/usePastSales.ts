@@ -159,6 +159,14 @@ export function usePastSales(brand: "genazym" | "zaidy") {
         const filteredBooksData = booksData.filter((b: any) => validAuctionNames.has(b.auction_name));
         console.log(`Books fetched: ${booksData.length}, after filtering to valid auctions: ${filteredBooksData.length}, auction names in books:`, [...new Set(booksData.map((b: any) => b.auction_name))].sort());
 
+        // 3b. שליפת daily snapshots
+        const snapshotsData = await fetchAllPages(
+          "fact_auction_daily_snapshot",
+          { brand: brandFilter }
+        );
+        if (cancelled) return;
+        console.log('Daily Snapshots fetched:', snapshotsData.length);
+
         // 4. שליפת נרשמים עם pagination ופילטר מותג
         const regsData = await fetchAllPages(
           "registrations",
