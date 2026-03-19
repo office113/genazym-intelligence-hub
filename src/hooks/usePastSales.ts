@@ -395,6 +395,7 @@ export function usePastSales(brand: "genazym" | "zaidy") {
           setRawRegsData(regsData);
           setParallelRegsData(parallelRegs);
           setRawAuctionsData(auctionsData ?? []);
+          setDailySnapshots(snapshotsData);
           setKpis({
             avgOpeningPrice: avgOpeningPrice > 0 ? `$${Math.round(avgOpeningPrice).toLocaleString()}` : "—",
             avgUplift: avgUplift !== "—" ? `${avgUplift}%` : "—",
