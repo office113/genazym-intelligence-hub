@@ -184,7 +184,8 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
   //  MODE 2: By Single Sale
   // ════════════════════════════════════
   const mode2Data = useMemo(() => {
-    const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0];
+    const fallbackSale = { id: "", name: "—", brand: selectedBrand, date: "", isCurrent: false };
+    const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0] || fallbackSale;
     const saleSnapshots = allSaleSnapshots
       .filter(s => s.saleId === selectedSale.id)
       .sort((a, b) => b.dx - a.dx); // D-30 first
