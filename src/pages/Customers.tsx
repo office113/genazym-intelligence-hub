@@ -290,10 +290,10 @@ export default function Customers() {
       </div>
 
       <div className="p-8 animate-fade-in">
-        {loading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
+        {isSearchLoading && activeTab === "search" && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
         {error && <div className="text-center py-20 text-destructive text-sm">שגיאה: {error}</div>}
 
-        {!loading && !error && activeTab === "search" && (
+        {!isSearchLoading && !error && activeTab === "search" && (
           <>
             <div className="chart-card mb-6">
               <div className="flex items-center gap-3 mb-4">
@@ -316,13 +316,13 @@ export default function Customers() {
             </div>
 
             <CustomerAdvancedFilters
-              filters={advancedFilters}
+              filters={advancedFilters || defaultCustomerFilters}
               onApply={setAdvancedFilters}
               onClear={() => setAdvancedFilters(defaultCustomerFilters)}
             />
 
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-muted-foreground">{filtered.length} לקוחות</div>
+              <div className="text-sm text-muted-foreground">{(filtered || []).length} לקוחות</div>
             </div>
 
             <div className="chart-card">
@@ -340,20 +340,20 @@ export default function Customers() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.slice(0, 100).map((c) => (
-                    <tr key={c.email} onClick={() => openCustomer(c)}>
-                      <td className="font-semibold"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
-                      <td>{c.country}</td>
-                      <td>{c.totalBids.toLocaleString()}</td>
-                      <td>{c.totalWins.toLocaleString()}</td>
-                      <td>${c.totalSpend.toLocaleString()}</td>
-                      <td>{c.auctionsInvolved}</td>
+                  {(filtered || []).slice(0, 100).map((c) => (
+                    <tr key={c?.email || Math.random()} onClick={() => c && openCustomer(c)}>
+                      <td className="font-semibold"><CustomerLink email={c?.email || ""}>{c?.name || "—"}</CustomerLink></td>
+                      <td>{c?.country || "—"}</td>
+                      <td>{(c?.totalBids || 0).toLocaleString()}</td>
+                      <td>{(c?.totalWins || 0).toLocaleString()}</td>
+                      <td>${(c?.totalSpend || 0).toLocaleString()}</td>
+                      <td>{c?.auctionsInvolved || 0}</td>
                       <td>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${c.segment === "VIP" ? "badge-ai" : "badge-rule"}`}>
-                          {c.segment === "VIP" && <Star className="w-3 h-3" />}{c.segment}
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${c?.segment === "VIP" ? "badge-ai" : "badge-rule"}`}>
+                          {c?.segment === "VIP" && <Star className="w-3 h-3" />}{c?.segment || "רגיל"}
                         </span>
                       </td>
-                      <td className="text-xs text-muted-foreground">{c.lastActive ? new Date(c.lastActive).toLocaleDateString("he-IL") : "—"}</td>
+                      <td className="text-xs text-muted-foreground">{c?.lastActive ? new Date(c.lastActive).toLocaleDateString("he-IL") : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
