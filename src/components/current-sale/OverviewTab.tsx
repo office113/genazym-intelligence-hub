@@ -171,15 +171,19 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
 
         if (error || !data?.length) { setLoadingGlobal(false); return; }
 
-        const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; firstSeen: string; lastSeen: string }> = {};
+        const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; maxBid: number; winAuctionCount: number; firstSeen: string; lastSeen: string }> = {};
         for (const row of data) {
           if (!row.email) continue;
           if (!byEmail[row.email]) {
-            byEmail[row.email] = { full_name: row.full_name, email: row.email, totalBids: 0, totalSpend: 0, auctionCount: 0, firstSeen: row.first_bid_at || "", lastSeen: row.first_bid_at || "" };
+            byEmail[row.email] = { full_name: row.full_name, email: row.email, totalBids: 0, totalSpend: 0, auctionCount: 0, maxBid: 0, winAuctionCount: 0, firstSeen: row.first_bid_at || "", lastSeen: row.first_bid_at || "" };
           }
           const p = byEmail[row.email];
           p.totalBids += row.total_bids || 0;
-          if (row.was_winner) p.totalSpend += row.total_win_value || 0;
+          if (row.max_bid && row.max_bid > p.maxBid) p.maxBid = row.max_bid;
+          if (row.was_winner) {
+            p.totalSpend += row.total_win_value || 0;
+            p.winAuctionCount += 1;
+          }
           p.auctionCount += 1;
           if (row.first_bid_at && row.first_bid_at < p.firstSeen) p.firstSeen = row.first_bid_at;
           if (row.first_bid_at && row.first_bid_at > p.lastSeen) p.lastSeen = row.first_bid_at;
