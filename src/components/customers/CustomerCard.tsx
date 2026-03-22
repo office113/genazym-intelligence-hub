@@ -327,7 +327,7 @@ export default function CustomerCard() {
               {(["all", "Genazym", "Zaidy"] as BrandTab[]).map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setBrandTab(tab)}
+                  onClick={() => { setBrandTab(tab); if (tab !== "all") setAuctionSubTab(tab); }}
                   className="px-4 py-2 text-xs font-medium transition-colors"
                   style={{
                     borderBottom: brandTab === tab ? `2px solid ${PURPLE.main}` : "2px solid transparent",
