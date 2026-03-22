@@ -167,48 +167,29 @@ export default function Customers() {
 
   const filtered = useMemo(() => {
     try {
-      let result = customers || [];
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        result = result.filter(c =>
-          (c?.name || '').toLowerCase().includes(q) ||
-          (c?.email || '').toLowerCase().includes(q) ||
-          (c?.country || '').toLowerCase().includes(q)
-        );
-      }
-      if (advancedFilters?.genazymId) {
-        const id = Number(advancedFilters.genazymId);
-        if (!isNaN(id)) result = result.filter(c => c?.genazym_id === id);
-      }
-      if (advancedFilters?.zaidyId) {
-        const id = Number(advancedFilters.zaidyId);
-        if (!isNaN(id)) result = result.filter(c => c?.zaidy_id === id);
-      }
-      if (advancedFilters?.minSpend) {
-        const min = Number(advancedFilters.minSpend);
-        if (!isNaN(min)) result = result.filter(c => (c?.totalSpend || 0) >= min);
-      }
-      if (advancedFilters?.maxSpend) {
-        const max = Number(advancedFilters.maxSpend);
-        if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
-      }
-      if (advancedFilters?.minMaxBid) {
-        const min = Number(advancedFilters.minMaxBid);
-        if (!isNaN(min)) result = result.filter(c => (c?.maxBid || 0) >= min);
-      }
-      if (advancedFilters?.maxMaxBid) {
-        const max = Number(advancedFilters.maxMaxBid);
-        if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
-      }
-      if (advancedFilters?.segment) {
-        result = result.filter(c => powerMap[c?.email] === advancedFilters.segment);
-      }
-      return result;
-    } catch (error) {
-      console.error('Filtering error:', error);
-      return customers || [];
+      return customers.filter(c => {
+        if (filters.segment && c?.segment !== filters.segment) return false;
+        if (filters.country && c?.country !== filters.country) return false;
+        if (filters.continent && c?.continent !== filters.continent) return false;
+        if (filters.genazymId && !String(c?.genazym_id ?? '').includes(filters.genazymId)) return false;
+        if (filters.zaidyId && !String(c?.zaidy_id ?? '').includes(filters.zaidyId)) return false;
+        if (filters.minSpend !== '' && (c?.totalSpend ?? 0) < Number(filters.minSpend)) return false;
+        if (filters.maxSpend !== '' && (c?.totalSpend ?? 0) > Number(filters.maxSpend)) return false;
+        if (filters.minMaxBid !== '' && (c?.maxBid ?? 0) < Number(filters.minMaxBid)) return false;
+        if (filters.maxMaxBid !== '' && (c?.maxBid ?? 0) > Number(filters.maxMaxBid)) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          if (!(c?.name || '').toLowerCase().includes(q) &&
+              !(c?.email || '').toLowerCase().includes(q) &&
+              !(c?.country || '').toLowerCase().includes(q)) return false;
+        }
+        return true;
+      });
+    } catch (e) {
+      console.error('filter error:', e);
+      return customers;
     }
-  }, [customers, searchQuery, advancedFilters, powerMap]);
+  }, [customers, searchQuery, filters]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
