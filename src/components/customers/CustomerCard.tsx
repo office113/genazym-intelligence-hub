@@ -73,21 +73,40 @@ export default function CustomerCard() {
         .limit(1000);
       setAuctionActivity(activity || []);
 
-      // Books WON - fetch winners joined with books
+      // Books WON - fetch winners then enrich with book names
       const { data: won } = await supabase
         .from("winners")
-        .select("book_id_bidspirit, auction_name, sold_price, win_time, books!inner(book_name)")
+        .select("book_id_bidspirit, auction_name, sold_price, win_time")
         .eq("customer_email", email)
         .order("win_time", { ascending: false })
         .limit(1000);
 
-      setBooksWon((won || []).map((w: any) => ({
-        book_id_bidspirit: w.book_id_bidspirit,
-        auction_name: w.auction_name,
-        sold_price: w.sold_price,
-        book_name: w.books?.book_name || w.book_id_bidspirit,
-        brand: (w.auction_name || "").toLowerCase().includes("zaidy") ? "Zaidy" : "Genazym",
-      })));
+      if (won && won.length > 0) {
+        // Batch fetch book names using .or() for pairwise matching
+        const bookNames: Record<string, string> = {};
+        for (let i = 0; i < won.length; i += 50) {
+          const batch = won.slice(i, i + 50);
+          const orFilter = batch.map(w =>
+            `and(book_id_bidspirit.eq.${w.book_id_bidspirit},auction_name.eq.${w.auction_name})`
+          ).join(",");
+          const { data: books } = await supabase
+            .from("books")
+            .select("book_id_bidspirit, auction_name, book_name")
+            .or(orFilter);
+          (books || []).forEach(b => {
+            bookNames[`${b.book_id_bidspirit}|${b.auction_name}`] = b.book_name;
+          });
+        }
+        setBooksWon(won.map(w => ({
+          book_id_bidspirit: w.book_id_bidspirit,
+          auction_name: w.auction_name,
+          sold_price: w.sold_price,
+          book_name: bookNames[`${w.book_id_bidspirit}|${w.auction_name}`] || w.book_id_bidspirit,
+          brand: (w.auction_name || "").toLowerCase().includes("zaidy") ? "Zaidy" : "Genazym",
+        })));
+      } else {
+        setBooksWon([]);
+      }
 
       // Books LOST - fetch from fact_customer_lost_bids
       const { data: lostData } = await supabase
