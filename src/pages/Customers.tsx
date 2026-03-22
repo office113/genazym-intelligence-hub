@@ -248,8 +248,20 @@ export default function Customers() {
                         placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
                   </div>
+                  <div className="grid grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מינימום ביד מקסימלי ($)</label>
+                      <input type="number" value={advancedFilters.minMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, minMaxBid: e.target.value }))}
+                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום ביד מקסימלי ($)</label>
+                      <input type="number" value={advancedFilters.maxMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, maxMaxBid: e.target.value }))}
+                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                  </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' })}
+                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '' })}
                       className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
                       נקה הכל
                     </button>
