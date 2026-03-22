@@ -47,7 +47,7 @@ export default function CurrentSale() {
         const { data, error: err, count } = await supabase
           .from("view_missing_customers")
           .select("*", { count: "exact" })
-          .eq("brand", missingBrand)
+          .eq("brand", brand === "genazym" ? "Genazym" : "Zaidy")
           .order("total_spend_all_time", { ascending: false })
           .range(from, to);
 
