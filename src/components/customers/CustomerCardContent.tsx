@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import CustomerTasteProfile from "./CustomerTasteProfile";
 
-type BrandTab = "all" | "Genazym" | "Zaidy";
+type BrandTab = "all" | "Genazym" | "Zaidy" | "taste";
 type BookTab = "won" | "lost" | "active";
 
 const PURPLE = { fill: "#EEEDFE", border: "#AFA9EC", text: "#3C3489", dark: "#26215C", main: "#7F77DD" };
