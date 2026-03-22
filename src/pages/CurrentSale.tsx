@@ -31,9 +31,12 @@ export default function CurrentSale() {
   const [missingPage, setMissingPage] = useState(0);
   const [missingTotal, setMissingTotal] = useState(0);
   const [missingSearch, setMissingSearch] = useState("");
+  const [missingBrand, setMissingBrand] = useState<"Genazym" | "Zaidy">("Genazym");
 
   useEffect(() => {
     if (activeTab !== "missing") return;
+    setMissingData([]);
+    setMissingTotal(0);
     const fetchMissing = async () => {
       setMissingLoading(true);
       setMissingError(null);
@@ -44,12 +47,13 @@ export default function CurrentSale() {
         const { data, error: err, count } = await supabase
           .from("view_missing_customers")
           .select("*", { count: "exact" })
+          .eq("brand", missingBrand)
           .order("total_spend_all_time", { ascending: false })
           .range(from, to);
 
         if (err) throw new Error(err.message);
-        console.log('Missing Customers Data:', data);
         setMissingData(data ?? []);
+        setMissingTotal(count ?? 0);
       } catch (e: any) {
         setMissingError(e.message);
       } finally {
@@ -57,7 +61,7 @@ export default function CurrentSale() {
       }
     };
     fetchMissing();
-  }, [activeTab, missingPage]);
+  }, [activeTab, missingPage, missingBrand]);
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
