@@ -156,10 +156,19 @@ export default function CustomerCard() {
     return `${g?.auctions_involved_count || 0}g + ${z?.auctions_involved_count || 0}z`;
   }, [brandTab, brandKpis]);
 
-  // Filtered auction activity
+  // Filtered auction activity — further filtered by auctionSubTab
   const filteredActivity = useMemo(() => {
-    if (brandTab === "all") return auctionActivity;
-    return auctionActivity.filter(a => a.brand === brandTab);
+    const byBrand = brandTab === "all" ? auctionActivity : auctionActivity.filter(a => a.brand === brandTab);
+    return byBrand.filter(a => a.brand === auctionSubTab);
+  }, [auctionActivity, brandTab, auctionSubTab]);
+
+  // Counts for sub-tab labels
+  const auctionSubCounts = useMemo(() => {
+    const pool = brandTab === "all" ? auctionActivity : auctionActivity.filter(a => a.brand === brandTab);
+    return {
+      Genazym: pool.filter(a => a.brand === "Genazym").length,
+      Zaidy: pool.filter(a => a.brand === "Zaidy").length,
+    };
   }, [auctionActivity, brandTab]);
 
   // Chart data - last 6 auctions (only in "all" tab)
