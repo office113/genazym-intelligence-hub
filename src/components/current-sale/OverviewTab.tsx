@@ -325,6 +325,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     <thead>
                       <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
                         <th>שם לקוח</th>
+                        <th>{selectedBrand === "גנזים" ? "מזהה גנזים" : "מזהה זיידי"}</th>
                         <th>סוג מעורבות</th>
                         <th>בידים במכירה</th>
                         <th>מס׳ לוטים</th>
