@@ -7,6 +7,7 @@ import { usePastSales } from "@/hooks/usePastSales";
 import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
+import CustomerCardContent from "@/components/customers/CustomerCardContent";
 import { supabase } from "@/lib/supabaseClient";
 
 function getSegment(totalSpend: number, rules: { name: string; min_spend: number }[]) {
@@ -43,6 +44,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [profileSearch, setProfileSearch] = useState("");
   const [filters, setFilters] = useState({
     segment: '', country: '', continent: '',
     genazymId: '', zaidyId: '',
@@ -147,6 +149,15 @@ export default function Customers() {
     for (const c of customers) { if (c.continent) s.add(c.continent); }
     return Array.from(s).sort();
   }, [customers]);
+
+  const profileResults = useMemo(() => {
+    if (profileSearch.length < 2) return [];
+    const q = profileSearch.toLowerCase();
+    return customers.filter(c =>
+      (c?.name || '').toLowerCase().includes(q) ||
+      (c?.email || '').toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [customers, profileSearch]);
 
 
   // Segment data for chart
@@ -369,60 +380,56 @@ export default function Customers() {
 
         {!loading && !error && activeTab === "profile" && selectedCustomer && (
           <div className="max-w-4xl">
-            <div className="chart-card mb-6">
-              <div className="flex items-start gap-6">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold font-display" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" }}>
-                  {selectedCustomer.name.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold font-display">{selectedCustomer.name}</h3>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                    <span>{selectedCustomer.country}</span>
-                    <span>{selectedCustomer.email}</span>
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${selectedCustomer.segment === "VIP" ? "badge-ai" : "badge-rule"}`}>
-                      {selectedCustomer.segment === "VIP" && <Star className="w-3 h-3" />}{selectedCustomer.segment}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => { setSelectedCustomer(null); }}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← חזרה לחיפוש
+              </button>
             </div>
-
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <KPICard label="סה״כ הצעות" value={selectedCustomer.totalBids.toLocaleString()} />
-              <KPICard label="זכיות" value={selectedCustomer.totalWins.toLocaleString()} />
-              <KPICard label="שיעור זכייה" value={selectedCustomer.totalBids > 0 ? `${Math.round(selectedCustomer.totalWins / selectedCustomer.totalBids * 100)}%` : "0%"} />
-              <KPICard label="סה״כ זכיות" value={`$${selectedCustomer.totalSpend.toLocaleString()}`} />
-            </div>
-
-            <div className="chart-card">
-              <div className="chart-title flex items-center gap-2"><Clock className="w-4 h-4" /> היסטוריית מכירות</div>
-              <div className="space-y-3 mt-4">
-                {customerTimeline.map((event: any, i: number) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-2.5 h-2.5 rounded-full ${event.wasWinner ? "bg-success" : "bg-accent"}`} />
-                      {i < customerTimeline.length - 1 && <div className="w-px h-8 bg-border mt-1" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm">
-                        <span className="font-semibold">{event.auction}</span>
-                        {" — "}
-                        {event.bids} הצעות, מקסימום ${(event.maxBid || 0).toLocaleString()}
-                        {event.wasWinner && <span className="text-success font-medium"> · זוכה ({event.wins} פריטים)</span>}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{event.date ? new Date(event.date).toLocaleDateString("he-IL") : ""}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="chart-card p-6">
+              <CustomerCardContent email={selectedCustomer.email} />
             </div>
           </div>
         )}
 
         {!loading && !error && activeTab === "profile" && !selectedCustomer && (
-          <div className="text-center py-20 text-muted-foreground">
-            <div className="text-lg font-display font-semibold mb-2">בחר לקוח</div>
-            <div className="text-sm">לחץ על לקוח בחיפוש החכם כדי לראות את הפרופיל</div>
+          <div className="max-w-2xl mx-auto py-12">
+            <div className="text-center mb-6">
+              <div className="text-lg font-display font-semibold mb-2">בחר לקוח</div>
+              <div className="text-sm text-muted-foreground">חפש לקוח כדי לראות את הכרטיס המלא</div>
+            </div>
+            <div className="relative mb-4">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={profileSearch}
+                onChange={(e) => setProfileSearch(e.target.value)}
+                placeholder="חפש לקוח לפי שם או אימייל..."
+                className="w-full pr-10 pl-4 py-3 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all"
+              />
+            </div>
+            {profileSearch.length >= 2 && (
+              <div className="chart-card divide-y divide-border">
+                {profileResults.length === 0 && (
+                  <div className="text-center py-6 text-sm text-muted-foreground">לא נמצאו תוצאות</div>
+                )}
+                {profileResults.map(c => (
+                  <button
+                    key={c.email}
+                    onClick={() => { setSelectedCustomer(c); setProfileSearch(""); }}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-right"
+                  >
+                    <div>
+                      <div className="font-medium">{c.name}</div>
+                      <div className="text-xs text-muted-foreground">{c.email}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{c.country}</div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
