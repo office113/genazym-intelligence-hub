@@ -39,14 +39,27 @@ export default function Customers() {
   // Fetch customer metadata (IDs, purchasing_power, continent) for advanced filtering
   useEffect(() => {
     const fetchMeta = async () => {
-      const { data } = await supabase
-        .from("customers")
-        .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
-        .limit(50000);
-      if (data) {
-        const map: Record<string, any> = {};
-        data.forEach((r: any) => { map[r.email] = r; });
-        setCustomerMeta(map);
+      try {
+        // First try with continent, fall back without it
+        let { data, error } = await supabase
+          .from("customers")
+          .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
+          .limit(50000);
+        if (error) {
+          // continent column may not exist
+          const res = await supabase
+            .from("customers")
+            .select("email, genazym_id, zaidy_id, purchasing_power, country")
+            .limit(50000);
+          data = res.data;
+        }
+        if (data) {
+          const map: Record<string, any> = {};
+          data.forEach((r: any) => { map[r.email] = r; });
+          setCustomerMeta(map);
+        }
+      } catch (e) {
+        console.error("Failed to fetch customer metadata:", e);
       }
     };
     fetchMeta();
