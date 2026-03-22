@@ -367,13 +367,25 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           {/* ═══ GLOBAL PROFILE VIEW ═══ */}
           {view === "profile" && (
             <>
-              {/* Legend */}
+              {/* Legend — dynamic from rules */}
               <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
                 📋 <strong>מקרא:</strong>{" "}
-                <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = ${statusThresholds.activeSpend.toLocaleString()}+ או {statusThresholds.activeAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(220, 45%, 40%)" }}>מתחיל</span> = {statusThresholds.beginnerAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = 0 מכירות
+                {statusRules.map((rule, i) => {
+                  const colors: Record<string, string> = { vip: "hsl(var(--gold-dark))", active: "hsl(var(--primary))", beginner: "hsl(220, 45%, 40%)" };
+                  const summary = rule.conditions.map(c => {
+                    const pLabel = c.parameter === "totalWins" ? "$" : c.parameter === "maxBid" ? "ביד $" : "מכירות";
+                    const val = c.parameter === "totalWins" || c.parameter === "maxBid" ? `$${c.value.toLocaleString()}` : String(c.value);
+                    return `${pLabel} ${c.operator} ${val}`;
+                  }).join(rule.connector === "OR" ? " או " : " וגם ");
+                  return (
+                    <span key={rule.key}>
+                      <span style={{ color: colors[rule.key] || "hsl(200, 45%, 35%)" }}>{rule.label}</span> = {summary}
+                      {i < statusRules.length - 1 ? " · " : ""}
+                    </span>
+                  );
+                })}
+                {" · "}
+                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = ברירת מחדל
               </div>
 
               {loadingGlobal && (
