@@ -108,6 +108,7 @@ export default function Customers() {
 
     return Object.entries(byEmail).map(([email, rows]) => {
       const head = rows?.[0] ?? {};
+      const meta = customerMeta?.[email] ?? {};
       const totalBids = (rows || []).reduce((s, r) => s + (r?.total_bids || 0), 0);
       const totalWins = (rows || []).reduce((s, r) => s + (r?.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
@@ -118,7 +119,7 @@ export default function Customers() {
         return d > latest ? d : latest;
       }, "");
       const name = head?.full_name || email;
-      const country = head?.country || "—";
+      const country = head?.country || meta?.country || "—";
 
       // Segment by spend
       let segment = "רגיל";
@@ -129,6 +130,8 @@ export default function Customers() {
         email,
         name,
         country,
+        genazym_id: head?.genazym_id ?? meta?.genazym_id ?? null,
+        zaidy_id: head?.zaidy_id ?? meta?.zaidy_id ?? null,
         totalBids,
         totalWins,
         totalSpend,
@@ -136,8 +139,8 @@ export default function Customers() {
         lastActive: lastActiveDate,
         segment,
       };
-    }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData]);
+    }).sort((a, b) => (b?.totalSpend || 0) - (a?.totalSpend || 0));
+  }, [rawActivityData, rawAuctionsData, customerMeta]);
 
   // Segment data for chart
   const segmentData = useMemo(() => {
