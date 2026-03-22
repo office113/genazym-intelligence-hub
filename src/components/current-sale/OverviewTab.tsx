@@ -225,20 +225,24 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
     }
 
     // Chart data: merge sale + benchmark
-    const chartData = saleSnapshots.map(s => ({
-      dx: `D-${s.dx}`,
-      dxNum: s.dx,
-      earlyBids: s.earlyBids,
-      uniqueBidders: s.uniqueBidders,
-      lotsWithBids: s.lotsWithBids,
-      lotsBidPct: s.lotsBidPct,
-      guaranteedPrice: s.guaranteedPrice,
-      avgBids: benchmarkByDX[s.dx]?.earlyBids ?? 0,
-      avgBidders: benchmarkByDX[s.dx]?.uniqueBidders ?? 0,
-      avgLots: benchmarkByDX[s.dx]?.lotsWithBids ?? 0,
-      avgPct: benchmarkByDX[s.dx]?.lotsBidPct ?? 0,
-      avgGuaranteed: benchmarkByDX[s.dx]?.guaranteedPrice ?? 0,
-    }));
+    const chartData = saleSnapshots.map(s => {
+      const dxKey = Math.round(s.dx);
+      const bench = benchmarkByDX[dxKey];
+      return {
+        dx: `D-${dxKey}`,
+        dxNum: dxKey,
+        earlyBids: s.earlyBids,
+        uniqueBidders: s.uniqueBidders,
+        lotsWithBids: s.lotsWithBids,
+        lotsBidPct: s.lotsBidPct,
+        guaranteedPrice: s.guaranteedPrice,
+        avgBids: bench?.earlyBids ?? 0,
+        avgBidders: bench?.uniqueBidders ?? 0,
+        avgLots: bench?.lotsWithBids ?? 0,
+        avgPct: bench?.lotsBidPct ?? 0,
+        avgGuaranteed: bench?.guaranteedPrice ?? 0,
+      };
+    });
 
     return { selectedSale, saleSnapshots, chartData, benchmarkByDX };
   }, [selectedSaleId, selectedBrand, salesList, allSaleSnapshots]);
