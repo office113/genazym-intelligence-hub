@@ -76,12 +76,12 @@ export default function CustomerCard() {
       // Books WON - fetch from view
       const { data: won } = await supabase
         .from("view_customer_won_books")
-        .select("book_name, auction_name, sold_price, brand")
+        .select("book_name, head_hebrew, auction_name, sold_price, brand")
         .eq("customer_email", email)
         .order("auction_date", { ascending: false })
         .limit(1000);
       setBooksWon((won || []).map(w => ({
-        book_name: w.book_name || "—",
+        book_name: w.head_hebrew || w.book_name || "—",
         auction_name: w.auction_name,
         sold_price: w.sold_price,
         brand: w.brand,
@@ -164,7 +164,7 @@ export default function CustomerCard() {
   const chartData = useMemo(() => {
     const last6 = [...auctionActivity].reverse().slice(-6);
     return last6.map(a => ({
-      name: (a.auction_name || "").replace(/^(Genazym|Zaidy)\s*/i, "").slice(0, 12),
+      name: (a.auction_name || "").replace(/^Genazym[_\s]*/i, "G").replace(/^Zaidy[_\s]*/i, "Z"),
       bids: a.total_bids || 0,
       wins: a.total_wins || 0,
     }));
