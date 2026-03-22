@@ -5,6 +5,7 @@ import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { usePastSales } from "@/hooks/usePastSales";
 import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import CustomerLink from "@/components/customers/CustomerLink";
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
@@ -202,7 +203,7 @@ export default function Customers() {
                 <tbody>
                   {filtered.slice(0, 100).map((c) => (
                     <tr key={c.email} onClick={() => openCustomer(c)}>
-                      <td className="font-semibold">{c.name}</td>
+                      <td className="font-semibold"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
                       <td>{c.country}</td>
                       <td>{c.totalBids.toLocaleString()}</td>
                       <td>{c.totalWins.toLocaleString()}</td>

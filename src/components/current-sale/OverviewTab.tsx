@@ -8,6 +8,7 @@ import { X, Search, ChevronDown, CalendarClock, Loader2, Users, UserCheck } from
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 import { useStatusThresholds, getCustomerStatus } from "@/contexts/StatusThresholdsContext";
+import CustomerLink from "@/components/customers/CustomerLink";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
@@ -372,7 +373,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                            <td className="font-semibold">{b.full_name}</td>
+                            <td className="font-semibold"><CustomerLink email={b.email}>{b.full_name}</CustomerLink></td>
                             <td className="text-center text-xs text-muted-foreground">{b.genazym_id || b.zaidy_id || "—"}</td>
                             <td>
                               <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
@@ -450,7 +451,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         const status = getStatus(p);
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                            <td className="font-semibold">{p.full_name}</td>
+                            <td className="font-semibold"><CustomerLink email={p.email}>{p.full_name}</CustomerLink></td>
                             <td className="text-center">{p.totalBids}</td>
                             <td className="text-center">{p.auctionCount}</td>
                             <td className="text-xs text-muted-foreground">{p.firstSeen?.slice(0, 10) || "—"}</td>
