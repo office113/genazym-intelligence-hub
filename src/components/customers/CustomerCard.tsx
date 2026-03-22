@@ -107,47 +107,14 @@ export default function CustomerCard() {
         setBooksWon([]);
       }
 
-      // Books LOST & ACTIVE - fetch events where not a winner
-      const { data: events } = await supabase
-        .from("events")
-        .select("book_id_bidspirit, auction_name, bid_price")
+      // Books LOST - fetch from fact_customer_lost_bids
+      const { data: lostData } = await supabase
+        .from("fact_customer_lost_bids")
+        .select("book_name, auction_name, max_bid, brand, auction_date")
         .eq("customer_email", email)
-        .neq("customer_email", "floor_crowd@aa.co")
-        .order("bid_price", { ascending: false })
-        .limit(1000);
+        .order("auction_date", { ascending: false });
 
-      // Get winner keys for this customer
-      const wonKeysCorrect = new Set((won || []).map(w => `${w.book_id_bidspirit}|${w.auction_name}`));
-
-      // Group events by book+auction, keep max bid
-      const eventMap: Record<string, { book_id_bidspirit: string; auction_name: string; max_bid: number }> = {};
-      (events || []).forEach(e => {
-        const key = `${e.book_id_bidspirit}|${e.auction_name}`;
-        if (wonKeysCorrect.has(key)) return; // skip won books
-        if (!eventMap[key] || e.bid_price > eventMap[key].max_bid) {
-          eventMap[key] = { book_id_bidspirit: e.book_id_bidspirit, auction_name: e.auction_name, max_bid: e.bid_price };
-        }
-      });
-
-      const lostItems = Object.values(eventMap);
-
-      // Enrich with book names
-      const lostBookNames: Record<string, string> = {};
-      for (let i = 0; i < lostItems.length; i += 50) {
-        const batch = lostItems.slice(i, i + 50);
-        const ids = batch.map(b => b.book_id_bidspirit);
-        const auctions = batch.map(b => b.auction_name);
-        const { data: books } = await supabase
-          .from("books")
-          .select("book_id_bidspirit, auction_name, book_name")
-          .in("book_id_bidspirit", ids)
-          .in("auction_name", auctions);
-        (books || []).forEach(b => {
-          lostBookNames[`${b.book_id_bidspirit}|${b.auction_name}`] = b.book_name;
-        });
-      }
-
-      // Get future auctions
+      // Books ACTIVE - filter lost bids for future auctions
       const today = new Date().toISOString().split("T")[0];
       const { data: futureAuctions } = await supabase
         .from("auctions")
@@ -155,13 +122,14 @@ export default function CustomerCard() {
         .gt("auction_date", today);
       const futureAuctionNames = new Set((futureAuctions || []).map(a => a.auction_name));
 
-      const enrichedLost = lostItems.map(item => ({
-        ...item,
-        book_name: lostBookNames[`${item.book_id_bidspirit}|${item.auction_name}`] || item.book_id_bidspirit,
+      const allLost = (lostData || []).map(r => ({
+        book_name: r.book_name || "—",
+        auction_name: r.auction_name,
+        max_bid: r.max_bid,
+        brand: r.brand,
       }));
-
-      setBooksActive(enrichedLost.filter(b => futureAuctionNames.has(b.auction_name)));
-      setBooksLost(enrichedLost.filter(b => !futureAuctionNames.has(b.auction_name)));
+      setBooksActive(allLost.filter(b => futureAuctionNames.has(b.auction_name)));
+      setBooksLost(allLost.filter(b => !futureAuctionNames.has(b.auction_name)));
 
     } catch (err) {
       console.error("CustomerCard fetch error:", err);
