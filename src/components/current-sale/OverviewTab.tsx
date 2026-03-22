@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, ChevronDown, CalendarClock, Loader2 } from "lucide-react";
+import { X, Search, ChevronDown, CalendarClock, Loader2, Users, UserCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 
