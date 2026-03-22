@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
-import { drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { useState, useMemo, useEffect } from "react";
+import { SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { supabase } from "@/lib/supabaseClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X, Search, ChevronDown, CalendarClock } from "lucide-react";
+import { X, Search, ChevronDown, CalendarClock, Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 
@@ -77,6 +78,200 @@ function InvestigationPanel({ open, onClose, title, subtitle, children }: {
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+// ─── DRILL-DOWN PANEL WITH REAL SUPABASE DATA ───
+interface DrillDownState {
+  type: string; title: string; subtitle: string; saleName: string; saleId: string; dx: number;
+}
+
+function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, selectedBrand }: {
+  drillDown: DrillDownState | null;
+  onClose: () => void;
+  getSnapshot: (saleId: string, dx: number) => SaleSnapshot | undefined;
+  benchmarkByDX: Record<number, any>;
+  selectedBrand: "גנזים" | "זיידי";
+}) {
+  const [bidders, setBidders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (!drillDown) { setBidders([]); setSearchTerm(""); return; }
+
+    const fetchBidders = async () => {
+      setLoading(true);
+      setBidders([]);
+      try {
+        // Fetch from fact_customer_auction_activity filtered by auction_name
+        const { data, error } = await supabase
+          .from("fact_customer_auction_activity")
+          .select("full_name, email, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
+          .eq("auction_name", drillDown.saleId)
+          .order("max_bid", { ascending: false });
+
+        if (error) {
+          console.error("[DrillDown] Supabase error:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (!data?.length) {
+          console.log("[DrillDown] No bidders found for", drillDown.saleId);
+          setLoading(false);
+          return;
+        }
+
+        // Filter by D-X: only include bidders whose first_bid_at <= snapshot_date
+        // snapshot_date = auction_date - dx days
+        const auctionDate = new Date(data[0].auction_date);
+        const snapshotDate = new Date(auctionDate);
+        snapshotDate.setDate(snapshotDate.getDate() - drillDown.dx);
+        snapshotDate.setHours(23, 59, 59, 999);
+
+        const filtered = data.filter(row => {
+          if (!row.first_bid_at) return false;
+          return new Date(row.first_bid_at) <= snapshotDate;
+        });
+
+        console.log(`[DrillDown] ${drillDown.saleId} D-${drillDown.dx}: ${filtered.length}/${data.length} bidders active by ${snapshotDate.toISOString().slice(0, 10)}`);
+        setBidders(filtered);
+      } catch (err) {
+        console.error("[DrillDown] fetch error:", err);
+      }
+      setLoading(false);
+    };
+
+    fetchBidders();
+  }, [drillDown?.saleId, drillDown?.dx]);
+
+  const drillSnap = drillDown ? getSnapshot(drillDown.saleId, drillDown.dx) : undefined;
+  const drillBench = drillDown ? benchmarkByDX[drillDown.dx] : undefined;
+
+  const filteredBidders = useMemo(() => {
+    if (!searchTerm) return bidders;
+    const term = searchTerm.toLowerCase();
+    return bidders.filter(b => b.full_name?.toLowerCase().includes(term) || b.email?.toLowerCase().includes(term));
+  }, [bidders, searchTerm]);
+
+  const fmtCurrency = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n?.toLocaleString() ?? 0}`;
+
+  return (
+    <InvestigationPanel
+      open={!!drillDown}
+      onClose={onClose}
+      title={drillDown?.title || ""}
+      subtitle={drillDown?.subtitle}
+    >
+      {drillDown && (
+        <div className="space-y-6">
+          {/* Context bar */}
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
+            <div className="text-sm">
+              <span className="font-semibold">{drillDown.saleName}</span>
+              <span className="mx-2 text-muted-foreground">·</span>
+              <span className="font-bold" style={{ color: "hsl(var(--accent))" }}>D-{drillDown.dx}</span>
+            </div>
+            {drillSnap && (
+              <div className="flex gap-4 mr-auto text-xs text-muted-foreground">
+                <span>הצעות: <strong>{drillSnap.earlyBids}</strong>{drillBench?.earlyBids ? ` (ממוצע: ${drillBench.earlyBids})` : ""}</span>
+                <span>משתמשים: <strong>{drillSnap.uniqueBidders}</strong>{drillBench?.uniqueBidders ? ` (ממוצע: ${drillBench.uniqueBidders})` : ""}</span>
+                <span>פריטים: <strong>{drillSnap.lotsWithBids}</strong>{drillBench?.lotsWithBids ? ` (ממוצע: ${drillBench.lotsWithBids})` : ""}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="kpi-card">
+              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.length}</div>
+              <div className="kpi-label">סה״כ בידרים</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.filter(b => b.was_winner).length}</div>
+              <div className="kpi-label">זכו בסוף המכירה</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.filter(b => b.was_early && b.was_live).length}</div>
+              <div className="kpi-label">מוקדם + לייב</div>
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="חיפוש לפי שם או אימייל..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+
+          {/* Loading state */}
+          {loading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              <span className="mr-3 text-sm text-muted-foreground">טוען נתונים...</span>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!loading && filteredBidders.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground text-sm">
+              {searchTerm ? "לא נמצאו תוצאות לחיפוש" : "אין בידרים פעילים בנקודה זו"}
+            </div>
+          )}
+
+          {/* Bidders table */}
+          {!loading && filteredBidders.length > 0 && (
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="data-table w-full">
+                <thead>
+                  <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                    <th>שם לקוח</th>
+                    <th>סוג מעורבות</th>
+                    <th>מס׳ הצעות</th>
+                    <th>מס׳ לוטים</th>
+                    <th>הצעה מקסימלית</th>
+                    <th>סה״כ זכיות</th>
+                    <th>שווי זכיות</th>
+                    <th>הצעה ראשונה</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBidders.map((b, i) => {
+                    const engType = b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב";
+                    return (
+                      <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                        <td className="font-semibold">{b.full_name}</td>
+                        <td>
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                            style={{
+                              background: engType === "גם וגם" ? "hsl(var(--accent) / 0.12)" : engType === "מוקדם" ? "hsl(var(--primary) / 0.1)" : "hsl(200, 40%, 92%)",
+                              color: engType === "גם וגם" ? "hsl(var(--gold-dark))" : engType === "מוקדם" ? "hsl(var(--primary))" : "hsl(200, 45%, 35%)",
+                            }}>
+                            {engType}
+                          </span>
+                        </td>
+                        <td className="text-center">{b.total_bids}</td>
+                        <td className="text-center">{b.lots_involved}</td>
+                        <td className="font-semibold">{fmtCurrency(b.max_bid || 0)}</td>
+                        <td className="text-center">{b.total_wins}</td>
+                        <td className="font-semibold">{b.total_win_value ? fmtCurrency(b.total_win_value) : "—"}</td>
+                        <td className="text-xs text-muted-foreground">{b.first_bid_at?.slice(0, 10) || "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </InvestigationPanel>
   );
 }
 
@@ -672,233 +867,13 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       )}
 
       {/* ═══ DRILL-DOWN INVESTIGATION PANEL ═══ */}
-      <InvestigationPanel
-        open={!!drillDown}
+      <DrillDownPanel
+        drillDown={drillDown}
         onClose={() => setDrillDown(null)}
-        title={drillDown?.title || ""}
-        subtitle={drillDown?.subtitle}
-      >
-        {drillDown && (() => {
-          // Get the snapshot for context
-          const drillSnap = getSnapshot(drillDown.saleId, drillDown.dx);
-          const drillBench = mode2Data.benchmarkByDX[drillDown.dx];
-          return (
-          <div className="space-y-6">
-            {/* Context bar */}
-            <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
-              <div className="text-sm">
-                <span className="font-semibold">{drillDown.saleName}</span>
-                <span className="mx-2 text-muted-foreground">·</span>
-                <span className="font-bold" style={{ color: "hsl(var(--accent))" }}>D-{drillDown.dx}</span>
-              </div>
-              {drillSnap && (
-                <div className="flex gap-4 mr-auto text-xs text-muted-foreground">
-                  <span>הצעות: <strong>{drillSnap.earlyBids}</strong>{drillBench?.earlyBids ? ` (ממוצע: ${drillBench.earlyBids})` : ""}</span>
-                  <span>משתמשים: <strong>{drillSnap.uniqueBidders}</strong>{drillBench?.uniqueBidders ? ` (ממוצע: ${drillBench.uniqueBidders})` : ""}</span>
-                  <span>פריטים: <strong>{drillSnap.lotsWithBids}</strong>{drillBench?.lotsWithBids ? ` (ממוצע: ${drillBench.lotsWithBids})` : ""}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Summary KPIs */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="kpi-card">
-                <div className="kpi-value text-xl">{(drillDownCustomers[drillDown.type] || drillDownCustomers.uniqueBidders).length}</div>
-                <div className="kpi-label">סה״כ רשומות</div>
-              </div>
-              {drillDown.type === "uniqueBidders" && (
-                <>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.uniqueBidders.filter(c => c.wonAtEnd).length}</div>
-                    <div className="kpi-label">זכו בסוף המכירה</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.uniqueBidders.filter(c => c.engagementType === "גם וגם").length}</div>
-                    <div className="kpi-label">מוקדם + לייב</div>
-                  </div>
-                </>
-              )}
-              {drillDown.type === "newBidders" && (
-                <>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.newBidders.filter(c => c.activeInOtherBrand).length}</div>
-                    <div className="kpi-label">פעילים במותג השני</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.newBidders.filter(c => !c.activeInOtherBrand).length}</div>
-                    <div className="kpi-label">חדשים לגמרי</div>
-                  </div>
-                </>
-              )}
-              {drillDown.type === "newBiddersFromOtherBrand" && (
-                <>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.newBiddersFromOtherBrand.reduce((a, c) => a + (c.winsOtherBrand || 0), 0)}</div>
-                    <div className="kpi-label">סה״כ זכיות במותג השני</div>
-                  </div>
-                  <div className="kpi-card">
-                    <div className="kpi-value text-xl">{drillDownCustomers.newBiddersFromOtherBrand.length > 0 ? drillDownCustomers.newBiddersFromOtherBrand[0].otherBrandName : "—"}</div>
-                    <div className="kpi-label">המותג השני</div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input type="text" placeholder="חיפוש..." className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30" />
-            </div>
-
-            {/* ── uniqueBidders table ── */}
-            {drillDown.type === "uniqueBidders" && (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="data-table w-full">
-                  <thead>
-                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                      <th>שם לקוח</th>
-                      <th>תאריך ביד ראשון במותג</th>
-                      <th>סוג מעורבות עד אותו יום</th>
-                      <th>מס׳ בידים עד אותו יום</th>
-                      <th>מס׳ לוטים עם ביד</th>
-                      <th>ביד מקסימלי עד אותו יום</th>
-                      <th>האם זכה בסוף המכירה</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drillDownCustomers.uniqueBidders.map((c, i) => (
-                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                        <td className="font-semibold">{c.name}</td>
-                        <td>{c.firstBidDate}</td>
-                        <td>
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
-                            style={{
-                              background: c.engagementType === "גם וגם" ? "hsl(var(--accent) / 0.12)" : c.engagementType === "מוקדם" ? "hsl(var(--primary) / 0.1)" : "hsl(200, 40%, 92%)",
-                              color: c.engagementType === "גם וגם" ? "hsl(var(--gold-dark))" : c.engagementType === "מוקדם" ? "hsl(var(--primary))" : "hsl(200, 45%, 35%)",
-                            }}>
-                            {c.engagementType}
-                          </span>
-                        </td>
-                        <td className="text-center">{c.bidsCount}</td>
-                        <td className="text-center">{c.lotsWithBidCount}</td>
-                        <td className="font-semibold">{c.maxBidAmount}</td>
-                        <td className="text-center">
-                          {c.wonAtEnd ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "hsl(142, 60%, 92%)", color: "hsl(142, 60%, 30%)" }}>כן</span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">לא</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* ── newBidders table ── */}
-            {drillDown.type === "newBidders" && (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="data-table w-full">
-                  <thead>
-                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                      <th>שם לקוח</th>
-                      <th>תאריך הרשמה</th>
-                      <th>תאריך ביד ראשון</th>
-                      <th>מס׳ בידים עד אותו יום</th>
-                      <th>מס׳ לוטים עם ביד</th>
-                      <th>ביד מקסימלי עד אותו יום</th>
-                      <th>היה פעיל בעבר באותו מותג</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drillDownCustomers.newBidders.map((c, i) => (
-                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                        <td className="font-semibold">{c.name}</td>
-                        <td>{c.registrationDate}</td>
-                        <td>{c.firstBidDate}</td>
-                        <td className="text-center">{c.bidsCount}</td>
-                        <td className="text-center">{c.lotsWithBidCount}</td>
-                        <td className="font-semibold">{c.maxBidAmount}</td>
-                        <td className="text-center">
-                          {c.activeInOtherBrand ? (
-                            <span className="badge-ai">כן</span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">לא</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* ── newBiddersFromOtherBrand table ── */}
-            {drillDown.type === "newBiddersFromOtherBrand" && (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="data-table w-full">
-                  <thead>
-                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                      <th>שם לקוח</th>
-                      <th>תאריך הרשמה</th>
-                      <th>תאריך ביד ראשון במותג הנוכחי</th>
-                      <th>המותג השני</th>
-                      <th>תאריך פעילות ראשון במותג השני</th>
-                      <th>ביד מקסימלי היסטורי במותג השני</th>
-                      <th>מס׳ זכיות במותג השני</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drillDownCustomers.newBiddersFromOtherBrand.map((c, i) => (
-                      <tr key={i} className="cursor-pointer hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                        <td className="font-semibold">{c.name}</td>
-                        <td>{c.registrationDate}</td>
-                        <td>{c.firstBidDate}</td>
-                        <td>
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" }}>
-                            {c.otherBrandName}
-                          </span>
-                        </td>
-                        <td>{c.firstActivityOtherBrand}</td>
-                        <td className="font-semibold">{c.maxBidOtherBrand}</td>
-                        <td className="text-center font-semibold">{c.winsOtherBrand}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* ── lotsWithBids fallback ── */}
-            {drillDown.type === "lotsWithBids" && (
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="data-table w-full">
-                  <thead>
-                    <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                      <th>שם</th>
-                      <th>הצעה ראשונה</th>
-                      <th>הצעה מקסימלית</th>
-                      <th>מס׳ הצעות</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {drillDownCustomers.lotsWithBids.map((c, i) => (
-                      <tr key={i} style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                        <td className="font-semibold">{c.name}</td>
-                        <td>{c.firstBidDate}</td>
-                        <td className="font-semibold">{c.maxHistoricalBid}</td>
-                        <td>{c.totalWins}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-          );
-        })()}
-      </InvestigationPanel>
+        getSnapshot={getSnapshot}
+        benchmarkByDX={mode2Data.benchmarkByDX}
+        selectedBrand={selectedBrand}
+      />
     </div>
   );
 }
