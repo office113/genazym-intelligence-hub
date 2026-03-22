@@ -14,7 +14,7 @@ const tabs = [
 
 type Brand = "genazym" | "zaidy";
 
-const MISSING_PAGE_SIZE = 25;
+const MISSING_PAGE_SIZE = 50;
 
 export default function CurrentSale() {
   const [activeTab, setActiveTab] = useState("overview");
