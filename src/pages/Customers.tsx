@@ -46,6 +46,7 @@ export default function Customers() {
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [profileSearch, setProfileSearch] = useState("");
+  const [profileCustomer, setProfileCustomer] = useState<any>(null);
   const [filters, setFilters] = useState({
     segment: '', country: '', continent: '',
     genazymId: '', zaidyId: '',
