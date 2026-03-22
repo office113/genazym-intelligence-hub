@@ -137,8 +137,8 @@ export default function CurrentSale() {
                     <tbody>
                       {filteredMissing.map((c, i) => (
                         <tr key={c.email || i} onClick={() => openCustomer({ name: c.full_name, email: c.email, totalSpend: c.total_spend_all_time, displayId: c.genazym_id || c.zaidy_id })}>
-                          <td className="text-center text-xs text-muted-foreground">{c.genazym_id || c.zaidy_id || "—"}</td>
-                          <td className="font-semibold">{c.full_name || c.email || "—"}</td>
+                          <td className="text-center text-xs text-muted-foreground"><CustomerLink email={c.email}>{c.genazym_id || c.zaidy_id || "—"}</CustomerLink></td>
+                          <td className="font-semibold"><CustomerLink email={c.email}>{c.full_name || c.email || "—"}</CustomerLink></td>
                           <td>{c.last_seen_auction || "—"}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
                           <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>

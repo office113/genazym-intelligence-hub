@@ -203,7 +203,7 @@ export default function Customers() {
                 <tbody>
                   {filtered.slice(0, 100).map((c) => (
                     <tr key={c.email} onClick={() => openCustomer(c)}>
-                      <td className="font-semibold">{c.name}</td>
+                      <td className="font-semibold"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
                       <td>{c.country}</td>
                       <td>{c.totalBids.toLocaleString()}</td>
                       <td>{c.totalWins.toLocaleString()}</td>
