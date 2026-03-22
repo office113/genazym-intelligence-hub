@@ -43,10 +43,27 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
+  const [filters, setFilters] = useState({
+    segment: '', country: '', continent: '',
+    genazymId: '', zaidyId: '',
+    minSpend: '', maxSpend: '',
+    minMaxBid: '', maxMaxBid: '',
+  });
+  const updateFilter = (key: string, value: string) =>
+    setFilters(prev => ({ ...prev, [key]: value }));
 
-  const [powerMap, setPowerMap] = useState<Record<string, string>>({});
-  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const { data: segmentRules = [] } = useQuery({
+    queryKey: ['customer_segments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_segments')
+        .select('name, min_spend')
+        .order('min_spend', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: Infinity,
+  });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
