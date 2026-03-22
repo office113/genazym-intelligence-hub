@@ -176,6 +176,7 @@ export default function CustomerCard() {
   const filterBooksByBrand = (books: any[]) => {
     if (brandTab === "all") return books;
     const target = brandTab === "genazym" ? "Genazym" : "Zaidy";
+    const tabKey = brandTab === "genazym" ? "genazym" : "zaidy";
     return books.filter(b => {
       if (b.brand) return b.brand === target;
       return (b.auction_name || "").toLowerCase().includes(brandTab);
