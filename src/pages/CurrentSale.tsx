@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { usePastSales } from "@/hooks/usePastSales";
+import { supabase } from "@/lib/supabaseClient";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -13,6 +14,8 @@ const tabs = [
 
 type Brand = "genazym" | "zaidy";
 
+const MISSING_PAGE_SIZE = 25;
+
 export default function CurrentSale() {
   const [activeTab, setActiveTab] = useState("overview");
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -21,71 +24,49 @@ export default function CurrentSale() {
 
   const { rawActivityData, rawAuctionsData, dailySnapshots, pastSalesData, loading, error } = usePastSales(brand);
 
+  // Missing customers state
+  const [missingData, setMissingData] = useState<any[]>([]);
+  const [missingLoading, setMissingLoading] = useState(false);
+  const [missingError, setMissingError] = useState<string | null>(null);
+  const [missingPage, setMissingPage] = useState(0);
+  const [missingTotal, setMissingTotal] = useState(0);
+
+  useEffect(() => {
+    if (activeTab !== "missing") return;
+    const fetchMissing = async () => {
+      setMissingLoading(true);
+      setMissingError(null);
+      try {
+        const from = missingPage * MISSING_PAGE_SIZE;
+        const to = from + MISSING_PAGE_SIZE - 1;
+
+        const { data, error: err, count } = await supabase
+          .from("view_missing_customers")
+          .select("*", { count: "exact" })
+          .order("total_spend_all_time", { ascending: false })
+          .range(from, to);
+
+        if (err) throw new Error(err.message);
+        setMissingData(data ?? []);
+        setMissingTotal(count ?? 0);
+      } catch (e: any) {
+        setMissingError(e.message);
+      } finally {
+        setMissingLoading(false);
+      }
+    };
+    fetchMissing();
+  }, [activeTab, missingPage]);
+
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
 
-  // Find the latest auction (reference) and the one before it
-  const { latestAuction, prevAuction } = useMemo(() => {
-    const sorted = [...rawAuctionsData].sort((a: any, b: any) => (b.auction_date || "").localeCompare(a.auction_date || ""));
-    return { latestAuction: sorted[0], prevAuction: sorted[1] };
-  }, [rawAuctionsData]);
-
-  // Missing customers: active in previous auctions but NOT in the latest
-  const missingCustomers = useMemo(() => {
-    if (!latestAuction || !rawActivityData.length) return [];
-
-    const latestEmails = new Set(
-      rawActivityData.filter((r: any) => r.auction_name === latestAuction.auction_name).map((r: any) => r.email)
-    );
-
-    // Get all customers who were active in any of the last 3 auctions (excluding latest)
-    const sorted = [...rawAuctionsData].sort((a: any, b: any) => (b.auction_date || "").localeCompare(a.auction_date || ""));
-    const recentPrevAuctions = sorted.slice(1, 4).map((a: any) => a.auction_name);
-    const recentPrevSet = new Set(recentPrevAuctions);
-
-    // Group activity by email for recent previous auctions
-    const prevCustomers: Record<string, any[]> = {};
-    rawActivityData.forEach((r: any) => {
-      if (recentPrevSet.has(r.auction_name) && !latestEmails.has(r.email)) {
-        if (!prevCustomers[r.email]) prevCustomers[r.email] = [];
-        prevCustomers[r.email].push(r);
-      }
-    });
-
-    return Object.entries(prevCustomers).map(([email, rows]) => {
-      const allRows = rawActivityData.filter((r: any) => r.email === email);
-      const totalBids = allRows.reduce((s: number, r: any) => s + (r.total_bids || 0), 0);
-      const totalWinValue = allRows.reduce((s: number, r: any) => r.was_winner ? s + (r.max_bid || 0) : s, 0);
-      const auctionsCount = allRows.length;
-      const avgBids = auctionsCount > 0 ? Math.round(totalBids / auctionsCount) : 0;
-      const lastRow = rows.sort((a: any, b: any) => (b.auction_date || "").localeCompare(a.auction_date || ""))[0];
-      const lastAuctionName = lastRow?.auction_name || "";
-      const num = lastAuctionName.match(/\d+/)?.[0] || "";
-
-      return {
-        email,
-        name: rows[0].full_name || email,
-        country: rows[0].country || "—",
-        lastSale: `מכירה #${num}`,
-        avgBids,
-        totalSpend: totalWinValue,
-        auctionsCount,
-      };
-    }).sort((a, b) => b.totalSpend - a.totalSpend).slice(0, 50);
-  }, [rawActivityData, rawAuctionsData, latestAuction]);
+  const totalPages = Math.ceil(missingTotal / MISSING_PAGE_SIZE);
 
   // KPIs for missing tab
-  const missingKpis = useMemo(() => {
-    const totalSpend = missingCustomers.reduce((s, c) => s + c.totalSpend, 0);
-    const avgBids = missingCustomers.length > 0
-      ? (missingCustomers.reduce((s, c) => s + c.avgBids, 0) / missingCustomers.length).toFixed(1)
-      : "0";
-    return {
-      count: missingCustomers.length,
-      totalSpend: `$${Math.round(totalSpend / 1000).toLocaleString()}K`,
-      avgBids,
-    };
-  }, [missingCustomers]);
+  const missingKpis = useMemo(() => ({
+    count: missingTotal,
+  }), [missingTotal]);
 
   return (
     <div className="min-h-screen">
@@ -111,34 +92,43 @@ export default function CurrentSale() {
 
         {activeTab === "missing" && (
           <>
-            {loading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
-            {error && <div className="text-center py-20 text-destructive text-sm">שגיאה: {error}</div>}
-            {!loading && !error && (
+            {missingLoading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
+            {missingError && <div className="text-center py-20 text-destructive text-sm">שגיאה: {missingError}</div>}
+            {!missingLoading && !missingError && (
               <>
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <KPICard label="לקוחות חסרים" value={missingKpis.count.toString()} />
-                  <KPICard label="סה״כ זכיות חסרים" value={missingKpis.totalSpend} subtitle="ערך מצטבר" />
-                  <KPICard label="ממוצע הצעות/מכירה" value={missingKpis.avgBids} />
                 </div>
                 <div className="chart-card">
-                  <div className="chart-title">לקוחות שהיו פעילים לאחרונה אך חסרים במכירה האחרונה ({latestAuction ? `#${latestAuction.auction_name.match(/\d+/)?.[0]}` : ""})</div>
+                  <div className="chart-title">לקוחות חסרים — ממוינים לפי סה״כ הוצאות</div>
                   <table className="data-table">
                     <thead>
-                      <tr><th>שם</th><th>מדינה</th><th>מכירה אחרונה</th><th>ממוצע הצעות</th><th>סה״כ זכיות ($)</th><th>מכירות</th></tr>
+                      <tr>
+                        <th>מזהה</th>
+                        <th>שם</th>
+                        <th>סה״כ הוצאות ($)</th>
+                        <th>מכירות</th>
+                      </tr>
                     </thead>
                     <tbody>
-                      {missingCustomers.map((c) => (
-                        <tr key={c.email} onClick={() => openCustomer(c)}>
-                          <td className="font-semibold">{c.name}</td>
-                          <td>{c.country}</td>
-                          <td>{c.lastSale}</td>
-                          <td>{c.avgBids}</td>
-                          <td>${c.totalSpend.toLocaleString()}</td>
-                          <td>{c.auctionsCount}</td>
+                      {missingData.map((c, i) => (
+                        <tr key={c.customer_email || i} onClick={() => openCustomer({ name: c.customer_name, email: c.customer_email, totalSpend: c.total_spend_all_time, displayId: c.display_id })}>
+                          <td className="text-center text-xs text-muted-foreground">{c.display_id || "—"}</td>
+                          <td className="font-semibold">{c.customer_name || c.customer_email || "—"}</td>
+                          <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
+                          <td>{c.auctions_participated ?? "—"}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-4 pb-2">
+                      <button disabled={missingPage === 0} onClick={() => setMissingPage(p => p - 1)} className="px-3 py-1 text-sm rounded-md border border-border bg-card disabled:opacity-40 hover:bg-muted transition-colors">הקודם</button>
+                      <span className="text-sm text-muted-foreground">עמוד {missingPage + 1} מתוך {totalPages}</span>
+                      <button disabled={missingPage >= totalPages - 1} onClick={() => setMissingPage(p => p + 1)} className="px-3 py-1 text-sm rounded-md border border-border bg-card disabled:opacity-40 hover:bg-muted transition-colors">הבא</button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -150,14 +140,12 @@ export default function CurrentSale() {
         {selectedCustomer && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <div className="kpi-card"><div className="kpi-value">{selectedCustomer.avgBids}</div><div className="kpi-label">ממוצע הצעות</div></div>
-              <div className="kpi-card"><div className="kpi-value">${selectedCustomer.totalSpend.toLocaleString()}</div><div className="kpi-label">סה״כ זכיות</div></div>
+              <div className="kpi-card"><div className="kpi-value">${(selectedCustomer.totalSpend ?? 0).toLocaleString()}</div><div className="kpi-label">סה״כ הוצאות</div></div>
+              <div className="kpi-card"><div className="kpi-value">{selectedCustomer.displayId || "—"}</div><div className="kpi-label">מזהה</div></div>
             </div>
             <div>
               <h4 className="font-display font-semibold mb-3">מידע נוסף</h4>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">מכירה אחרונה</span><span>{selectedCustomer.lastSale}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">מדינה</span><span>{selectedCustomer.country}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">אימייל</span><span dir="ltr" className="text-xs">{selectedCustomer.email}</span></div>
               </div>
             </div>
