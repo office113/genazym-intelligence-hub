@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
@@ -46,24 +46,41 @@ export default function Customers() {
   const [filters, setFilters] = useState({
     segment: '', country: '', continent: '',
     genazymId: '', zaidyId: '',
-    minSpend: '', maxSpend: '',
-    minMaxBid: '', maxMaxBid: '',
+    minSpend: '',
+    minMaxBid: '',
   });
   const updateFilter = (key: string, value: string) =>
     setFilters(prev => ({ ...prev, [key]: value }));
 
-  const { data: segmentRules = [] } = useQuery({
-    queryKey: ['customer_segments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customer_segments')
-        .select('name, min_spend')
-        .order('min_spend', { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: Infinity,
-  });
+  // Hardcoded segment rules since customer_segments table doesn't exist
+  const segmentRules = useMemo(() => [
+    { name: 'VIP', min_spend: 50000 },
+    { name: 'פעיל', min_spend: 5000 },
+    { name: 'רגיל', min_spend: 1 },
+    { name: 'רשום', min_spend: 0 },
+  ], []);
+
+  // Fetch continent lookup from customers table
+  const [continentMap, setContinentMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let mounted = true;
+    const fetchContinents = async () => {
+      try {
+        const { data } = await supabase
+          .from('customers')
+          .select('email, continent')
+          .not('continent', 'is', null)
+          .limit(50000);
+        if (data && mounted) {
+          const map: Record<string, string> = {};
+          data.forEach(row => { if (row.email && row.continent) map[row.email] = row.continent; });
+          setContinentMap(map);
+        }
+      } catch (err) { console.error('Failed to fetch continents', err); }
+    };
+    fetchContinents();
+    return () => { mounted = false; };
+  }, []);
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
@@ -97,7 +114,7 @@ export default function Customers() {
       }, "");
       const name = rows[0].full_name || email;
       const country = rows[0].country || "—";
-      const continent = rows[0].continent || "";
+      const continent = continentMap[email] || rows[0].continent || "";
 
       return {
         email,
@@ -115,7 +132,9 @@ export default function Customers() {
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData, segmentRules]);
+  }, [rawActivityData, rawAuctionsData, segmentRules, continentMap]);
+
+
 
   const countryOptions = useMemo(() => {
     const s = new Set<string>();
@@ -174,9 +193,7 @@ export default function Customers() {
         if (filters.genazymId && !String(c?.genazym_id ?? '').includes(filters.genazymId)) return false;
         if (filters.zaidyId && !String(c?.zaidy_id ?? '').includes(filters.zaidyId)) return false;
         if (filters.minSpend !== '' && (c?.totalSpend ?? 0) < Number(filters.minSpend)) return false;
-        if (filters.maxSpend !== '' && (c?.totalSpend ?? 0) > Number(filters.maxSpend)) return false;
         if (filters.minMaxBid !== '' && (c?.maxBid ?? 0) < Number(filters.minMaxBid)) return false;
-        if (filters.maxMaxBid !== '' && (c?.maxBid ?? 0) > Number(filters.maxMaxBid)) return false;
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           if (!(c?.name || '').toLowerCase().includes(q) &&
@@ -277,31 +294,19 @@ export default function Customers() {
                       value={filters.zaidyId}
                       onChange={e => updateFilter('zaidyId', e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <input type="number" placeholder="הוצאה מינ'" style={{ flex: 1 }}
-                        value={filters.minSpend}
-                        onChange={e => updateFilter('minSpend', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                      <input type="number" placeholder="הוצאה מקס'" style={{ flex: 1 }}
-                        value={filters.maxSpend}
-                        onChange={e => updateFilter('maxSpend', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <input type="number" placeholder="ביד מינ'" style={{ flex: 1 }}
-                        value={filters.minMaxBid}
-                        onChange={e => updateFilter('minMaxBid', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                      <input type="number" placeholder="ביד מקס'" style={{ flex: 1 }}
-                        value={filters.maxMaxBid}
-                        onChange={e => updateFilter('maxMaxBid', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
+                    <input type="number" placeholder="החל מ — סך זכיות"
+                      value={filters.minSpend}
+                      onChange={e => updateFilter('minSpend', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <input type="number" placeholder="החל מ — ביד מקסימלי"
+                      value={filters.minMaxBid}
+                      onChange={e => updateFilter('minMaxBid', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     <button onClick={() => setFilters({
                       segment: '', country: '', continent: '',
                       genazymId: '', zaidyId: '',
-                      minSpend: '', maxSpend: '',
-                      minMaxBid: '', maxMaxBid: '',
+                      minSpend: '',
+                      minMaxBid: '',
                     })}
                       className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
                       נקה פילטרים
