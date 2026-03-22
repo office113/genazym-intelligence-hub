@@ -103,8 +103,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<DrillDownView>("sale");
-  const [showSettings, setShowSettings] = useState(false);
-  const [statusThresholds, setStatusThresholds] = useState<StatusThresholds>(DEFAULT_THRESHOLDS);
+  const { thresholds: statusThresholds } = useStatusThresholds();
 
   // Determine if auction is in the past
   const auctionInPast = useMemo(() => {
