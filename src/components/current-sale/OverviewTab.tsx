@@ -86,6 +86,8 @@ interface DrillDownState {
   type: string; title: string; subtitle: string; saleName: string; saleId: string; dx: number;
 }
 
+type DrillDownView = "sale" | "profile";
+
 function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, selectedBrand }: {
   drillDown: DrillDownState | null;
   onClose: () => void;
@@ -94,37 +96,31 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   selectedBrand: "גנזים" | "זיידי";
 }) {
   const [bidders, setBidders] = useState<any[]>([]);
+  const [globalProfiles, setGlobalProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [view, setView] = useState<DrillDownView>("sale");
 
+  // Fetch current-sale bidders
   useEffect(() => {
-    if (!drillDown) { setBidders([]); setSearchTerm(""); return; }
+    if (!drillDown) { setBidders([]); setGlobalProfiles([]); setSearchTerm(""); setView("sale"); return; }
 
     const fetchBidders = async () => {
       setLoading(true);
       setBidders([]);
       try {
-        // Fetch from fact_customer_auction_activity filtered by auction_name
         const { data, error } = await supabase
           .from("fact_customer_auction_activity")
           .select("full_name, email, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
           .eq("auction_name", drillDown.saleId)
           .order("max_bid", { ascending: false });
 
-        if (error) {
-          console.error("[DrillDown] Supabase error:", error);
+        if (error || !data?.length) {
           setLoading(false);
           return;
         }
 
-        if (!data?.length) {
-          console.log("[DrillDown] No bidders found for", drillDown.saleId);
-          setLoading(false);
-          return;
-        }
-
-        // Filter by D-X: only include bidders whose first_bid_at <= snapshot_date
-        // snapshot_date = auction_date - dx days
         const auctionDate = new Date(data[0].auction_date);
         const snapshotDate = new Date(auctionDate);
         snapshotDate.setDate(snapshotDate.getDate() - drillDown.dx);
@@ -134,8 +130,6 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           if (!row.first_bid_at) return false;
           return new Date(row.first_bid_at) <= snapshotDate;
         });
-
-        console.log(`[DrillDown] ${drillDown.saleId} D-${drillDown.dx}: ${filtered.length}/${data.length} bidders active by ${snapshotDate.toISOString().slice(0, 10)}`);
         setBidders(filtered);
       } catch (err) {
         console.error("[DrillDown] fetch error:", err);
@@ -146,6 +140,53 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     fetchBidders();
   }, [drillDown?.saleId, drillDown?.dx]);
 
+  // Fetch global profiles when switching to profile view (or when bidders change)
+  useEffect(() => {
+    if (view !== "profile" || !bidders.length) return;
+    if (globalProfiles.length) return; // already fetched
+
+    const fetchGlobal = async () => {
+      setLoadingGlobal(true);
+      try {
+        const emails = [...new Set(bidders.map(b => b.email).filter(Boolean))];
+        if (!emails.length) { setLoadingGlobal(false); return; }
+
+        // Fetch all activity rows for these emails
+        const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
+        const { data, error } = await supabase
+          .from("fact_customer_auction_activity")
+          .select("full_name, email, total_bids, max_bid, was_winner, total_win_value, first_bid_at, auction_name")
+          .eq("brand", brandFilter)
+          .in("email", emails);
+
+        if (error || !data?.length) { setLoadingGlobal(false); return; }
+
+        // Aggregate per email
+        const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; firstSeen: string; lastSeen: string }> = {};
+        for (const row of data) {
+          if (!row.email) continue;
+          if (!byEmail[row.email]) {
+            byEmail[row.email] = { full_name: row.full_name, email: row.email, totalBids: 0, totalSpend: 0, auctionCount: 0, firstSeen: row.first_bid_at || "", lastSeen: row.first_bid_at || "" };
+          }
+          const p = byEmail[row.email];
+          p.totalBids += row.total_bids || 0;
+          if (row.was_winner) p.totalSpend += row.total_win_value || 0;
+          p.auctionCount += 1;
+          if (row.first_bid_at && row.first_bid_at < p.firstSeen) p.firstSeen = row.first_bid_at;
+          if (row.first_bid_at && row.first_bid_at > p.lastSeen) p.lastSeen = row.first_bid_at;
+        }
+
+        const profiles = Object.values(byEmail).sort((a, b) => b.totalSpend - a.totalSpend);
+        setGlobalProfiles(profiles);
+      } catch (err) {
+        console.error("[DrillDown] global fetch error:", err);
+      }
+      setLoadingGlobal(false);
+    };
+
+    fetchGlobal();
+  }, [view, bidders, selectedBrand]);
+
   const drillSnap = drillDown ? getSnapshot(drillDown.saleId, drillDown.dx) : undefined;
   const drillBench = drillDown ? benchmarkByDX[drillDown.dx] : undefined;
 
@@ -155,7 +196,24 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     return bidders.filter(b => b.full_name?.toLowerCase().includes(term) || b.email?.toLowerCase().includes(term));
   }, [bidders, searchTerm]);
 
-  const fmtCurrency = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n?.toLocaleString() ?? 0}`;
+  const filteredProfiles = useMemo(() => {
+    if (!searchTerm) return globalProfiles;
+    const term = searchTerm.toLowerCase();
+    return globalProfiles.filter(p => p.full_name?.toLowerCase().includes(term) || p.email?.toLowerCase().includes(term));
+  }, [globalProfiles, searchTerm]);
+
+  const fmtCurrency = (n: number) => {
+    if (!n) return "—";
+    if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+    return `$${n.toLocaleString()}`;
+  };
+
+  const getStatus = (p: typeof globalProfiles[0]) => {
+    if (p.totalSpend >= 50000 || p.auctionCount >= 5) return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
+    if (p.auctionCount >= 2) return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
+    return { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
+  };
 
   return (
     <InvestigationPanel
@@ -165,7 +223,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       subtitle={drillDown?.subtitle}
     >
       {drillDown && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Context bar */}
           <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
             <div className="text-sm">
@@ -177,97 +235,169 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
               <div className="flex gap-4 mr-auto text-xs text-muted-foreground">
                 <span>הצעות: <strong>{drillSnap.earlyBids}</strong>{drillBench?.earlyBids ? ` (ממוצע: ${drillBench.earlyBids})` : ""}</span>
                 <span>משתמשים: <strong>{drillSnap.uniqueBidders}</strong>{drillBench?.uniqueBidders ? ` (ממוצע: ${drillBench.uniqueBidders})` : ""}</span>
-                <span>פריטים: <strong>{drillSnap.lotsWithBids}</strong>{drillBench?.lotsWithBids ? ` (ממוצע: ${drillBench.lotsWithBids})` : ""}</span>
               </div>
             )}
           </div>
 
-          {/* Summary KPIs */}
+          {/* KPI cards — always from current sale */}
           <div className="grid grid-cols-3 gap-4">
             <div className="kpi-card">
-              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.length}</div>
+              <div className="kpi-value text-xl">{loading ? "..." : bidders.length}</div>
               <div className="kpi-label">סה״כ בידרים</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.filter(b => b.was_winner).length}</div>
+              <div className="kpi-value text-xl">{loading ? "..." : bidders.filter(b => b.was_winner).length}</div>
               <div className="kpi-label">זכו בסוף המכירה</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-value text-xl">{loading ? "..." : filteredBidders.filter(b => b.was_early && b.was_live).length}</div>
+              <div className="kpi-value text-xl">{loading ? "..." : bidders.filter(b => b.was_early && b.was_live).length}</div>
               <div className="kpi-label">מוקדם + לייב</div>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="חיפוש לפי שם או אימייל..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-            />
+          {/* View Toggle + Search row */}
+          <div className="flex items-center gap-3">
+            <div className="inline-flex rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => setView("sale")}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold transition-colors"
+                style={view === "sale"
+                  ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }
+                  : { background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}
+              >
+                <Users className="w-3.5 h-3.5" />
+                נתוני מכירה זו
+              </button>
+              <button
+                onClick={() => setView("profile")}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold transition-colors"
+                style={view === "profile"
+                  ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }
+                  : { background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                פרופיל לקוח
+              </button>
+            </div>
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="חיפוש לפי שם או אימייל..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+              />
+            </div>
           </div>
 
-          {/* Loading state */}
-          {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              <span className="mr-3 text-sm text-muted-foreground">טוען נתונים...</span>
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!loading && filteredBidders.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground text-sm">
-              {searchTerm ? "לא נמצאו תוצאות לחיפוש" : "אין בידרים פעילים בנקודה זו"}
-            </div>
-          )}
-
-          {/* Bidders table */}
-          {!loading && filteredBidders.length > 0 && (
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="data-table w-full">
-                <thead>
-                  <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
-                    <th>שם לקוח</th>
-                    <th>סוג מעורבות</th>
-                    <th>מס׳ הצעות</th>
-                    <th>מס׳ לוטים</th>
-                    <th>הצעה מקסימלית</th>
-                    <th>סה״כ זכיות</th>
-                    <th>שווי זכיות</th>
-                    <th>הצעה ראשונה</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBidders.map((b, i) => {
-                    const engType = b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב";
-                    return (
-                      <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                        <td className="font-semibold">{b.full_name}</td>
-                        <td>
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
-                            style={{
-                              background: engType === "גם וגם" ? "hsl(var(--accent) / 0.12)" : engType === "מוקדם" ? "hsl(var(--primary) / 0.1)" : "hsl(200, 40%, 92%)",
-                              color: engType === "גם וגם" ? "hsl(var(--gold-dark))" : engType === "מוקדם" ? "hsl(var(--primary))" : "hsl(200, 45%, 35%)",
-                            }}>
-                            {engType}
-                          </span>
-                        </td>
-                        <td className="text-center">{b.total_bids}</td>
-                        <td className="text-center">{b.lots_involved}</td>
-                        <td className="font-semibold">{fmtCurrency(b.max_bid || 0)}</td>
-                        <td className="text-center">{b.total_wins}</td>
-                        <td className="font-semibold">{b.total_win_value ? fmtCurrency(b.total_win_value) : "—"}</td>
-                        <td className="text-xs text-muted-foreground">{b.first_bid_at?.slice(0, 10) || "—"}</td>
+          {/* ═══ CURRENT SALE VIEW ═══ */}
+          {view === "sale" && (
+            <>
+              {loading && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  <span className="mr-3 text-sm text-muted-foreground">טוען נתונים...</span>
+                </div>
+              )}
+              {!loading && filteredBidders.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground text-sm">
+                  {searchTerm ? "לא נמצאו תוצאות לחיפוש" : "אין בידרים פעילים בנקודה זו"}
+                </div>
+              )}
+              {!loading && filteredBidders.length > 0 && (
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <table className="data-table w-full">
+                    <thead>
+                      <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                        <th>שם לקוח</th>
+                        <th>סוג מעורבות</th>
+                        <th>בידים במכירה</th>
+                        <th>מס׳ לוטים</th>
+                        <th>הצעה מקסימלית</th>
+                        <th>שווי זכיות</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    </thead>
+                    <tbody>
+                      {filteredBidders.map((b, i) => {
+                        const engType = b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב";
+                        return (
+                          <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                            <td className="font-semibold">{b.full_name}</td>
+                            <td>
+                              <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                                style={{
+                                  background: engType === "גם וגם" ? "hsl(var(--accent) / 0.12)" : engType === "מוקדם" ? "hsl(var(--primary) / 0.1)" : "hsl(200, 40%, 92%)",
+                                  color: engType === "גם וגם" ? "hsl(var(--gold-dark))" : engType === "מוקדם" ? "hsl(var(--primary))" : "hsl(200, 45%, 35%)",
+                                }}>
+                                {engType}
+                              </span>
+                            </td>
+                            <td className="text-center">{b.total_bids}</td>
+                            <td className="text-center">{b.lots_involved}</td>
+                            <td className="font-semibold">{fmtCurrency(b.max_bid || 0)}</td>
+                            <td className="font-semibold">{b.total_win_value ? fmtCurrency(b.total_win_value) : "—"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ═══ GLOBAL PROFILE VIEW ═══ */}
+          {view === "profile" && (
+            <>
+              {loadingGlobal && (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  <span className="mr-3 text-sm text-muted-foreground">טוען פרופילים...</span>
+                </div>
+              )}
+              {!loadingGlobal && filteredProfiles.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground text-sm">
+                  {searchTerm ? "לא נמצאו תוצאות לחיפוש" : "אין נתוני פרופיל זמינים"}
+                </div>
+              )}
+              {!loadingGlobal && filteredProfiles.length > 0 && (
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <table className="data-table w-full">
+                    <thead>
+                      <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                        <th>שם לקוח</th>
+                        <th>סה״כ בידים (היסטורי)</th>
+                        <th>מס׳ מכירות</th>
+                        <th>תאריך הצטרפות</th>
+                        <th>סה״כ רכישות ($)</th>
+                        <th>סטטוס</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredProfiles.map((p, i) => {
+                        const status = getStatus(p);
+                        return (
+                          <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
+                            <td className="font-semibold">{p.full_name}</td>
+                            <td className="text-center">{p.totalBids}</td>
+                            <td className="text-center">{p.auctionCount}</td>
+                            <td className="text-xs text-muted-foreground">{p.firstSeen?.slice(0, 10) || "—"}</td>
+                            <td className="font-semibold">{fmtCurrency(p.totalSpend)}</td>
+                            <td>
+                              <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                                style={{ background: status.bg, color: status.color }}>
+                                {status.label}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
