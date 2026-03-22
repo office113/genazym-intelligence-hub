@@ -284,7 +284,7 @@ export default function CustomerCard() {
                   )}
                   {header?.zaidy_id && (
                     <button
-                      onClick={() => setBrandTab("Zaidy")}
+                      onClick={() => { setBrandTab("Zaidy"); setAuctionSubTab("Zaidy"); }}
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: GREEN.fill, borderColor: GREEN.border, color: GREEN.text }}
                     >
