@@ -328,17 +328,15 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     </thead>
                     <tbody>
                       {filteredBidders.map((b, i) => {
-                        // Use events-based metrics when available, fallback to fact table
-                        const em = eventsMetrics[b.email];
                         const engType = !auctionInPast && drillDown && drillDown.dx > 0
                           ? "מוקדם"
                           : (b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב");
                         const showWins = auctionInPast && drillDown?.dx === 0;
                         
-                        // Dynamic metrics from events table (accurate per DX)
-                        const bidCount = em ? em.bidCount : (drillDown && drillDown.dx > 0 ? (b.early_bids_count || 0) : (b.total_bids || 0));
-                        const lotsCount = em ? em.lotsCount : Math.min(b.lots_involved || 0, bidCount);
-                        const maxBidValue = em ? em.maxBid : (drillDown && drillDown.dx > 0 ? (bidCount > 0 ? (b.max_bid || 0) : 0) : (b.max_bid || 0));
+                        // Use fact_customer_drilldown cumulative columns
+                        const bidCount = b.total_bids_cumulative || 0;
+                        const lotsCount = b.total_lots_cumulative || 0;
+                        const maxBidValue = b.max_bid_cumulative || 0;
                         
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
