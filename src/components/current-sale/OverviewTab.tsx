@@ -98,6 +98,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   selectedBrand: "גנזים" | "זיידי";
 }) {
   const [bidders, setBidders] = useState<any[]>([]);
+  const [eventsMetrics, setEventsMetrics] = useState<Record<string, { bidCount: number; lotsCount: number; maxBid: number }>>({});
   const [globalProfiles, setGlobalProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingGlobal, setLoadingGlobal] = useState(false);
@@ -113,14 +114,16 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     return auctionDate < new Date();
   }, [bidders]);
 
-  // Fetch current-sale bidders
+  // Fetch current-sale bidders + events-based metrics
   useEffect(() => {
-    if (!drillDown) { setBidders([]); setGlobalProfiles([]); setSearchTerm(""); setView("sale"); return; }
+    if (!drillDown) { setBidders([]); setEventsMetrics({}); setGlobalProfiles([]); setSearchTerm(""); setView("sale"); return; }
 
     const fetchBidders = async () => {
       setLoading(true);
       setBidders([]);
+      setEventsMetrics({});
       try {
+        // 1. Fetch fact data for customer list & metadata
         const { data, error } = await supabase
           .from("fact_customer_auction_activity")
           .select("full_name, email, genazym_id, zaidy_id, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
@@ -142,6 +145,48 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           return new Date(row.first_bid_at) <= snapshotDate;
         });
         setBidders(filtered);
+
+        // 2. Fetch raw events for accurate bid/lot/maxBid calculations
+        const snapshotISO = snapshotDate.toISOString();
+        let allEvents: any[] = [];
+        let offset = 0;
+        const pageSize = 1000;
+        while (true) {
+          const { data: evData, error: evErr } = await supabase
+            .from("events")
+            .select("customer_email, book_id_bidspirit, bid_price, bid_time")
+            .eq("auction_name", drillDown.saleId)
+            .lte("bid_time", snapshotISO)
+            .range(offset, offset + pageSize - 1);
+          if (evErr || !evData?.length) break;
+          allEvents = allEvents.concat(evData);
+          if (evData.length < pageSize) break;
+          offset += pageSize;
+        }
+
+        // 3. Group events by customer email
+        const metrics: Record<string, { bidCount: number; lotsCount: number; maxBid: number }> = {};
+        for (const ev of allEvents) {
+          const email = ev.customer_email;
+          if (!email) continue;
+          if (!metrics[email]) metrics[email] = { bidCount: 0, lotsCount: 0, maxBid: 0 };
+          metrics[email].bidCount += 1;
+          if (ev.bid_price > metrics[email].maxBid) metrics[email].maxBid = ev.bid_price;
+        }
+        // Count unique lots per customer
+        const lotSets: Record<string, Set<string>> = {};
+        for (const ev of allEvents) {
+          const email = ev.customer_email;
+          if (!email || !ev.book_id_bidspirit) continue;
+          if (!lotSets[email]) lotSets[email] = new Set();
+          lotSets[email].add(ev.book_id_bidspirit);
+        }
+        for (const email of Object.keys(metrics)) {
+          metrics[email].lotsCount = lotSets[email]?.size || 0;
+        }
+
+        console.log("[DrillDown] Events-based metrics computed for", Object.keys(metrics).length, "customers at DX", drillDown.dx);
+        setEventsMetrics(metrics);
       } catch (err) {
         console.error("[DrillDown] fetch error:", err);
       }
@@ -335,22 +380,18 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     </thead>
                     <tbody>
                       {filteredBidders.map((b, i) => {
-                        // DX > 0 means auction hasn't happened yet — only show "מוקדם" engagement
+                        // Use events-based metrics when available, fallback to fact table
+                        const em = eventsMetrics[b.email];
                         const engType = !auctionInPast && drillDown && drillDown.dx > 0
                           ? "מוקדם"
                           : (b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב");
-                        // If auction hasn't happened, wins don't exist yet
                         const showWins = auctionInPast && drillDown?.dx === 0;
-                        // Bid count: use early_bids_count when DX > 0 (pre-auction)
-                        const isPreAuction = drillDown && drillDown.dx > 0;
-                        const bidCount = isPreAuction ? (b.early_bids_count || 0) : (b.total_bids || 0);
-                        // Lots cannot exceed bids — cap dynamically
-                        const lotsCount = Math.min(b.lots_involved || 0, bidCount);
-                        // Max bid: when pre-auction, only early bids exist — use max_bid but cap context
-                        // (max_bid from DB reflects final state; for pre-auction, approximate with early context)
-                        const maxBidValue = isPreAuction
-                          ? (bidCount > 0 ? (b.max_bid || 0) : 0)
-                          : (b.max_bid || 0);
+                        
+                        // Dynamic metrics from events table (accurate per DX)
+                        const bidCount = em ? em.bidCount : (drillDown && drillDown.dx > 0 ? (b.early_bids_count || 0) : (b.total_bids || 0));
+                        const lotsCount = em ? em.lotsCount : Math.min(b.lots_involved || 0, bidCount);
+                        const maxBidValue = em ? em.maxBid : (drillDown && drillDown.dx > 0 ? (bidCount > 0 ? (b.max_bid || 0) : 0) : (b.max_bid || 0));
+                        
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
                             <td className="font-semibold">{b.full_name}</td>
