@@ -123,35 +123,6 @@ export default function CurrentSale() {
           <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} dailySnapshots={dailySnapshots} rawAuctionsData={rawAuctionsData} />
         )}
 
-        {activeTab === "pace" && (
-          <>
-            {loading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
-            {error && <div className="text-center py-20 text-destructive text-sm">שגיאה: {error}</div>}
-            {!loading && !error && (
-              <>
-                <div className="grid grid-cols-4 gap-4 mb-8">
-                  <KPICard label="מכירות (מותג)" value={rawAuctionsData.length.toString()} />
-                  <KPICard label="מכירה אחרונה" value={latestAuction ? `#${latestAuction.auction_name.match(/\d+/)?.[0] || ""}` : "—"} />
-                  <KPICard label="מעורבים במכירה האחרונה" value={rawActivityData.filter((r: any) => r.auction_name === latestAuction?.auction_name).length.toString()} />
-                  <KPICard label="זוכים במכירה האחרונה" value={rawActivityData.filter((r: any) => r.auction_name === latestAuction?.auction_name && r.was_winner).length.toString()} />
-                </div>
-                <div className="chart-card">
-                  <div className="chart-title">הצעות לפי מכירה (7 אחרונות)</div>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <BarChart data={paceData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                      <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Bar dataKey="bids" fill="hsl(220,35%,18%)" radius={[4, 4, 0, 0]} name="הצעות" />
-                      <Bar dataKey="involved" fill="hsl(38,65%,52%)" radius={[4, 4, 0, 0]} name="מעורבים" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </>
-            )}
-          </>
-        )}
 
         {activeTab === "missing" && (
           <>
