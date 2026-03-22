@@ -187,7 +187,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
     const fallbackSale = { id: "", name: "—", brand: selectedBrand, date: "", isCurrent: false };
     const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0] || fallbackSale;
     const saleSnapshots = allSaleSnapshots
-      .filter(s => s.saleId === selectedSale.id)
+      .filter(s => s.saleId === selectedSale.id && s.dx <= 30)
       .sort((a, b) => b.dx - a.dx); // D-30 first
 
     // Get last 5 completed same-brand sales for benchmark (excluding selected)
