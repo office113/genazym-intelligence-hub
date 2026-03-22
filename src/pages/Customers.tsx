@@ -35,51 +35,20 @@ export default function Customers() {
   const [brand, setBrand] = useState<Brand>("genazym");
   const [advancedFilters, setAdvancedFilters] = useState<CustomerFilters>(defaultCustomerFilters);
   const [customerMeta, setCustomerMeta] = useState<Record<string, any>>({});
-  const [metaLoading, setMetaLoading] = useState(true);
 
   // Fetch customer metadata (IDs, purchasing_power, continent) for advanced filtering
   useEffect(() => {
     const fetchMeta = async () => {
-      setMetaLoading(true);
-      try {
-        // First try with continent, fall back without it
-        let { data, error } = await supabase
-          .from("customers")
-          .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
-          .limit(50000);
-
-        if (error) {
-          // continent column may not exist
-          const res = await supabase
-            .from("customers")
-            .select("email, genazym_id, zaidy_id, purchasing_power, country")
-            .limit(50000);
-          data = (res.data || []) as any;
-        }
-
+      const { data } = await supabase
+        .from("customers")
+        .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
+        .limit(50000);
+      if (data) {
         const map: Record<string, any> = {};
-        (data || []).forEach((row: any) => {
-          const email = row?.email || "";
-          if (email) {
-            map[email] = {
-              email,
-              genazym_id: row?.genazym_id ?? null,
-              zaidy_id: row?.zaidy_id ?? null,
-              purchasing_power: row?.purchasing_power ?? "",
-              country: row?.country ?? "",
-              continent: row?.continent ?? "",
-            };
-          }
-        });
+        data.forEach((r: any) => { map[r.email] = r; });
         setCustomerMeta(map);
-      } catch (e) {
-        console.error("Failed to fetch customer metadata:", e);
-        setCustomerMeta({});
-      } finally {
-        setMetaLoading(false);
       }
     };
-
     fetchMeta();
   }, []);
 
@@ -87,39 +56,32 @@ export default function Customers() {
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
-    if (!Array.isArray(rawActivityData) || rawActivityData.length === 0) return [];
+    if (!rawActivityData.length) return [];
 
     const byEmail: Record<string, any[]> = {};
-    rawActivityData.forEach((row: any) => {
-      const email = row?.email || "";
-      if (!email) return;
-      if (!byEmail[email]) byEmail[email] = [];
-      byEmail[email].push(row);
+    rawActivityData.forEach((r: any) => {
+      if (!byEmail[r.email]) byEmail[r.email] = [];
+      byEmail[r.email].push(r);
     });
 
     // Sort auctions by date for "last active" lookup
     const auctionDateMap: Record<string, string> = {};
-    (rawAuctionsData || []).forEach((a: any) => {
-      const auctionName = a?.auction_name || "";
-      if (auctionName) {
-        auctionDateMap[auctionName] = a?.auction_date || "";
-      }
+    rawAuctionsData.forEach((a: any) => {
+      auctionDateMap[a.auction_name] = a.auction_date;
     });
 
     return Object.entries(byEmail).map(([email, rows]) => {
-      const head = rows?.[0] ?? {};
-      const meta = customerMeta?.[email] ?? {};
-      const totalBids = (rows || []).reduce((s, r) => s + (r?.total_bids || 0), 0);
-      const totalWins = (rows || []).reduce((s, r) => s + (r?.total_wins || 0), 0);
+      const totalBids = rows.reduce((s, r) => s + (r.total_bids || 0), 0);
+      const totalWins = rows.reduce((s, r) => s + (r.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
-      const totalSpend = (rows || []).reduce((s, r) => r?.was_winner ? s + (r?.max_bid || 0) : s, 0);
-      const auctionsInvolved = rows?.length || 0;
-      const lastActiveDate = (rows || []).reduce((latest, r) => {
-        const d = auctionDateMap[r?.auction_name || ""] || r?.auction_date || "";
+      const totalSpend = rows.reduce((s, r) => r.was_winner ? s + (r.max_bid || 0) : s, 0);
+      const auctionsInvolved = rows.length;
+      const lastActiveDate = rows.reduce((latest, r) => {
+        const d = auctionDateMap[r.auction_name] || r.auction_date || "";
         return d > latest ? d : latest;
       }, "");
-      const name = head?.full_name || email;
-      const country = head?.country || meta?.country || "—";
+      const name = rows[0].full_name || email;
+      const country = rows[0].country || "—";
 
       // Segment by spend
       let segment = "רגיל";
@@ -130,8 +92,6 @@ export default function Customers() {
         email,
         name,
         country,
-        genazym_id: head?.genazym_id ?? meta?.genazym_id ?? null,
-        zaidy_id: head?.zaidy_id ?? meta?.zaidy_id ?? null,
         totalBids,
         totalWins,
         totalSpend,
@@ -139,8 +99,8 @@ export default function Customers() {
         lastActive: lastActiveDate,
         segment,
       };
-    }).sort((a, b) => (b?.totalSpend || 0) - (a?.totalSpend || 0));
-  }, [rawActivityData, rawAuctionsData, customerMeta]);
+    }).sort((a, b) => b.totalSpend - a.totalSpend);
+  }, [rawActivityData, rawAuctionsData]);
 
   // Segment data for chart
   const segmentData = useMemo(() => {
@@ -175,109 +135,61 @@ export default function Customers() {
 
   const addFilter = (f: string) => { if (!activeFilters.includes(f)) setActiveFilters([...activeFilters, f]); };
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
-  const openCustomer = (c: any) => {
-    if (!c) return;
-    const email = c?.email || "";
-    const meta = customerMeta?.[email] ?? {};
-
-    setSelectedCustomer({
-      ...c,
-      genazym_id: c?.genazym_id ?? meta?.genazym_id ?? null,
-      zaidy_id: c?.zaidy_id ?? meta?.zaidy_id ?? null,
-    });
-    setDrawerOpen(true);
-    setActiveTab("profile");
-  };
+  const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
   const filtered = useMemo(() => {
-    try {
-      const safeFilters = advancedFilters ?? defaultCustomerFilters;
+    let result = customers.filter(c =>
+      !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-      let result = (customers || []).filter((customer: any) => {
-        if (!customer) return false;
-        if (!searchQuery) return true;
-        const q = (searchQuery || "").toLowerCase();
-        return (customer?.name || "").toLowerCase().includes(q)
-          || (customer?.email || "").toLowerCase().includes(q)
-          || (customer?.country || "").toLowerCase().includes(q);
-      });
-
-      if (safeFilters.genazymId) {
-        const id = Number(safeFilters.genazymId || 0);
-        result = result.filter((customer: any) => (customerMeta?.[customer?.email || ""]?.genazym_id ?? null) === id);
-      }
-
-      if (safeFilters.zaidyId) {
-        const id = Number(safeFilters.zaidyId || 0);
-        result = result.filter((customer: any) => (customerMeta?.[customer?.email || ""]?.zaidy_id ?? null) === id);
-      }
-
-      if (safeFilters.maxBidMin) {
-        const min = Number(safeFilters.maxBidMin || 0);
-        result = result.filter((customer: any) => {
-          const bids = (rawActivityData || [])
-            .filter((row: any) => row?.email === customer?.email)
-            .map((row: any) => row?.max_bid || 0);
-          const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
-          return maxBid >= min;
-        });
-      }
-
-      if (safeFilters.maxBidMax) {
-        const max = Number(safeFilters.maxBidMax || 0);
-        result = result.filter((customer: any) => {
-          const bids = (rawActivityData || [])
-            .filter((row: any) => row?.email === customer?.email)
-            .map((row: any) => row?.max_bid || 0);
-          const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
-          return maxBid <= max;
-        });
-      }
-
-      if (safeFilters.totalWinsMin) {
-        const min = Number(safeFilters.totalWinsMin || 0);
-        result = result.filter((customer: any) => (customer?.totalSpend || 0) >= min);
-      }
-
-      if (safeFilters.totalWinsMax) {
-        const max = Number(safeFilters.totalWinsMax || 0);
-        result = result.filter((customer: any) => (customer?.totalSpend || 0) <= max);
-      }
-
-      if ((safeFilters.classifications || []).length > 0) {
-        result = result.filter((customer: any) => {
-          const purchasingPower = customerMeta?.[customer?.email || ""]?.purchasing_power || "";
-          return (safeFilters.classifications || []).includes(purchasingPower);
-        });
-      }
-
-      if ((safeFilters.countries || []).length > 0) {
-        result = result.filter((customer: any) => {
-          const country = customerMeta?.[customer?.email || ""]?.country || customer?.country || "";
-          return (safeFilters.countries || []).includes(country);
-        });
-      }
-
-      if ((safeFilters.continents || []).length > 0) {
-        result = result.filter((customer: any) => {
-          const continent = customerMeta?.[customer?.email || ""]?.continent || "";
-          return (safeFilters.continents || []).includes(continent);
-        });
-      }
-
-      return result;
-    } catch (filterError) {
-      console.error("Customers filter error:", filterError);
-      return customers || [];
+    const f = advancedFilters;
+    if (f.genazymId) {
+      const id = Number(f.genazymId);
+      result = result.filter(c => customerMeta[c.email]?.genazym_id === id);
     }
-  }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
+    if (f.zaidyId) {
+      const id = Number(f.zaidyId);
+      result = result.filter(c => customerMeta[c.email]?.zaidy_id === id);
+    }
+    if (f.maxBidMin) {
+      const min = Number(f.maxBidMin);
+      result = result.filter(c => {
+        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        return maxBid >= min;
+      });
+    }
+    if (f.maxBidMax) {
+      const max = Number(f.maxBidMax);
+      result = result.filter(c => {
+        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        return maxBid <= max;
+      });
+    }
+    if (f.totalWinsMin) {
+      const min = Number(f.totalWinsMin);
+      result = result.filter(c => c.totalSpend >= min);
+    }
+    if (f.totalWinsMax) {
+      const max = Number(f.totalWinsMax);
+      result = result.filter(c => c.totalSpend <= max);
+    }
+    if (f.classifications.length > 0) {
+      result = result.filter(c => f.classifications.includes(customerMeta[c.email]?.purchasing_power));
+    }
+    if (f.countries.length > 0) {
+      result = result.filter(c => f.countries.includes(customerMeta[c.email]?.country || c.country));
+    }
+    if (f.continents.length > 0) {
+      result = result.filter(c => f.continents.includes(customerMeta[c.email]?.continent));
+    }
 
-  const isSearchLoading = loading || metaLoading;
+    return result;
+  }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
     if (!selectedCustomer) return [];
-    const rows = (rawActivityData || []).filter((r: any) => r?.email === selectedCustomer?.email);
+    const rows = rawActivityData.filter((r: any) => r.email === selectedCustomer.email);
     return rows
       .map((r: any) => ({
         date: r.auction_date || "",
@@ -310,10 +222,10 @@ export default function Customers() {
       </div>
 
       <div className="p-8 animate-fade-in">
-        {isSearchLoading && activeTab === "search" && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
+        {loading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
         {error && <div className="text-center py-20 text-destructive text-sm">שגיאה: {error}</div>}
 
-        {!isSearchLoading && !error && activeTab === "search" && (
+        {!loading && !error && activeTab === "search" && (
           <>
             <div className="chart-card mb-6">
               <div className="flex items-center gap-3 mb-4">
@@ -336,13 +248,13 @@ export default function Customers() {
             </div>
 
             <CustomerAdvancedFilters
-              filters={advancedFilters || defaultCustomerFilters}
+              filters={advancedFilters}
               onApply={setAdvancedFilters}
               onClear={() => setAdvancedFilters(defaultCustomerFilters)}
             />
 
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-muted-foreground">{(filtered || []).length} לקוחות</div>
+              <div className="text-sm text-muted-foreground">{filtered.length} לקוחות</div>
             </div>
 
             <div className="chart-card">
@@ -360,20 +272,20 @@ export default function Customers() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(filtered || []).slice(0, 100).map((c, idx) => (
-                    <tr key={c?.email || `customer-${idx}`} onClick={() => c && openCustomer(c)}>
-                      <td className="font-semibold"><CustomerLink email={c?.email || ""}>{c?.name || "—"}</CustomerLink></td>
-                      <td>{c?.country || "—"}</td>
-                      <td>{(c?.totalBids || 0).toLocaleString()}</td>
-                      <td>{(c?.totalWins || 0).toLocaleString()}</td>
-                      <td>${(c?.totalSpend || 0).toLocaleString()}</td>
-                      <td>{c?.auctionsInvolved || 0}</td>
+                  {filtered.slice(0, 100).map((c) => (
+                    <tr key={c.email} onClick={() => openCustomer(c)}>
+                      <td className="font-semibold"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
+                      <td>{c.country}</td>
+                      <td>{c.totalBids.toLocaleString()}</td>
+                      <td>{c.totalWins.toLocaleString()}</td>
+                      <td>${c.totalSpend.toLocaleString()}</td>
+                      <td>{c.auctionsInvolved}</td>
                       <td>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${c?.segment === "VIP" ? "badge-ai" : "badge-rule"}`}>
-                          {c?.segment === "VIP" && <Star className="w-3 h-3" />}{c?.segment || "רגיל"}
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${c.segment === "VIP" ? "badge-ai" : "badge-rule"}`}>
+                          {c.segment === "VIP" && <Star className="w-3 h-3" />}{c.segment}
                         </span>
                       </td>
-                      <td className="text-xs text-muted-foreground">{c?.lastActive ? new Date(c.lastActive).toLocaleDateString("he-IL") : "—"}</td>
+                      <td className="text-xs text-muted-foreground">{c.lastActive ? new Date(c.lastActive).toLocaleDateString("he-IL") : "—"}</td>
                     </tr>
                   ))}
                 </tbody>

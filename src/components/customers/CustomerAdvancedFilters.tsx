@@ -34,8 +34,8 @@ interface Props {
   onClear: () => void;
 }
 
-export default function CustomerAdvancedFilters({ filters = defaultCustomerFilters, onApply, onClear }: Props) {
-  const [local, setLocal] = useState<CustomerFilters>(filters ?? defaultCustomerFilters);
+export default function CustomerAdvancedFilters({ filters, onApply, onClear }: Props) {
+  const [local, setLocal] = useState<CustomerFilters>(filters);
   const [expanded, setExpanded] = useState(false);
   const [countryOptions, setCountryOptions] = useState<string[]>([]);
   const [classificationOptions, setClassificationOptions] = useState<string[]>([]);
@@ -46,56 +46,46 @@ export default function CustomerAdvancedFilters({ filters = defaultCustomerFilte
 
   useEffect(() => {
     const fetchOptions = async () => {
-      try {
-        const [countriesRes, classRes] = await Promise.all([
-          supabase.from("customers").select("country").not("country", "is", null).limit(5000),
-          supabase.from("customers").select("purchasing_power").not("purchasing_power", "is", null).limit(5000),
-        ]);
+      const [countriesRes, classRes, continentRes] = await Promise.all([
+        supabase.from("customers").select("country").not("country", "is", null).limit(5000),
+        supabase.from("customers").select("purchasing_power").not("purchasing_power", "is", null).limit(5000),
+        supabase.from("customers").select("continent").not("continent", "is", null).limit(5000),
+      ]);
 
-        const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r?.country).filter(Boolean))].sort();
-        const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r?.purchasing_power).filter(Boolean))].sort();
+      const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r.country).filter(Boolean))].sort();
+      const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r.purchasing_power).filter(Boolean))].sort();
+      const uniqueContinents = [...new Set((continentRes.data || []).map((r: any) => r.continent).filter(Boolean))].sort();
 
-        setCountryOptions(uniqueCountries as string[]);
-        setClassificationOptions(uniqueClass as string[]);
-
-        // continent may not exist — fetch separately to avoid crashing
-        const continentRes = await supabase.from("customers").select("continent").not("continent", "is", null).limit(5000);
-        if (continentRes.data) {
-          const uniqueContinents = [...new Set(continentRes.data.map((r: any) => r?.continent).filter(Boolean))].sort();
-          setContinentOptions(uniqueContinents as string[]);
-        }
-      } catch (e) {
-        console.error("Failed to fetch filter options:", e);
-      }
+      setCountryOptions(uniqueCountries as string[]);
+      setClassificationOptions(uniqueClass as string[]);
+      setContinentOptions(uniqueContinents as string[]);
     };
     fetchOptions();
   }, []);
 
   useEffect(() => {
-    setLocal(filters ?? defaultCustomerFilters);
+    setLocal(filters);
   }, [filters]);
 
   const set = (key: keyof CustomerFilters, val: any) => setLocal(prev => ({ ...prev, [key]: val }));
 
   const toggleMulti = (key: "classifications" | "countries" | "continents", val: string) => {
     setLocal(prev => {
-      const arr = (prev?.[key] || []) as string[];
+      const arr = prev[key] as string[];
       return { ...prev, [key]: arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val] };
     });
   };
 
-  const hasActiveFilters = !!(local?.genazymId || local?.zaidyId || local?.maxBidMin || local?.maxBidMax ||
-    local?.totalWinsMin || local?.totalWinsMax || (local?.classifications || []).length > 0 ||
-    (local?.countries || []).length > 0 || (local?.continents || []).length > 0);
+  const hasActiveFilters = local.genazymId || local.zaidyId || local.maxBidMin || local.maxBidMax ||
+    local.totalWinsMin || local.totalWinsMax || local.classifications.length > 0 ||
+    local.countries.length > 0 || local.continents.length > 0;
 
   const activeCount = [
-    local?.genazymId || "",
-    local?.zaidyId || "",
-    local?.maxBidMin || local?.maxBidMax || "",
-    local?.totalWinsMin || local?.totalWinsMax || "",
-    (local?.classifications || []).length > 0 ? "x" : "",
-    (local?.countries || []).length > 0 ? "x" : "",
-    (local?.continents || []).length > 0 ? "x" : "",
+    local.genazymId, local.zaidyId, local.maxBidMin || local.maxBidMax,
+    local.totalWinsMin || local.totalWinsMax,
+    local.classifications.length > 0 ? "x" : "",
+    local.countries.length > 0 ? "x" : "",
+    local.continents.length > 0 ? "x" : "",
   ].filter(Boolean).length;
 
   return (
@@ -252,9 +242,7 @@ function MultiSelectDropdown({
   onSearchChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const safeOptions = options || [];
-  const safeSelected = selected || [];
-  const filtered = safeOptions.filter(o => (o || "").toLowerCase().includes((searchValue || "").toLowerCase()));
+  const filtered = options.filter(o => o.toLowerCase().includes(searchValue.toLowerCase()));
 
   return (
     <div className="relative">
@@ -264,23 +252,23 @@ function MultiSelectDropdown({
         className="flex items-center justify-between w-full h-9 px-3 text-sm border border-input rounded-md bg-background hover:bg-accent/50 transition-colors"
       >
         <span className="truncate text-right">
-          {safeSelected.length > 0 ? `${safeSelected.length} נבחרו` : "בחר..."}
+          {selected.length > 0 ? `${selected.length} נבחרו` : "בחר..."}
         </span>
         <svg className={`w-4 h-4 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
-      {safeSelected.length > 0 && (
+      {selected.length > 0 && (
         <div className="flex flex-wrap gap-1 mt-1">
-          {safeSelected.slice(0, 3).map(s => (
+          {selected.slice(0, 3).map(s => (
             <span key={s} className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded bg-primary/10 text-primary">
               {s}
               <X className="w-2.5 h-2.5 cursor-pointer" onClick={() => onToggle(s)} />
             </span>
           ))}
-          {safeSelected.length > 3 && (
-            <span className="text-[10px] text-muted-foreground">+{safeSelected.length - 3}</span>
+          {selected.length > 3 && (
+            <span className="text-[10px] text-muted-foreground">+{selected.length - 3}</span>
           )}
         </div>
       )}
@@ -292,8 +280,8 @@ function MultiSelectDropdown({
               <Search className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <input
                 type="text"
-                value={searchValue || ""}
-                onChange={e => onSearchChange(e.target.value || "")}
+                value={searchValue}
+                onChange={e => onSearchChange(e.target.value)}
                 placeholder="חיפוש..."
                 className="w-full pr-7 pl-2 py-1 text-xs border border-input rounded bg-background focus:outline-none"
                 onClick={e => e.stopPropagation()}
@@ -309,13 +297,13 @@ function MultiSelectDropdown({
                 key={opt}
                 onClick={() => onToggle(opt)}
                 className={`flex items-center gap-2 w-full px-2 py-1 text-xs text-right rounded hover:bg-accent/50 transition-colors ${
-                  safeSelected.includes(opt) ? "bg-primary/10 text-primary font-medium" : ""
+                  selected.includes(opt) ? "bg-primary/10 text-primary font-medium" : ""
                 }`}
               >
                 <span className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center ${
-                  safeSelected.includes(opt) ? "bg-primary border-primary" : "border-input"
+                  selected.includes(opt) ? "bg-primary border-primary" : "border-input"
                 }`}>
-                  {safeSelected.includes(opt) && (
+                  {selected.includes(opt) && (
                     <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>

@@ -73,10 +73,10 @@ export default function CurrentSale() {
   const filteredMissing = useMemo(() => {
     if (!missingSearch.trim()) return missingData;
     const q = missingSearch.trim().toLowerCase();
-    return missingData.filter((c) => {
-      const name = (c?.full_name || "").toLowerCase();
-      const email = (c?.email || "").toLowerCase();
-      const id = (c?.genazym_id || c?.zaidy_id || "").toString().toLowerCase();
+    return missingData.filter(c => {
+      const name = (c.full_name || "").toLowerCase();
+      const email = (c.email || "").toLowerCase();
+      const id = (c.genazym_id || c.zaidy_id || "").toString().toLowerCase();
       return name.includes(q) || email.includes(q) || id.includes(q);
     });
   }, [missingData, missingSearch]);
@@ -136,10 +136,10 @@ export default function CurrentSale() {
                     </thead>
                     <tbody>
                       {filteredMissing.map((c, i) => (
-                        <tr key={c?.email || i} onClick={() => openCustomer({ name: c?.full_name, email: c?.email, totalSpend: c?.total_spend_all_time, displayId: c?.genazym_id || c?.zaidy_id })}>
-                          <td className="text-center text-xs text-muted-foreground"><CustomerLink email={c?.email || ""}>{c?.genazym_id || c?.zaidy_id || "—"}</CustomerLink></td>
-                          <td className="font-semibold"><CustomerLink email={c?.email || ""}>{c?.full_name || c?.email || "—"}</CustomerLink></td>
-                          <td>{c?.last_seen_auction || "—"}</td>
+                        <tr key={c.email || i} onClick={() => openCustomer({ name: c.full_name, email: c.email, totalSpend: c.total_spend_all_time, displayId: c.genazym_id || c.zaidy_id })}>
+                          <td className="text-center text-xs text-muted-foreground"><CustomerLink email={c.email}>{c.genazym_id || c.zaidy_id || "—"}</CustomerLink></td>
+                          <td className="font-semibold"><CustomerLink email={c.email}>{c.full_name || c.email || "—"}</CustomerLink></td>
+                          <td>{c.last_seen_auction || "—"}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
                           <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
                           <td>{c.active_auctions_last_6 ?? "—"}</td>
