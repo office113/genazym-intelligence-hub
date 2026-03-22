@@ -67,31 +67,6 @@ export default function Customers() {
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchClassifications = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('customers')
-          .select('email, purchasing_power')
-          .not('purchasing_power', 'is', null);
-        if (data && !error && isMounted) {
-          const map: Record<string, string> = {};
-          const optionsSet = new Set<string>();
-          data.forEach((row: any) => {
-            if (row?.email) map[row.email] = row.purchasing_power;
-            if (row?.purchasing_power) optionsSet.add(row.purchasing_power);
-          });
-          setPowerMap(map);
-          setClassOptions(Array.from(optionsSet).sort());
-        }
-      } catch (err) {
-        console.error('Failed to fetch classifications', err);
-      }
-    };
-    fetchClassifications();
-    return () => { isMounted = false; };
-  }, []);
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
