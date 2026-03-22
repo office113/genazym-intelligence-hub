@@ -3,7 +3,7 @@ import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { usePastSales } from "@/hooks/usePastSales";
-import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap } from "lucide-react";
+import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 
@@ -31,6 +31,8 @@ export default function Customers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
@@ -78,6 +80,8 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
+        genazym_id: rows[0]?.genazym_id,
+        zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData]);
@@ -117,9 +121,39 @@ export default function Customers() {
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
-  const filtered = customers.filter(c =>
-    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    try {
+      let result = customers || [];
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(c =>
+          (c?.name || '').toLowerCase().includes(q) ||
+          (c?.email || '').toLowerCase().includes(q) ||
+          (c?.country || '').toLowerCase().includes(q)
+        );
+      }
+      if (advancedFilters?.genazymId) {
+        const id = Number(advancedFilters.genazymId);
+        if (!isNaN(id)) result = result.filter(c => c?.genazym_id === id);
+      }
+      if (advancedFilters?.zaidyId) {
+        const id = Number(advancedFilters.zaidyId);
+        if (!isNaN(id)) result = result.filter(c => c?.zaidy_id === id);
+      }
+      if (advancedFilters?.minSpend) {
+        const min = Number(advancedFilters.minSpend);
+        if (!isNaN(min)) result = result.filter(c => (c?.totalSpend || 0) >= min);
+      }
+      if (advancedFilters?.maxSpend) {
+        const max = Number(advancedFilters.maxSpend);
+        if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
+      }
+      return result;
+    } catch (error) {
+      console.error('Filtering error:', error);
+      return customers || [];
+    }
+  }, [customers, searchQuery, advancedFilters]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
@@ -170,7 +204,49 @@ export default function Customers() {
                     placeholder="חיפוש לפי שם, אימייל, או מדינה..."
                     className="w-full pr-10 pl-4 py-3 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all" />
                 </div>
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center gap-1.5 px-4 py-3 text-sm border border-border rounded-lg bg-background hover:bg-muted transition-all text-muted-foreground"
+                >
+                  <Filter className="w-4 h-4" />
+                  חיפוש מתקדם
+                  {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
               </div>
+
+              {showAdvanced && (
+                <div className="border border-border rounded-lg p-4 mb-4 bg-muted/30">
+                  <div className="grid grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מזהה גנזים</label>
+                      <input type="number" value={advancedFilters.genazymId} onChange={e => setAdvancedFilters(f => ({ ...f, genazymId: e.target.value }))}
+                        placeholder="Genazym ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מזהה זיידי</label>
+                      <input type="number" value={advancedFilters.zaidyId} onChange={e => setAdvancedFilters(f => ({ ...f, zaidyId: e.target.value }))}
+                        placeholder="Zaidy ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מינימום סה״כ זכיות ($)</label>
+                      <input type="number" value={advancedFilters.minSpend} onChange={e => setAdvancedFilters(f => ({ ...f, minSpend: e.target.value }))}
+                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום סה״כ זכיות ($)</label>
+                      <input type="number" value={advancedFilters.maxSpend} onChange={e => setAdvancedFilters(f => ({ ...f, maxSpend: e.target.value }))}
+                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' })}
+                      className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
+                      נקה הכל
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {activeFilters.length > 0 && (
                 <div className="flex gap-2 flex-wrap mb-4">
                   {activeFilters.map((f) => (<span key={f} className="filter-chip filter-chip-active">{f}<X className="w-3 h-3 cursor-pointer" onClick={() => removeFilter(f)} /></span>))}
