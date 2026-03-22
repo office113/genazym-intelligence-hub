@@ -896,7 +896,8 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
       </InvestigationPanel>
     </div>
   );
