@@ -3,14 +3,11 @@ import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { usePastSales } from "@/hooks/usePastSales";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Phone, Mail, AlertTriangle } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
   { key: "byDX", label: "לפי יום לפני מכירה" },
   { key: "bySale", label: "לפי מכירה אחת" },
-  { key: "pace", label: "קצב התקדמות" },
   { key: "missing", label: "לקוחות חסרים" },
 ];
 
@@ -77,18 +74,6 @@ export default function CurrentSale() {
     }).sort((a, b) => b.totalSpend - a.totalSpend).slice(0, 50);
   }, [rawActivityData, rawAuctionsData, latestAuction]);
 
-  // Pace data: bids per auction (last 7 auctions)
-  const paceData = useMemo(() => {
-    if (!rawAuctionsData.length) return [];
-    const sorted = [...rawAuctionsData].sort((a: any, b: any) => (a.auction_date || "").localeCompare(b.auction_date || "")).slice(-7);
-    return sorted.map((auction: any) => {
-      const rows = rawActivityData.filter((r: any) => r.auction_name === auction.auction_name);
-      const totalBids = rows.reduce((s: number, r: any) => s + (r.total_bids || 0), 0);
-      const num = auction.auction_name.match(/\d+/)?.[0] || "";
-      return { sale: `#${num}`, bids: totalBids, involved: rows.length };
-    });
-  }, [rawActivityData, rawAuctionsData]);
-
   // KPIs for missing tab
   const missingKpis = useMemo(() => {
     const totalSpend = missingCustomers.reduce((s, c) => s + c.totalSpend, 0);
@@ -122,36 +107,6 @@ export default function CurrentSale() {
       <div className="p-8 animate-fade-in">
         {(activeTab === "overview" || activeTab === "byDX" || activeTab === "bySale") && (
           <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} dailySnapshots={dailySnapshots} rawAuctionsData={rawAuctionsData} />
-        )}
-
-        {activeTab === "pace" && (
-          <>
-            {loading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
-            {error && <div className="text-center py-20 text-destructive text-sm">שגיאה: {error}</div>}
-            {!loading && !error && (
-              <>
-                <div className="grid grid-cols-4 gap-4 mb-8">
-                  <KPICard label="מכירות (מותג)" value={rawAuctionsData.length.toString()} />
-                  <KPICard label="מכירה אחרונה" value={latestAuction ? `#${latestAuction.auction_name.match(/\d+/)?.[0] || ""}` : "—"} />
-                  <KPICard label="מעורבים במכירה האחרונה" value={rawActivityData.filter((r: any) => r.auction_name === latestAuction?.auction_name).length.toString()} />
-                  <KPICard label="זוכים במכירה האחרונה" value={rawActivityData.filter((r: any) => r.auction_name === latestAuction?.auction_name && r.was_winner).length.toString()} />
-                </div>
-                <div className="chart-card">
-                  <div className="chart-title">הצעות לפי מכירה (7 אחרונות)</div>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <BarChart data={paceData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(40,12%,89%)" />
-                      <XAxis dataKey="sale" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Bar dataKey="bids" fill="hsl(220,35%,18%)" radius={[4, 4, 0, 0]} name="הצעות" />
-                      <Bar dataKey="involved" fill="hsl(38,65%,52%)" radius={[4, 4, 0, 0]} name="מעורבים" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </>
-            )}
-          </>
         )}
 
         {activeTab === "missing" && (
