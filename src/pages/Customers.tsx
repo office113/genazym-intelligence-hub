@@ -340,8 +340,8 @@ export default function Customers() {
                   </tr>
                 </thead>
                 <tbody>
-                  {(filtered || []).slice(0, 100).map((c) => (
-                    <tr key={c?.email || Math.random()} onClick={() => c && openCustomer(c)}>
+                  {(filtered || []).slice(0, 100).map((c, idx) => (
+                    <tr key={c?.email || `customer-${idx}`} onClick={() => c && openCustomer(c)}>
                       <td className="font-semibold"><CustomerLink email={c?.email || ""}>{c?.name || "—"}</CustomerLink></td>
                       <td>{c?.country || "—"}</td>
                       <td>{(c?.totalBids || 0).toLocaleString()}</td>
