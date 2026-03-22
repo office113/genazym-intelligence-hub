@@ -127,6 +127,7 @@ export default function CurrentSale() {
                       <tr>
                         <th>מזהה</th>
                         <th>שם</th>
+                        <th>מכירה אחרונה</th>
                         <th>סה״כ הוצאות ($)</th>
                         <th>ביד מקסימלי בעבר ($)</th>
                         <th>מס' מכירות (6 אחרונות)</th>
@@ -137,6 +138,7 @@ export default function CurrentSale() {
                         <tr key={c.email || i} onClick={() => openCustomer({ name: c.full_name, email: c.email, totalSpend: c.total_spend_all_time, displayId: c.genazym_id || c.zaidy_id })}>
                           <td className="text-center text-xs text-muted-foreground">{c.genazym_id || c.zaidy_id || "—"}</td>
                           <td className="font-semibold">{c.full_name || c.email || "—"}</td>
+                          <td>{c.last_seen_auction || "—"}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
                           <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
                           <td>{c.active_auctions_last_6 ?? "—"}</td>
