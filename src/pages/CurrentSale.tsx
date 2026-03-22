@@ -123,11 +123,10 @@ export default function CurrentSale() {
                       <tr>
                         <th>מזהה</th>
                         <th>שם</th>
-                        <th>חסר מ-</th>
-                        <th>מכירה אחרונה</th>
-                        <th>רכישות במכירה אחרונה</th>
-                        <th>סה״כ הוצאות ($)</th>
-                        <th>מס' מכירות (6 אחרונות)</th>
+                        <th>מכירה נוכחית</th>
+                        <th>רכישות היסטוריות ($)</th>
+                        <th>ביד מקסימלי בעבר ($)</th>
+                        <th>השתתפות ב-6 אחרונות</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -136,9 +135,8 @@ export default function CurrentSale() {
                           <td className="text-center text-xs text-muted-foreground">{c.genazym_id || c.zaidy_id || "—"}</td>
                           <td className="font-semibold">{c.full_name || c.email || "—"}</td>
                           <td>{c.current_auction || "—"}</td>
-                          <td>{c.last_seen_in || "—"}</td>
-                          <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
+                          <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
                           <td>{c.active_auctions_last_6 ?? "—"}</td>
                         </tr>
                       ))}
