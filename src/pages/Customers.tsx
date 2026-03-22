@@ -82,11 +82,17 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
+        classification: rows[0]?.purchasing_power || '',
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData]);
+
+  const uniqueClassifications = useMemo(() => {
+    const options = new Set((customers || []).map(c => c?.classification).filter(Boolean));
+    return Array.from(options).sort();
+  }, [customers]);
 
   // Segment data for chart
   const segmentData = useMemo(() => {
@@ -159,7 +165,7 @@ export default function Customers() {
         if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
       }
       if (advancedFilters?.segment && advancedFilters.segment !== '') {
-        result = result.filter(c => c?.segment === advancedFilters.segment);
+        result = result.filter(c => c?.classification === advancedFilters.segment);
       }
       return result;
     } catch (error) {
@@ -269,9 +275,9 @@ export default function Customers() {
                       <select value={advancedFilters.segment} onChange={e => setAdvancedFilters(f => ({ ...f, segment: e.target.value }))}
                         className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
                         <option value="">הכל</option>
-                        <option value="VIP">VIP</option>
-                        <option value="פעיל">פעיל</option>
-                        <option value="רגיל">רגיל</option>
+                        {uniqueClassifications.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
