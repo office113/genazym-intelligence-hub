@@ -61,7 +61,7 @@ export default function CurrentSale() {
       }
     };
     fetchMissing();
-  }, [activeTab, missingPage, missingBrand]);
+  }, [activeTab, missingPage, brand]);
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
