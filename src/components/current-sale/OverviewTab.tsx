@@ -98,7 +98,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   selectedBrand: "גנזים" | "זיידי";
 }) {
   const [bidders, setBidders] = useState<any[]>([]);
-  const [eventsMetrics, setEventsMetrics] = useState<Record<string, { bidCount: number; lotsCount: number; maxBid: number }>>({});
+  const [globalProfiles, setGlobalProfiles] = useState<any[]>([]);
   const [globalProfiles, setGlobalProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingGlobal, setLoadingGlobal] = useState(false);
