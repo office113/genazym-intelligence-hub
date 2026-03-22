@@ -46,8 +46,8 @@ export default function Customers() {
   const [filters, setFilters] = useState({
     segment: '', country: '', continent: '',
     genazymId: '', zaidyId: '',
-    minSpend: '', maxSpend: '',
-    minMaxBid: '', maxMaxBid: '',
+    minSpend: '',
+    minMaxBid: '',
   });
   const updateFilter = (key: string, value: string) =>
     setFilters(prev => ({ ...prev, [key]: value }));
