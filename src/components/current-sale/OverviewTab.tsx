@@ -193,14 +193,19 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       setLoadingGlobal(true);
       try {
         const emails = [...new Set(bidders.map(b => b.email).filter(Boolean))];
-        if (!emails.length) { setLoadingGlobal(false); return; }
+        const gIds = [...new Set(bidders.map(b => b.genazym_id).filter(Boolean))];
+        if (!emails.length && !gIds.length) { setLoadingGlobal(false); return; }
 
         const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
-        const { data, error } = await supabase
+        // Use emails if available, fallback to genazym_id matching
+        const query = supabase
           .from("fact_customer_auction_activity")
-          .select("full_name, email, total_bids, max_bid, was_winner, total_win_value, first_bid_at, auction_name")
-          .eq("brand", brandFilter)
-          .in("email", emails);
+          .select("full_name, email, genazym_id, total_bids, max_bid, was_winner, total_win_value, first_bid_at, auction_name")
+          .eq("brand", brandFilter);
+        
+        const { data, error } = emails.length
+          ? await query.in("email", emails)
+          : await query.in("genazym_id", gIds);
 
         if (error || !data?.length) { setLoadingGlobal(false); return; }
 
