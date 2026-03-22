@@ -678,8 +678,28 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
         title={drillDown?.title || ""}
         subtitle={drillDown?.subtitle}
       >
-        {drillDown && (
+        {drillDown && (() => {
+          // Get the snapshot for context
+          const drillSnap = getSnapshot(drillDown.saleId, drillDown.dx);
+          const drillBench = mode2Data.benchmarkByDX[drillDown.dx];
+          return (
           <div className="space-y-6">
+            {/* Context bar */}
+            <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-border" style={{ background: "hsl(var(--secondary) / 0.3)" }}>
+              <div className="text-sm">
+                <span className="font-semibold">{drillDown.saleName}</span>
+                <span className="mx-2 text-muted-foreground">·</span>
+                <span className="font-bold" style={{ color: "hsl(var(--accent))" }}>D-{drillDown.dx}</span>
+              </div>
+              {drillSnap && (
+                <div className="flex gap-4 mr-auto text-xs text-muted-foreground">
+                  <span>הצעות: <strong>{drillSnap.earlyBids}</strong>{drillBench?.earlyBids ? ` (ממוצע: ${drillBench.earlyBids})` : ""}</span>
+                  <span>משתמשים: <strong>{drillSnap.uniqueBidders}</strong>{drillBench?.uniqueBidders ? ` (ממוצע: ${drillBench.uniqueBidders})` : ""}</span>
+                  <span>פריטים: <strong>{drillSnap.lotsWithBids}</strong>{drillBench?.lotsWithBids ? ` (ממוצע: ${drillBench.lotsWithBids})` : ""}</span>
+                </div>
+              )}
+            </div>
+
             {/* Summary KPIs */}
             <div className="grid grid-cols-3 gap-4">
               <div className="kpi-card">
