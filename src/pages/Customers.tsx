@@ -108,6 +108,7 @@ export default function Customers() {
 
     return Object.entries(byEmail).map(([email, rows]) => {
       const head = rows?.[0] ?? {};
+      const meta = customerMeta?.[email] ?? {};
       const totalBids = (rows || []).reduce((s, r) => s + (r?.total_bids || 0), 0);
       const totalWins = (rows || []).reduce((s, r) => s + (r?.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
@@ -118,7 +119,7 @@ export default function Customers() {
         return d > latest ? d : latest;
       }, "");
       const name = head?.full_name || email;
-      const country = head?.country || "—";
+      const country = head?.country || meta?.country || "—";
 
       // Segment by spend
       let segment = "רגיל";
@@ -129,6 +130,8 @@ export default function Customers() {
         email,
         name,
         country,
+        genazym_id: head?.genazym_id ?? meta?.genazym_id ?? null,
+        zaidy_id: head?.zaidy_id ?? meta?.zaidy_id ?? null,
         totalBids,
         totalWins,
         totalSpend,
@@ -136,8 +139,8 @@ export default function Customers() {
         lastActive: lastActiveDate,
         segment,
       };
-    }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData]);
+    }).sort((a, b) => (b?.totalSpend || 0) - (a?.totalSpend || 0));
+  }, [rawActivityData, rawAuctionsData, customerMeta]);
 
   // Segment data for chart
   const segmentData = useMemo(() => {
@@ -172,84 +175,101 @@ export default function Customers() {
 
   const addFilter = (f: string) => { if (!activeFilters.includes(f)) setActiveFilters([...activeFilters, f]); };
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
-  const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
+  const openCustomer = (c: any) => {
+    if (!c) return;
+    const email = c?.email || "";
+    const meta = customerMeta?.[email] ?? {};
+
+    setSelectedCustomer({
+      ...c,
+      genazym_id: c?.genazym_id ?? meta?.genazym_id ?? null,
+      zaidy_id: c?.zaidy_id ?? meta?.zaidy_id ?? null,
+    });
+    setDrawerOpen(true);
+    setActiveTab("profile");
+  };
 
   const filtered = useMemo(() => {
-    const safeFilters = advancedFilters ?? defaultCustomerFilters;
+    try {
+      const safeFilters = advancedFilters ?? defaultCustomerFilters;
 
-    let result = (customers || []).filter((customer: any) => {
-      if (!customer) return false;
-      if (!searchQuery) return true;
-      const q = (searchQuery || "").toLowerCase();
-      return (customer?.name || "").toLowerCase().includes(q)
-        || (customer?.email || "").toLowerCase().includes(q)
-        || (customer?.country || "").toLowerCase().includes(q);
-    });
-
-    if (safeFilters.genazymId) {
-      const id = Number(safeFilters.genazymId || 0);
-      result = result.filter((customer: any) => (customerMeta[customer?.email || ""]?.genazym_id ?? null) === id);
-    }
-
-    if (safeFilters.zaidyId) {
-      const id = Number(safeFilters.zaidyId || 0);
-      result = result.filter((customer: any) => (customerMeta[customer?.email || ""]?.zaidy_id ?? null) === id);
-    }
-
-    if (safeFilters.maxBidMin) {
-      const min = Number(safeFilters.maxBidMin || 0);
-      result = result.filter((customer: any) => {
-        const bids = (rawActivityData || [])
-          .filter((row: any) => row?.email === customer?.email)
-          .map((row: any) => row?.max_bid || 0);
-        const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
-        return maxBid >= min;
+      let result = (customers || []).filter((customer: any) => {
+        if (!customer) return false;
+        if (!searchQuery) return true;
+        const q = (searchQuery || "").toLowerCase();
+        return (customer?.name || "").toLowerCase().includes(q)
+          || (customer?.email || "").toLowerCase().includes(q)
+          || (customer?.country || "").toLowerCase().includes(q);
       });
-    }
 
-    if (safeFilters.maxBidMax) {
-      const max = Number(safeFilters.maxBidMax || 0);
-      result = result.filter((customer: any) => {
-        const bids = (rawActivityData || [])
-          .filter((row: any) => row?.email === customer?.email)
-          .map((row: any) => row?.max_bid || 0);
-        const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
-        return maxBid <= max;
-      });
-    }
+      if (safeFilters.genazymId) {
+        const id = Number(safeFilters.genazymId || 0);
+        result = result.filter((customer: any) => (customerMeta?.[customer?.email || ""]?.genazym_id ?? null) === id);
+      }
 
-    if (safeFilters.totalWinsMin) {
-      const min = Number(safeFilters.totalWinsMin || 0);
-      result = result.filter((customer: any) => (customer?.totalSpend || 0) >= min);
-    }
+      if (safeFilters.zaidyId) {
+        const id = Number(safeFilters.zaidyId || 0);
+        result = result.filter((customer: any) => (customerMeta?.[customer?.email || ""]?.zaidy_id ?? null) === id);
+      }
 
-    if (safeFilters.totalWinsMax) {
-      const max = Number(safeFilters.totalWinsMax || 0);
-      result = result.filter((customer: any) => (customer?.totalSpend || 0) <= max);
-    }
+      if (safeFilters.maxBidMin) {
+        const min = Number(safeFilters.maxBidMin || 0);
+        result = result.filter((customer: any) => {
+          const bids = (rawActivityData || [])
+            .filter((row: any) => row?.email === customer?.email)
+            .map((row: any) => row?.max_bid || 0);
+          const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
+          return maxBid >= min;
+        });
+      }
 
-    if ((safeFilters.classifications || []).length > 0) {
-      result = result.filter((customer: any) => {
-        const purchasingPower = customerMeta[customer?.email || ""]?.purchasing_power || "";
-        return (safeFilters.classifications || []).includes(purchasingPower);
-      });
-    }
+      if (safeFilters.maxBidMax) {
+        const max = Number(safeFilters.maxBidMax || 0);
+        result = result.filter((customer: any) => {
+          const bids = (rawActivityData || [])
+            .filter((row: any) => row?.email === customer?.email)
+            .map((row: any) => row?.max_bid || 0);
+          const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
+          return maxBid <= max;
+        });
+      }
 
-    if ((safeFilters.countries || []).length > 0) {
-      result = result.filter((customer: any) => {
-        const country = customerMeta[customer?.email || ""]?.country || customer?.country || "";
-        return (safeFilters.countries || []).includes(country);
-      });
-    }
+      if (safeFilters.totalWinsMin) {
+        const min = Number(safeFilters.totalWinsMin || 0);
+        result = result.filter((customer: any) => (customer?.totalSpend || 0) >= min);
+      }
 
-    if ((safeFilters.continents || []).length > 0) {
-      result = result.filter((customer: any) => {
-        const continent = customerMeta[customer?.email || ""]?.continent || "";
-        return (safeFilters.continents || []).includes(continent);
-      });
-    }
+      if (safeFilters.totalWinsMax) {
+        const max = Number(safeFilters.totalWinsMax || 0);
+        result = result.filter((customer: any) => (customer?.totalSpend || 0) <= max);
+      }
 
-    return result;
+      if ((safeFilters.classifications || []).length > 0) {
+        result = result.filter((customer: any) => {
+          const purchasingPower = customerMeta?.[customer?.email || ""]?.purchasing_power || "";
+          return (safeFilters.classifications || []).includes(purchasingPower);
+        });
+      }
+
+      if ((safeFilters.countries || []).length > 0) {
+        result = result.filter((customer: any) => {
+          const country = customerMeta?.[customer?.email || ""]?.country || customer?.country || "";
+          return (safeFilters.countries || []).includes(country);
+        });
+      }
+
+      if ((safeFilters.continents || []).length > 0) {
+        result = result.filter((customer: any) => {
+          const continent = customerMeta?.[customer?.email || ""]?.continent || "";
+          return (safeFilters.continents || []).includes(continent);
+        });
+      }
+
+      return result;
+    } catch (filterError) {
+      console.error("Customers filter error:", filterError);
+      return customers || [];
+    }
   }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
 
   const isSearchLoading = loading || metaLoading;
