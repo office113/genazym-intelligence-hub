@@ -181,8 +181,8 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     const fetchGlobal = async () => {
       setLoadingGlobal(true);
       try {
-        const emails = [...new Set(bidders.map(b => b.email).filter(Boolean))];
-        const gIds = [...new Set(bidders.map(b => b.genazym_id).filter(Boolean))];
+        const emails = [...new Set(bidders.map((b) => b?.email).filter(Boolean))];
+        const gIds = [...new Set(bidders.map((b) => b?.genazym_id).filter(Boolean))];
         if (!emails.length && !gIds.length) { setLoadingGlobal(false); return; }
 
         const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
