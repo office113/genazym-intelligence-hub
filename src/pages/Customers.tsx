@@ -190,8 +190,8 @@ export default function Customers() {
         const max = Number(advancedFilters.maxMaxBid);
         if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
       }
-      if (advancedFilters?.segment && advancedFilters.segment !== '') {
-        result = result.filter(c => c?.classification === advancedFilters.segment);
+      if (advancedFilters?.segment) {
+        result = result.filter(c => powerMap[c?.email] === advancedFilters.segment);
       }
       return result;
     } catch (error) {
