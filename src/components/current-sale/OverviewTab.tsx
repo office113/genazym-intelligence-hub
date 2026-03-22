@@ -386,7 +386,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                             <td className="text-center">{bidCount}</td>
                             <td className="text-center">{lotsCount}</td>
                             <td className="font-semibold">{fmtCurrency(maxBidValue)}</td>
-                            <td className="font-semibold">{showWins && b.total_win_value ? fmtCurrency(b.total_win_value) : "—"}</td>
+                            
                           </tr>
                         );
                       })}
