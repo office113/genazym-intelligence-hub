@@ -51,7 +51,7 @@ export default function Customers() {
             .from("customers")
             .select("email, genazym_id, zaidy_id, purchasing_power, country")
             .limit(50000);
-          data = res.data;
+          data = res.data as any;
         }
         if (data) {
           const map: Record<string, any> = {};
