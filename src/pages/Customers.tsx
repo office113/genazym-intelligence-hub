@@ -78,6 +78,7 @@ export default function Customers() {
         totalBids,
         totalWins,
         totalSpend,
+        maxBid,
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
