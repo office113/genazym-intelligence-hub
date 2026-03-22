@@ -1,11 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { usePastSales } from "@/hooks/usePastSales";
 import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
-import CustomerAdvancedFilters, { CustomerFilters, defaultCustomerFilters } from "@/components/customers/CustomerAdvancedFilters";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 
@@ -33,24 +31,6 @@ export default function Customers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
-  const [advancedFilters, setAdvancedFilters] = useState<CustomerFilters>(defaultCustomerFilters);
-  const [customerMeta, setCustomerMeta] = useState<Record<string, any>>({});
-
-  // Fetch customer metadata (IDs, purchasing_power, continent) for advanced filtering
-  useEffect(() => {
-    const fetchMeta = async () => {
-      const { data } = await supabase
-        .from("customers")
-        .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
-        .limit(50000);
-      if (data) {
-        const map: Record<string, any> = {};
-        data.forEach((r: any) => { map[r.email] = r; });
-        setCustomerMeta(map);
-      }
-    };
-    fetchMeta();
-  }, []);
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
@@ -137,54 +117,9 @@ export default function Customers() {
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
-  const filtered = useMemo(() => {
-    let result = customers.filter(c =>
-      !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const f = advancedFilters;
-    if (f.genazymId) {
-      const id = Number(f.genazymId);
-      result = result.filter(c => customerMeta[c.email]?.genazym_id === id);
-    }
-    if (f.zaidyId) {
-      const id = Number(f.zaidyId);
-      result = result.filter(c => customerMeta[c.email]?.zaidy_id === id);
-    }
-    if (f.maxBidMin) {
-      const min = Number(f.maxBidMin);
-      result = result.filter(c => {
-        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
-        return maxBid >= min;
-      });
-    }
-    if (f.maxBidMax) {
-      const max = Number(f.maxBidMax);
-      result = result.filter(c => {
-        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
-        return maxBid <= max;
-      });
-    }
-    if (f.totalWinsMin) {
-      const min = Number(f.totalWinsMin);
-      result = result.filter(c => c.totalSpend >= min);
-    }
-    if (f.totalWinsMax) {
-      const max = Number(f.totalWinsMax);
-      result = result.filter(c => c.totalSpend <= max);
-    }
-    if (f.classifications.length > 0) {
-      result = result.filter(c => f.classifications.includes(customerMeta[c.email]?.purchasing_power));
-    }
-    if (f.countries.length > 0) {
-      result = result.filter(c => f.countries.includes(customerMeta[c.email]?.country || c.country));
-    }
-    if (f.continents.length > 0) {
-      result = result.filter(c => f.continents.includes(customerMeta[c.email]?.continent));
-    }
-
-    return result;
-  }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
+  const filtered = customers.filter(c =>
+    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
@@ -246,12 +181,6 @@ export default function Customers() {
                 {suggestedQueries.map((q) => (<button key={q} onClick={() => addFilter(q)} className="filter-chip text-xs"><Plus className="w-3 h-3" /> {q}</button>))}
               </div>
             </div>
-
-            <CustomerAdvancedFilters
-              filters={advancedFilters}
-              onApply={setAdvancedFilters}
-              onClear={() => setAdvancedFilters(defaultCustomerFilters)}
-            />
 
             <div className="flex items-center justify-between mb-4">
               <div className="text-sm text-muted-foreground">{filtered.length} לקוחות</div>
