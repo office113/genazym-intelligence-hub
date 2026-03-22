@@ -198,7 +198,7 @@ export default function Customers() {
       console.error('Filtering error:', error);
       return customers || [];
     }
-  }, [customers, searchQuery, advancedFilters]);
+  }, [customers, searchQuery, advancedFilters, powerMap]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
