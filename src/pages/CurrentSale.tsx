@@ -14,7 +14,7 @@ const tabs = [
 
 type Brand = "genazym" | "zaidy";
 
-const MISSING_PAGE_SIZE = 25;
+const MISSING_PAGE_SIZE = 50;
 
 export default function CurrentSale() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -107,8 +107,8 @@ export default function CurrentSale() {
                         <th>מזהה</th>
                         <th>שם</th>
                         <th>מכירה אחרונה</th>
-                        <th>סה״כ הוצאות ($)</th>
-                        <th>מכירות</th>
+                        <th>רכישות במכירה אחרונה</th>
+                        <th>מס' מכירות</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -117,8 +117,8 @@ export default function CurrentSale() {
                           <td className="text-center text-xs text-muted-foreground">{c.display_id || "—"}</td>
                           <td className="font-semibold">{c.customer_name || c.customer_email || "—"}</td>
                           <td>{c.last_seen_in || "—"}</td>
-                          <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
-                          <td>{c.auctions_participated ?? "—"}</td>
+                          <td>${(c.last_auction_spend ?? 0).toLocaleString()}</td>
+                          <td>{c.total_auctions_participated ?? "—"}</td>
                         </tr>
                       ))}
                     </tbody>
