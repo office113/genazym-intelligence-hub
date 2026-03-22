@@ -150,6 +150,14 @@ export default function Customers() {
         const max = Number(advancedFilters.maxSpend);
         if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
       }
+      if (advancedFilters?.minMaxBid) {
+        const min = Number(advancedFilters.minMaxBid);
+        if (!isNaN(min)) result = result.filter(c => (c?.maxBid || 0) >= min);
+      }
+      if (advancedFilters?.maxMaxBid) {
+        const max = Number(advancedFilters.maxMaxBid);
+        if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
+      }
       return result;
     } catch (error) {
       console.error('Filtering error:', error);
