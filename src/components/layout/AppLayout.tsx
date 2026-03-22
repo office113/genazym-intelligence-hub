@@ -11,10 +11,9 @@ import {
   BookOpen,
   Activity,
   RefreshCw,
-  Settings,
-  ChevronDown,
+  Shield,
 } from "lucide-react";
-import { useStatusThresholds } from "@/contexts/StatusThresholdsContext";
+import StatusRulesModal from "@/components/layout/StatusRulesModal";
 
 const navItems = [
   { label: "מכירות עבר", path: "/past-sales", icon: History },
@@ -33,8 +32,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const isFetching = useIsFetching({ queryKey: ["brandData"] });
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showStatusSettings, setShowStatusSettings] = useState(false);
-  const { thresholds, setThresholds } = useStatusThresholds();
+  const [showRulesModal, setShowRulesModal] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -75,82 +73,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        {/* Status Rules Section */}
+        {/* Customer Rules Button */}
         <div className="px-3 pb-2">
           <button
-            onClick={() => setShowStatusSettings(s => !s)}
-            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border"
+            onClick={() => setShowRulesModal(true)}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border hover:opacity-90"
             style={{
               borderColor: "hsl(var(--sidebar-border))",
               color: "hsl(var(--sidebar-foreground))",
               background: "hsl(var(--sidebar-accent))",
             }}
           >
-            <div className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>כללי סטטוס</span>
-            </div>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showStatusSettings ? "rotate-180" : ""}`} />
+            <Shield className="w-4 h-4 flex-shrink-0" />
+            <span>כללי סיווג לקוחות</span>
           </button>
-
-          {showStatusSettings && (
-            <div className="mt-2 p-3 rounded-lg border space-y-2.5"
-              style={{
-                borderColor: "hsl(var(--sidebar-border))",
-                background: "hsl(var(--sidebar-accent) / 0.5)",
-              }}>
-              <div>
-                <label className="text-[10px] block mb-0.5" style={{ color: "hsl(var(--sidebar-muted))" }}>VIP — סף הוצאות ($)</label>
-                <input
-                  type="number"
-                  value={thresholds.vipSpend}
-                  onChange={e => setThresholds({ ...thresholds, vipSpend: Number(e.target.value) || 0 })}
-                  className="w-full px-2 py-1.5 rounded border text-xs focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: "hsl(var(--sidebar-border))",
-                    background: "hsl(var(--sidebar-background))",
-                    color: "hsl(var(--sidebar-foreground))",
-                  }}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] block mb-0.5" style={{ color: "hsl(var(--sidebar-muted))" }}>VIP — סף מכירות</label>
-                <input
-                  type="number"
-                  value={thresholds.vipAuctions}
-                  onChange={e => setThresholds({ ...thresholds, vipAuctions: Number(e.target.value) || 0 })}
-                  className="w-full px-2 py-1.5 rounded border text-xs focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: "hsl(var(--sidebar-border))",
-                    background: "hsl(var(--sidebar-background))",
-                    color: "hsl(var(--sidebar-foreground))",
-                  }}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] block mb-0.5" style={{ color: "hsl(var(--sidebar-muted))" }}>פעיל — סף מכירות</label>
-                <input
-                  type="number"
-                  value={thresholds.activeAuctions}
-                  onChange={e => setThresholds({ ...thresholds, activeAuctions: Number(e.target.value) || 0 })}
-                  className="w-full px-2 py-1.5 rounded border text-xs focus:outline-none focus:ring-1"
-                  style={{
-                    borderColor: "hsl(var(--sidebar-border))",
-                    background: "hsl(var(--sidebar-background))",
-                    color: "hsl(var(--sidebar-foreground))",
-                  }}
-                />
-              </div>
-              <div className="text-[10px] p-1.5 rounded border"
-                style={{
-                  borderColor: "hsl(var(--sidebar-border))",
-                  color: "hsl(var(--sidebar-muted))",
-                  background: "hsl(var(--sidebar-background))",
-                }}>
-                VIP = ${thresholds.vipSpend.toLocaleString()}+ או {thresholds.vipAuctions}+ · פעיל = {thresholds.activeAuctions}+
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Refresh Button */}
@@ -180,6 +116,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <div className="mt-0.5 opacity-60">v2.0</div>
         </div>
       </aside>
+
+      {/* Status Rules Modal */}
+      <StatusRulesModal open={showRulesModal} onOpenChange={setShowRulesModal} />
 
       {/* Main Content */}
       <main className="flex-1 mr-56 min-h-screen bg-background">
