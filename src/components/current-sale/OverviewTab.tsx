@@ -564,18 +564,22 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
 
           {/* KPI Row - latest available snapshot */}
           {(() => {
-            const latestSnap = mode2Data.saleSnapshots[mode2Data.saleSnapshots.length - 1]; // D-0
-            const latestAvail = mode2Data.saleSnapshots.find(s => s.earlyBids > 0) ? mode2Data.saleSnapshots[mode2Data.saleSnapshots.length - 1] : mode2Data.saleSnapshots[0];
-            if (!latestSnap) return null;
-            const bench = mode2Data.benchmarkByDX[latestSnap.dx];
+            // saleSnapshots sorted D-0 first, so [0] = D-0 (most recent data)
+            const latestSnap = mode2Data.saleSnapshots[0]; // D-0
+            // For future sales with no bids yet, find first snapshot with data, else fall back to D-0
+            const displaySnap = mode2Data.saleSnapshots.find(s => s.earlyBids > 0) || latestSnap;
+            if (!displaySnap) return null;
+            const dxKey = Math.round(displaySnap.dx);
+            const bench = mode2Data.benchmarkByDX[dxKey];
+            console.log(`[KPI Cards] Brand=${selectedBrand}, Sale=${mode2Data.selectedSale.name}, DX=${dxKey}, hasBench=${!!bench}`);
             return (
               <div className="grid grid-cols-6 gap-3">
-                <OverviewKPI label="סה״כ הצעות מוקדמות" value={latestSnap.earlyBids} comparison={bench?.earlyBids} />
-                <OverviewKPI label="משתמשים שונים עם הצעות" value={latestSnap.uniqueBidders} comparison={bench?.uniqueBidders} />
-                <OverviewKPI label="מס׳ פריטים עם הצעות" value={latestSnap.lotsWithBids} comparison={bench?.lotsWithBids} />
-                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${latestSnap.lotsBidPct}%`} comparison={bench?.lotsBidPct !== undefined ? `${bench.lotsBidPct}%` : undefined} />
-                <OverviewKPI label="מחיר מובטח" value={fmtPrice(latestSnap.guaranteedPrice)} comparison={bench?.guaranteedPrice !== undefined ? fmtPrice(bench.guaranteedPrice) : undefined} />
-                <OverviewKPI label="מס׳ בידרים חדשים" value={latestSnap.newBidders} />
+                <OverviewKPI label="סה״כ הצעות מוקדמות" value={displaySnap.earlyBids} comparison={bench?.earlyBids} />
+                <OverviewKPI label="משתמשים שונים עם הצעות" value={displaySnap.uniqueBidders} comparison={bench?.uniqueBidders} />
+                <OverviewKPI label="מס׳ פריטים עם הצעות" value={displaySnap.lotsWithBids} comparison={bench?.lotsWithBids} />
+                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${displaySnap.lotsBidPct}%`} comparison={bench?.lotsBidPct !== undefined ? `${bench.lotsBidPct}%` : undefined} />
+                <OverviewKPI label="מחיר מובטח" value={fmtPrice(displaySnap.guaranteedPrice)} comparison={bench?.guaranteedPrice !== undefined ? fmtPrice(bench.guaranteedPrice) : undefined} />
+                <OverviewKPI label="מס׳ בידרים חדשים" value={displaySnap.newBidders} />
               </div>
             );
           })()}
