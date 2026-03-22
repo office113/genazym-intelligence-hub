@@ -52,18 +52,35 @@ export default function Customers() {
   const updateFilter = (key: string, value: string) =>
     setFilters(prev => ({ ...prev, [key]: value }));
 
-  const { data: segmentRules = [] } = useQuery({
-    queryKey: ['customer_segments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customer_segments')
-        .select('name, min_spend')
-        .order('min_spend', { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: Infinity,
-  });
+  // Hardcoded segment rules since customer_segments table doesn't exist
+  const segmentRules = useMemo(() => [
+    { name: 'VIP', min_spend: 50000 },
+    { name: 'פעיל', min_spend: 5000 },
+    { name: 'רגיל', min_spend: 1 },
+    { name: 'רשום', min_spend: 0 },
+  ], []);
+
+  // Fetch continent lookup from customers table
+  const [continentMap, setContinentMap] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let mounted = true;
+    const fetchContinents = async () => {
+      try {
+        const { data } = await supabase
+          .from('customers')
+          .select('email, continent')
+          .not('continent', 'is', null)
+          .limit(50000);
+        if (data && mounted) {
+          const map: Record<string, string> = {};
+          data.forEach(row => { if (row.email && row.continent) map[row.email] = row.continent; });
+          setContinentMap(map);
+        }
+      } catch (err) { console.error('Failed to fetch continents', err); }
+    };
+    fetchContinents();
+    return () => { mounted = false; };
+  }, []);
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
