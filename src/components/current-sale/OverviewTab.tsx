@@ -126,7 +126,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           .from("view_drilldown_with_names")
           .select("*")
           .eq("auction_name", drillDown.saleId)
-          .eq("days_before_auction", drillDown.dx)
+          .eq("days_before", drillDown.dx)
           .order("max_bid_cumulative", { ascending: false });
 
         if (error) {
