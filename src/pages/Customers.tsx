@@ -31,6 +31,8 @@ export default function Customers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
