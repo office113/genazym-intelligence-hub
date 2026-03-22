@@ -32,7 +32,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '' });
+  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
