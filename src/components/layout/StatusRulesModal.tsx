@@ -7,154 +7,212 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useStatusThresholds, StatusThresholds } from "@/contexts/StatusThresholdsContext";
+import {
+  useStatusThresholds,
+  StatusRule,
+  RuleCondition,
+  RuleParameter,
+  RuleOperator,
+  ConditionConnector,
+  PARAMETER_LABELS,
+  OPERATOR_LABELS,
+} from "@/contexts/StatusThresholdsContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Crown, Zap, Sprout, Star, ArrowDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Crown, Zap, Sprout, Star, Plus, Trash2, ArrowDown } from "lucide-react";
 
 interface StatusRulesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const uid = () => Math.random().toString(36).slice(2, 8);
+
+const STATUS_META: Record<string, { icon: typeof Crown; color: string; bg: string }> = {
+  vip: { icon: Crown, color: "hsl(var(--gold-dark, 45 80% 40%))", bg: "hsl(var(--accent) / 0.08)" },
+  active: { icon: Zap, color: "hsl(var(--primary))", bg: "hsl(var(--primary) / 0.06)" },
+  beginner: { icon: Sprout, color: "hsl(220, 45%, 40%)", bg: "hsl(220, 40%, 95%)" },
+};
+
 export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModalProps) {
-  const { thresholds, setThresholds } = useStatusThresholds();
-  const [draft, setDraft] = useState<StatusThresholds>(thresholds);
+  const { rules, setRules } = useStatusThresholds();
+  const [draft, setDraft] = useState<StatusRule[]>(rules);
 
   useEffect(() => {
-    if (open) setDraft(thresholds);
-  }, [open, thresholds]);
-
-  const update = (key: keyof StatusThresholds, val: string) => {
-    setDraft(prev => ({ ...prev, [key]: Number(val) || 0 }));
-  };
+    if (open) setDraft(JSON.parse(JSON.stringify(rules)));
+  }, [open, rules]);
 
   const handleSave = () => {
-    setThresholds(draft);
+    setRules(draft);
     onOpenChange(false);
   };
 
-  const tiers: {
-    title: string;
-    icon: typeof Crown;
-    color: string;
-    bg: string;
-    spendKey: keyof StatusThresholds;
-    auctionsKey: keyof StatusThresholds;
-    description: string;
-    editable: boolean;
-  }[] = [
-    {
-      title: "VIP",
-      icon: Crown,
-      color: "hsl(var(--gold-dark, 45 80% 40%))",
-      bg: "hsl(var(--accent) / 0.08)",
-      spendKey: "vipSpend",
-      auctionsKey: "vipAuctions",
-      description: "דרג עליון — לקוחות עם הוצאות גבוהות או השתתפות רבה",
-      editable: true,
-    },
-    {
-      title: "פעיל",
-      icon: Zap,
-      color: "hsl(var(--primary))",
-      bg: "hsl(var(--primary) / 0.06)",
-      spendKey: "activeSpend",
-      auctionsKey: "activeAuctions",
-      description: "דרג ביניים — לקוחות עם פעילות סדירה",
-      editable: true,
-    },
-    {
-      title: "מתחיל",
-      icon: Sprout,
-      color: "hsl(220, 45%, 40%)",
-      bg: "hsl(220, 40%, 95%)",
-      spendKey: "beginnerSpend",
-      auctionsKey: "beginnerAuctions",
-      description: "דרג כניסה — כל לקוח שהשתתף לפחות פעם אחת",
-      editable: true,
-    },
-  ];
+  const updateRule = (ruleIdx: number, updater: (r: StatusRule) => StatusRule) => {
+    setDraft(prev => prev.map((r, i) => (i === ruleIdx ? updater({ ...r }) : r)));
+  };
+
+  const addCondition = (ruleIdx: number) => {
+    updateRule(ruleIdx, r => ({
+      ...r,
+      conditions: [...r.conditions, { id: uid(), parameter: "totalWins" as RuleParameter, operator: ">=" as RuleOperator, value: 0 }],
+    }));
+  };
+
+  const removeCondition = (ruleIdx: number, condId: string) => {
+    updateRule(ruleIdx, r => ({
+      ...r,
+      conditions: r.conditions.filter(c => c.id !== condId),
+    }));
+  };
+
+  const updateCondition = (ruleIdx: number, condId: string, patch: Partial<RuleCondition>) => {
+    updateRule(ruleIdx, r => ({
+      ...r,
+      conditions: r.conditions.map(c => (c.id === condId ? { ...c, ...patch } : c)),
+    }));
+  };
+
+  const toggleConnector = (ruleIdx: number) => {
+    updateRule(ruleIdx, r => ({
+      ...r,
+      connector: r.connector === "OR" ? "AND" : "OR",
+    }));
+  };
+
+  const paramOptions = Object.entries(PARAMETER_LABELS) as [RuleParameter, string][];
+  const opOptions = Object.entries(OPERATOR_LABELS) as [RuleOperator, string][];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-lg">כללי סיווג לקוחות</DialogTitle>
+          <DialogTitle className="text-lg">מנוע כללי סיווג לקוחות</DialogTitle>
           <DialogDescription>
-            הסיווג מבוסס על פעילות מצטברת בשני המותגים (Genazym + Zaidy). הבדיקה מתבצעת מלמעלה למטה — הלקוח מקבל את הדרג הגבוה ביותר שהוא עומד בו.
+            הגדר תנאים דינמיים לכל דרג. החישוב מבוסס על פעילות מצטברת בשני המותגים (Genazym + Zaidy). הבדיקה מתבצעת מלמעלה למטה.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Header row */}
-        <div className="grid grid-cols-[1fr_1fr] gap-3 px-14 text-[11px] font-medium text-muted-foreground">
-          <span>סף הוצאות מצטבר ($)</span>
-          <span>מספר מכירות שהשתתף בהן</span>
-        </div>
+        <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+          {draft.map((rule, ruleIdx) => {
+            const meta = STATUS_META[rule.key] || STATUS_META.beginner;
+            const Icon = meta.icon;
 
-        <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
-          {tiers.map((tier, idx) => (
-            <div key={tier.title}>
-              <div
-                className="rounded-xl border p-4 space-y-3"
-                style={{ background: tier.bg, borderColor: "hsl(var(--border))" }}
-              >
-                <div className="flex items-center gap-2">
-                  <tier.icon className="w-5 h-5" style={{ color: tier.color }} />
-                  <span className="font-semibold text-sm" style={{ color: tier.color }}>
-                    {tier.title}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground mr-auto">
-                    {tier.description}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Spend */}
-                  <div>
-                    <label className="text-[11px] text-muted-foreground block mb-1">
-                      סף הוצאות מצטבר ($)
-                    </label>
-                    <div className="relative">
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
-                      <Input
-                        type="number"
-                        value={draft[tier.spendKey]}
-                        onChange={(e) => update(tier.spendKey, e.target.value)}
-                        className="h-8 text-xs pr-7"
-                      />
-                    </div>
+            return (
+              <div key={rule.key}>
+                <div
+                  className="rounded-xl border p-4 space-y-3"
+                  style={{ background: meta.bg, borderColor: "hsl(var(--border))" }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-5 h-5" style={{ color: meta.color }} />
+                    <span className="font-semibold text-sm" style={{ color: meta.color }}>
+                      {rule.label}
+                    </span>
                   </div>
-                  {/* Auctions */}
-                  <div>
-                    <label className="text-[11px] text-muted-foreground block mb-1">
-                      מספר מכירות שהשתתף בהן
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">≥</span>
-                      <Input
-                        type="number"
-                        value={draft[tier.auctionsKey]}
-                        onChange={(e) => update(tier.auctionsKey, e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </div>
+
+                  {/* Conditions */}
+                  <div className="space-y-2">
+                    {rule.conditions.map((cond, condIdx) => (
+                      <div key={cond.id}>
+                        {/* Connector toggle between conditions */}
+                        {condIdx > 0 && (
+                          <div className="flex justify-center py-1">
+                            <button
+                              onClick={() => toggleConnector(ruleIdx)}
+                              className="text-[10px] font-bold px-3 py-0.5 rounded-full border transition-colors"
+                              style={{
+                                borderColor: meta.color,
+                                color: meta.color,
+                                background: "hsl(var(--background) / 0.8)",
+                              }}
+                            >
+                              {rule.connector === "OR" ? "או" : "וגם"}
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Condition row */}
+                        <div className="flex items-center gap-2 bg-background/60 rounded-lg border p-2" style={{ borderColor: "hsl(var(--border))" }}>
+                          {/* Parameter */}
+                          <Select
+                            value={cond.parameter}
+                            onValueChange={(v) => updateCondition(ruleIdx, cond.id, { parameter: v as RuleParameter })}
+                          >
+                            <SelectTrigger className="h-8 text-xs w-[160px] flex-shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {paramOptions.map(([val, label]) => (
+                                <SelectItem key={val} value={val} className="text-xs">{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          {/* Operator */}
+                          <Select
+                            value={cond.operator}
+                            onValueChange={(v) => updateCondition(ruleIdx, cond.id, { operator: v as RuleOperator })}
+                          >
+                            <SelectTrigger className="h-8 text-xs w-[60px] flex-shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {opOptions.map(([val, label]) => (
+                                <SelectItem key={val} value={val} className="text-xs">{label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          {/* Value */}
+                          <Input
+                            type="number"
+                            value={cond.value}
+                            onChange={(e) => updateCondition(ruleIdx, cond.id, { value: Number(e.target.value) || 0 })}
+                            className="h-8 text-xs flex-1"
+                          />
+
+                          {/* Delete */}
+                          <button
+                            onClick={() => removeCondition(ruleIdx, cond.id)}
+                            className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+
+                  {/* Add condition */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => addCondition(ruleIdx)}
+                    className="h-7 text-xs gap-1"
+                    style={{ color: meta.color }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    הוסף תנאי
+                  </Button>
                 </div>
 
-                <div className="text-[10px] text-muted-foreground/70">
-                  תנאי: הוצאות ≥ ${draft[tier.spendKey].toLocaleString()} <strong>או</strong> מכירות ≥ {draft[tier.auctionsKey]}
-                </div>
+                {/* Arrow between tiers */}
+                {ruleIdx < draft.length - 1 && (
+                  <div className="flex justify-center py-1">
+                    <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                )}
               </div>
-
-              {/* Arrow between tiers */}
-              {idx < tiers.length - 1 && (
-                <div className="flex justify-center py-1">
-                  <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
 
           {/* New — static */}
           <div className="flex justify-center py-1">
@@ -171,12 +229,12 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
               </span>
             </div>
             <div className="text-xs rounded-lg border p-2 bg-background/60" style={{ borderColor: "hsl(var(--border))" }}>
-              ברירת מחדל — לקוחות עם 0 מכירות ו-$0 הוצאות
+              ברירת מחדל — לקוחות שלא עמדו באף תנאי מהדרגות שלמעלה
             </div>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-0 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             ביטול
           </Button>
