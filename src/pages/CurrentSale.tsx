@@ -3,7 +3,6 @@ import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { usePastSales } from "@/hooks/usePastSales";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Phone, Mail, AlertTriangle } from "lucide-react";
 
 const tabs = [
