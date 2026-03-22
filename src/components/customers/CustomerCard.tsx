@@ -69,7 +69,8 @@ export default function CustomerCard() {
         .from("fact_customer_auction_activity")
         .select("*")
         .eq("email", email)
-        .order("auction_date", { ascending: false });
+        .order("auction_date", { ascending: false })
+        .limit(1000);
       setAuctionActivity(activity || []);
 
       // Books WON - using RPC or raw query via supabase
