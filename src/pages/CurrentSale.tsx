@@ -31,7 +31,7 @@ export default function CurrentSale() {
   const [missingPage, setMissingPage] = useState(0);
   const [missingTotal, setMissingTotal] = useState(0);
   const [missingSearch, setMissingSearch] = useState("");
-  const [missingBrand, setMissingBrand] = useState<"Genazym" | "Zaidy">("Genazym");
+  
 
   useEffect(() => {
     if (activeTab !== "missing") return;
