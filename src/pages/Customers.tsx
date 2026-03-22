@@ -263,8 +263,20 @@ export default function Customers() {
                         placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
                   </div>
+                  <div className="grid grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">סיווג לקוח</label>
+                      <select value={advancedFilters.segment} onChange={e => setAdvancedFilters(f => ({ ...f, segment: e.target.value }))}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                        <option value="">הכל</option>
+                        <option value="VIP">VIP</option>
+                        <option value="פעיל">פעיל</option>
+                        <option value="רגיל">רגיל</option>
+                      </select>
+                    </div>
+                  </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '' })}
+                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' })}
                       className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
                       נקה הכל
                     </button>
