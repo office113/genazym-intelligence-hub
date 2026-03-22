@@ -98,7 +98,6 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   selectedBrand: "גנזים" | "זיידי";
 }) {
   const [bidders, setBidders] = useState<any[]>([]);
-  const [eventsMetrics, setEventsMetrics] = useState<Record<string, { bidCount: number; lotsCount: number; maxBid: number }>>({});
   const [globalProfiles, setGlobalProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingGlobal, setLoadingGlobal] = useState(false);
@@ -114,79 +113,28 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     return auctionDate < new Date();
   }, [bidders]);
 
-  // Fetch current-sale bidders + events-based metrics
+  // Fetch drill-down data from fact_customer_drilldown
   useEffect(() => {
-    if (!drillDown) { setBidders([]); setEventsMetrics({}); setGlobalProfiles([]); setSearchTerm(""); setView("sale"); return; }
+    if (!drillDown) { setBidders([]); setGlobalProfiles([]); setSearchTerm(""); setView("sale"); return; }
 
     const fetchBidders = async () => {
       setLoading(true);
       setBidders([]);
-      setEventsMetrics({});
       try {
-        // 1. Fetch fact data for customer list & metadata
         const { data, error } = await supabase
-          .from("fact_customer_auction_activity")
-          .select("full_name, email, genazym_id, zaidy_id, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
+          .from("fact_customer_drilldown")
+          .select("*")
           .eq("auction_name", drillDown.saleId)
-          .order("max_bid", { ascending: false });
+          .eq("days_before_auction", drillDown.dx)
+          .order("max_bid_cumulative", { ascending: false });
 
-        if (error || !data?.length) {
+        if (error) {
+          console.error("[DrillDown] fetch error:", error);
           setLoading(false);
           return;
         }
 
-        const auctionDate = new Date(data[0].auction_date);
-        const snapshotDate = new Date(auctionDate);
-        snapshotDate.setDate(snapshotDate.getDate() - drillDown.dx);
-        snapshotDate.setHours(23, 59, 59, 999);
-
-        const filtered = data.filter(row => {
-          if (!row.first_bid_at) return false;
-          return new Date(row.first_bid_at) <= snapshotDate;
-        });
-        setBidders(filtered);
-
-        // 2. Fetch raw events for accurate bid/lot/maxBid calculations
-        const snapshotISO = snapshotDate.toISOString();
-        let allEvents: any[] = [];
-        let offset = 0;
-        const pageSize = 1000;
-        while (true) {
-          const { data: evData, error: evErr } = await supabase
-            .from("events")
-            .select("customer_email, book_id_bidspirit, bid_price, bid_time")
-            .eq("auction_name", drillDown.saleId)
-            .lte("bid_time", snapshotISO)
-            .range(offset, offset + pageSize - 1);
-          if (evErr || !evData?.length) break;
-          allEvents = allEvents.concat(evData);
-          if (evData.length < pageSize) break;
-          offset += pageSize;
-        }
-
-        // 3. Group events by customer email
-        const metrics: Record<string, { bidCount: number; lotsCount: number; maxBid: number }> = {};
-        for (const ev of allEvents) {
-          const email = ev.customer_email;
-          if (!email) continue;
-          if (!metrics[email]) metrics[email] = { bidCount: 0, lotsCount: 0, maxBid: 0 };
-          metrics[email].bidCount += 1;
-          if (ev.bid_price > metrics[email].maxBid) metrics[email].maxBid = ev.bid_price;
-        }
-        // Count unique lots per customer
-        const lotSets: Record<string, Set<string>> = {};
-        for (const ev of allEvents) {
-          const email = ev.customer_email;
-          if (!email || !ev.book_id_bidspirit) continue;
-          if (!lotSets[email]) lotSets[email] = new Set();
-          lotSets[email].add(ev.book_id_bidspirit);
-        }
-        for (const email of Object.keys(metrics)) {
-          metrics[email].lotsCount = lotSets[email]?.size || 0;
-        }
-
-        console.log("[DrillDown] Events-based metrics computed for", Object.keys(metrics).length, "customers at DX", drillDown.dx);
-        setEventsMetrics(metrics);
+        setBidders(data || []);
       } catch (err) {
         console.error("[DrillDown] fetch error:", err);
       }
@@ -380,17 +328,15 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     </thead>
                     <tbody>
                       {filteredBidders.map((b, i) => {
-                        // Use events-based metrics when available, fallback to fact table
-                        const em = eventsMetrics[b.email];
                         const engType = !auctionInPast && drillDown && drillDown.dx > 0
                           ? "מוקדם"
                           : (b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב");
                         const showWins = auctionInPast && drillDown?.dx === 0;
                         
-                        // Dynamic metrics from events table (accurate per DX)
-                        const bidCount = em ? em.bidCount : (drillDown && drillDown.dx > 0 ? (b.early_bids_count || 0) : (b.total_bids || 0));
-                        const lotsCount = em ? em.lotsCount : Math.min(b.lots_involved || 0, bidCount);
-                        const maxBidValue = em ? em.maxBid : (drillDown && drillDown.dx > 0 ? (bidCount > 0 ? (b.max_bid || 0) : 0) : (b.max_bid || 0));
+                        // Use fact_customer_drilldown cumulative columns
+                        const bidCount = b.total_bids_cumulative || 0;
+                        const lotsCount = b.total_lots_cumulative || 0;
+                        const maxBidValue = b.max_bid_cumulative || 0;
                         
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
