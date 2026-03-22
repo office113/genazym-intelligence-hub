@@ -3,7 +3,6 @@ import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { usePastSales } from "@/hooks/usePastSales";
-import { Phone, Mail, AlertTriangle } from "lucide-react";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -75,18 +74,6 @@ export default function CurrentSale() {
     }).sort((a, b) => b.totalSpend - a.totalSpend).slice(0, 50);
   }, [rawActivityData, rawAuctionsData, latestAuction]);
 
-  // Pace data: bids per auction (last 7 auctions)
-  const paceData = useMemo(() => {
-    if (!rawAuctionsData.length) return [];
-    const sorted = [...rawAuctionsData].sort((a: any, b: any) => (a.auction_date || "").localeCompare(b.auction_date || "")).slice(-7);
-    return sorted.map((auction: any) => {
-      const rows = rawActivityData.filter((r: any) => r.auction_name === auction.auction_name);
-      const totalBids = rows.reduce((s: number, r: any) => s + (r.total_bids || 0), 0);
-      const num = auction.auction_name.match(/\d+/)?.[0] || "";
-      return { sale: `#${num}`, bids: totalBids, involved: rows.length };
-    });
-  }, [rawActivityData, rawAuctionsData]);
-
   // KPIs for missing tab
   const missingKpis = useMemo(() => {
     const totalSpend = missingCustomers.reduce((s, c) => s + c.totalSpend, 0);
@@ -121,7 +108,6 @@ export default function CurrentSale() {
         {(activeTab === "overview" || activeTab === "byDX" || activeTab === "bySale") && (
           <OverviewTab selectedBrand={selectedBrand} mode={activeTab as DisplayMode} dailySnapshots={dailySnapshots} rawAuctionsData={rawAuctionsData} />
         )}
-
 
         {activeTab === "missing" && (
           <>
