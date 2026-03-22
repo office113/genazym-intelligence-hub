@@ -121,9 +121,9 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       setLoading(true);
       setBidders([]);
       try {
-        // 1. Fetch drill-down metrics
+        // Fetch from pre-joined view
         const { data, error } = await supabase
-          .from("fact_customer_drilldown")
+          .from("view_drilldown_with_names")
           .select("*")
           .eq("auction_name", drillDown.saleId)
           .eq("days_before_auction", drillDown.dx)
@@ -141,40 +141,12 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           return;
         }
 
-        // 2. Fetch customer names from customers table using email
-        const emails = [...new Set(data.map((r: any) => r.customer_email || r.email).filter(Boolean))];
-        let customerMap: Record<string, any> = {};
-
-        if (emails.length) {
-          // Batch in chunks of 100
-          for (let i = 0; i < emails.length; i += 100) {
-            const chunk = emails.slice(i, i + 100);
-            const { data: custData } = await supabase
-              .from("customers")
-              .select("genazym_id, zaidy_id, full_name, email, phone, country")
-              .in("email", chunk);
-            if (custData) {
-              for (const c of custData) {
-                if (c.email) customerMap[c.email.trim().toLowerCase()] = c;
-              }
-            }
-          }
-        }
-
-        // 3. Merge customer info into drill-down rows
-        const merged = data.map((row: any) => {
-          const rowEmail = (row.customer_email || row.email || "").trim().toLowerCase();
-          const cust = customerMap[rowEmail] || {};
-          return {
-            ...row,
-            full_name: cust.full_name || row.customer_email || row.genazym_id || "—",
-            email: cust.email || row.customer_email || "",
-            genazym_id: cust.genazym_id || row.genazym_id || "",
-            zaidy_id: cust.zaidy_id || "",
-            phone: cust.phone || "",
-            country: cust.country || "",
-          };
-        });
+        // Map view columns directly
+        const merged = data.map((row: any) => ({
+          ...row,
+          full_name: row.customer_name || row.customer_email || "—",
+          email: row.customer_email || row.email || "",
+        }));
 
         setBidders(merged);
       } catch (err) {
