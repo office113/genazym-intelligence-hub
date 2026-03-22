@@ -106,15 +106,17 @@ export default function CurrentSale() {
                       <tr>
                         <th>מזהה</th>
                         <th>שם</th>
+                        <th>מכירה אחרונה</th>
                         <th>סה״כ הוצאות ($)</th>
                         <th>מכירות</th>
                       </tr>
                     </thead>
                     <tbody>
                       {missingData.map((c, i) => (
-                        <tr key={c.customer_email || i} onClick={() => openCustomer({ name: c.customer_name, email: c.customer_email, totalSpend: c.total_spend_all_time, displayId: c.display_id })}>
+                        <tr key={c.customer_email || i} onClick={() => openCustomer({ name: c.customer_name, email: c.customer_email, totalSpend: c.total_spend_all_time, displayId: c.display_id, lastSeen: c.last_seen_in })}>
                           <td className="text-center text-xs text-muted-foreground">{c.display_id || "—"}</td>
                           <td className="font-semibold">{c.customer_name || c.customer_email || "—"}</td>
+                          <td>{c.last_seen_in || "—"}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
                           <td>{c.auctions_participated ?? "—"}</td>
                         </tr>
