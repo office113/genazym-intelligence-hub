@@ -36,28 +36,34 @@ export default function Customers() {
   const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
 
   const [powerMap, setPowerMap] = useState<Record<string, string>>({});
+  const [classOptions, setClassOptions] = useState<string[]>([]);
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
   useEffect(() => {
-    const fetchPowers = async () => {
+    let isMounted = true;
+    const fetchClassifications = async () => {
       try {
         const { data, error } = await supabase
           .from('customers')
           .select('email, purchasing_power')
-          .limit(50000);
-        if (data && !error) {
+          .not('purchasing_power', 'is', null);
+        if (data && !error && isMounted) {
           const map: Record<string, string> = {};
+          const optionsSet = new Set<string>();
           data.forEach((row: any) => {
-            if (row?.email) map[row.email] = row.purchasing_power || '';
+            if (row?.email) map[row.email] = row.purchasing_power;
+            if (row?.purchasing_power) optionsSet.add(row.purchasing_power);
           });
           setPowerMap(map);
+          setClassOptions(Array.from(optionsSet).sort());
         }
       } catch (err) {
-        console.error('Failed to fetch purchasing powers', err);
+        console.error('Failed to fetch classifications', err);
       }
     };
-    fetchPowers();
+    fetchClassifications();
+    return () => { isMounted = false; };
   }, []);
 
   // Aggregate activity data into customer profiles
@@ -113,10 +119,6 @@ export default function Customers() {
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData, powerMap]);
 
-  const uniqueClassifications = useMemo(() => {
-    const options = new Set((customers || []).map(c => c?.classification).filter(Boolean));
-    return Array.from(options).sort();
-  }, [customers]);
 
   // Segment data for chart
   const segmentData = useMemo(() => {
@@ -188,15 +190,15 @@ export default function Customers() {
         const max = Number(advancedFilters.maxMaxBid);
         if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
       }
-      if (advancedFilters?.segment && advancedFilters.segment !== '') {
-        result = result.filter(c => c?.classification === advancedFilters.segment);
+      if (advancedFilters?.segment) {
+        result = result.filter(c => powerMap[c?.email] === advancedFilters.segment);
       }
       return result;
     } catch (error) {
       console.error('Filtering error:', error);
       return customers || [];
     }
-  }, [customers, searchQuery, advancedFilters]);
+  }, [customers, searchQuery, advancedFilters, powerMap]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
@@ -299,7 +301,7 @@ export default function Customers() {
                       <select value={advancedFilters.segment} onChange={e => setAdvancedFilters(f => ({ ...f, segment: e.target.value }))}
                         className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
                         <option value="">הכל</option>
-                        {uniqueClassifications.map(c => (
+                        {classOptions.map(c => (
                           <option key={c} value={c}>{c}</option>
                         ))}
                       </select>
