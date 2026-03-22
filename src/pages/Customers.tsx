@@ -57,6 +57,7 @@ export default function Customers() {
       const totalWins = rows.reduce((s, r) => s + (r.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
       const totalSpend = rows.reduce((s, r) => r.was_winner ? s + (r.max_bid || 0) : s, 0);
+      const maxBid = Math.max(...rows.map(r => r.max_bid || 0), 0);
       const auctionsInvolved = rows.length;
       const lastActiveDate = rows.reduce((latest, r) => {
         const d = auctionDateMap[r.auction_name] || r.auction_date || "";
