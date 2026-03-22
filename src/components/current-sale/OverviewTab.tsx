@@ -8,6 +8,7 @@ import { X, Search, ChevronDown, CalendarClock, Loader2, Users, UserCheck } from
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
 import { useStatusThresholds, getCustomerStatus } from "@/contexts/StatusThresholdsContext";
+import CustomerLink from "@/components/customers/CustomerLink";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
