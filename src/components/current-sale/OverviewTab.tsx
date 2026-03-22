@@ -166,6 +166,13 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       .slice(0, 5);
     const pastSnapshots = pastSales.map(s => getSnapshot(s.id, selectedDX)).filter(Boolean) as SaleSnapshot[];
 
+    // DEBUG: Mode 1 breakdown
+    console.log(`[Mode1] Brand: ${selectedBrand}, DX: ${selectedDX}, excludes: ${currentSaleId}`);
+    console.log(`[Mode1] Past sales used (${pastSales.length}):`, pastSales.map(s => {
+      const snap = getSnapshot(s.id, selectedDX);
+      return `${s.name} (${s.id}) → earlyBids=${snap?.earlyBids ?? 'MISSING'}`;
+    }));
+    console.log(`[Mode1] Avg earlyBids = ${pastSnapshots.length ? Math.round(pastSnapshots.reduce((a, s) => a + s.earlyBids, 0) / pastSnapshots.length) : 0} (from ${pastSnapshots.length} snapshots)`);
     const avg = (field: keyof SaleSnapshot) => {
       const vals = pastSnapshots.map(s => s[field] as number).filter(v => !isNaN(v));
       return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
