@@ -190,8 +190,14 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       .filter(s => s.saleId === selectedSale.id)
       .sort((a, b) => b.dx - a.dx); // D-30 first
 
-    // Get same-brand past sales for benchmark
-    const sameBrandPast = salesList.filter(s => s.id !== selectedSale.id && s.brand === selectedSale.brand);
+    // Get last 5 completed same-brand sales for benchmark (excluding selected)
+    const sameBrandPast = salesList
+      .filter(s => s.id !== selectedSale.id && s.brand === selectedSale.brand)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
+
+    console.log(`Calculating benchmark for ${selectedSale.brand} using sales: [${sameBrandPast.map(s => s.name).join(", ")}]`);
+
     const benchmarkByDX: Record<number, { earlyBids: number; uniqueBidders: number; lotsWithBids: number; lotsBidPct: number; guaranteedPrice: number }> = {};
     for (let dx = 30; dx >= 0; dx--) {
       const snaps = sameBrandPast.map(s => getSnapshot(s.id, dx)).filter(Boolean) as SaleSnapshot[];
@@ -215,15 +221,15 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       lotsWithBids: s.lotsWithBids,
       lotsBidPct: s.lotsBidPct,
       guaranteedPrice: s.guaranteedPrice,
-      avgBids: benchmarkByDX[s.dx]?.earlyBids || 0,
-      avgBidders: benchmarkByDX[s.dx]?.uniqueBidders || 0,
-      avgLots: benchmarkByDX[s.dx]?.lotsWithBids || 0,
-      avgPct: benchmarkByDX[s.dx]?.lotsBidPct || 0,
-      avgGuaranteed: benchmarkByDX[s.dx]?.guaranteedPrice || 0,
+      avgBids: benchmarkByDX[s.dx]?.earlyBids ?? 0,
+      avgBidders: benchmarkByDX[s.dx]?.uniqueBidders ?? 0,
+      avgLots: benchmarkByDX[s.dx]?.lotsWithBids ?? 0,
+      avgPct: benchmarkByDX[s.dx]?.lotsBidPct ?? 0,
+      avgGuaranteed: benchmarkByDX[s.dx]?.guaranteedPrice ?? 0,
     }));
 
     return { selectedSale, saleSnapshots, chartData, benchmarkByDX };
-  }, [selectedSaleId]);
+  }, [selectedSaleId, selectedBrand, salesList, allSaleSnapshots]);
 
   const openDrillDown = (type: string, title: string, subtitle: string, saleName?: string, saleId?: string, dx?: number) => {
     setDrillDown({ type, title, subtitle, saleName: saleName || "", saleId: saleId || "", dx: dx ?? selectedDX });
