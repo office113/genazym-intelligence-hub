@@ -88,6 +88,55 @@ interface DrillDownState {
 
 type DrillDownView = "sale" | "profile";
 
+// ─── STATUS THRESHOLDS (configurable) ───
+interface StatusThresholds {
+  vipSpend: number;
+  vipAuctions: number;
+  activeAuctions: number;
+}
+
+const DEFAULT_THRESHOLDS: StatusThresholds = { vipSpend: 50000, vipAuctions: 5, activeAuctions: 2 };
+
+function StatusSettingsPanel({ thresholds, onChange }: { thresholds: StatusThresholds; onChange: (t: StatusThresholds) => void }) {
+  return (
+    <div className="rounded-lg border border-border p-4 space-y-4" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
+      <h4 className="text-sm font-bold text-foreground">⚙️ הגדרות סטטוס לקוח</h4>
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="text-xs text-muted-foreground block mb-1">VIP — סף הוצאות ($)</label>
+          <input
+            type="number"
+            value={thresholds.vipSpend}
+            onChange={e => onChange({ ...thresholds, vipSpend: Number(e.target.value) || 0 })}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground block mb-1">VIP — סף מכירות</label>
+          <input
+            type="number"
+            value={thresholds.vipAuctions}
+            onChange={e => onChange({ ...thresholds, vipAuctions: Number(e.target.value) || 0 })}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground block mb-1">פעיל — סף מכירות</label>
+          <input
+            type="number"
+            value={thresholds.activeAuctions}
+            onChange={e => onChange({ ...thresholds, activeAuctions: Number(e.target.value) || 0 })}
+            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
+          />
+        </div>
+      </div>
+      <div className="text-xs text-muted-foreground mt-2 p-2 rounded border border-border" style={{ background: "hsl(var(--card))" }}>
+        📋 <strong>מקרא:</strong> VIP = ${thresholds.vipSpend.toLocaleString()}+ הוצאות או {thresholds.vipAuctions}+ מכירות · פעיל = {thresholds.activeAuctions}+ מכירות · חדש = מתחת לסף
+      </div>
+    </div>
+  );
+}
+
 function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, selectedBrand }: {
   drillDown: DrillDownState | null;
   onClose: () => void;
@@ -101,6 +150,16 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<DrillDownView>("sale");
+  const [showSettings, setShowSettings] = useState(false);
+  const [statusThresholds, setStatusThresholds] = useState<StatusThresholds>(DEFAULT_THRESHOLDS);
+
+  // Determine if auction is in the past
+  const auctionInPast = useMemo(() => {
+    if (!bidders.length || !bidders[0]?.auction_date) return false;
+    const auctionDate = new Date(bidders[0].auction_date);
+    auctionDate.setHours(23, 59, 59, 999);
+    return auctionDate < new Date();
+  }, [bidders]);
 
   // Fetch current-sale bidders
   useEffect(() => {
@@ -140,10 +199,10 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     fetchBidders();
   }, [drillDown?.saleId, drillDown?.dx]);
 
-  // Fetch global profiles when switching to profile view (or when bidders change)
+  // Fetch global profiles when switching to profile view
   useEffect(() => {
     if (view !== "profile" || !bidders.length) return;
-    if (globalProfiles.length) return; // already fetched
+    if (globalProfiles.length) return;
 
     const fetchGlobal = async () => {
       setLoadingGlobal(true);
@@ -151,7 +210,6 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
         const emails = [...new Set(bidders.map(b => b.email).filter(Boolean))];
         if (!emails.length) { setLoadingGlobal(false); return; }
 
-        // Fetch all activity rows for these emails
         const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
         const { data, error } = await supabase
           .from("fact_customer_auction_activity")
@@ -161,7 +219,6 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
 
         if (error || !data?.length) { setLoadingGlobal(false); return; }
 
-        // Aggregate per email
         const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; firstSeen: string; lastSeen: string }> = {};
         for (const row of data) {
           if (!row.email) continue;
@@ -210,8 +267,8 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   };
 
   const getStatus = (p: typeof globalProfiles[0]) => {
-    if (p.totalSpend >= 50000 || p.auctionCount >= 5) return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
-    if (p.auctionCount >= 2) return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
+    if (p.totalSpend >= statusThresholds.vipSpend || p.auctionCount >= statusThresholds.vipAuctions) return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
+    if (p.auctionCount >= statusThresholds.activeAuctions) return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
     return { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
   };
 
