@@ -28,6 +28,7 @@ export default function CustomerCard() {
   const { customerEmail, closeCustomerCard } = useCustomerCard();
   const [brandTab, setBrandTab] = useState<BrandTab>("all");
   const [bookTab, setBookTab] = useState<BookTab>("won");
+  const [auctionSubTab, setAuctionSubTab] = useState<"Genazym" | "Zaidy">("Genazym");
 
   // Data state
   const [header, setHeader] = useState<any>(null);
