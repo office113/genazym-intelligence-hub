@@ -279,31 +279,19 @@ export default function Customers() {
                       value={filters.zaidyId}
                       onChange={e => updateFilter('zaidyId', e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <input type="number" placeholder="הוצאה מינ'" style={{ flex: 1 }}
-                        value={filters.minSpend}
-                        onChange={e => updateFilter('minSpend', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                      <input type="number" placeholder="הוצאה מקס'" style={{ flex: 1 }}
-                        value={filters.maxSpend}
-                        onChange={e => updateFilter('maxSpend', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <input type="number" placeholder="ביד מינ'" style={{ flex: 1 }}
-                        value={filters.minMaxBid}
-                        onChange={e => updateFilter('minMaxBid', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                      <input type="number" placeholder="ביד מקס'" style={{ flex: 1 }}
-                        value={filters.maxMaxBid}
-                        onChange={e => updateFilter('maxMaxBid', e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
+                    <input type="number" placeholder="החל מ — סך זכיות"
+                      value={filters.minSpend}
+                      onChange={e => updateFilter('minSpend', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <input type="number" placeholder="החל מ — ביד מקסימלי"
+                      value={filters.minMaxBid}
+                      onChange={e => updateFilter('minMaxBid', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     <button onClick={() => setFilters({
                       segment: '', country: '', continent: '',
                       genazymId: '', zaidyId: '',
-                      minSpend: '', maxSpend: '',
-                      minMaxBid: '', maxMaxBid: '',
+                      minSpend: '',
+                      minMaxBid: '',
                     })}
                       className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
                       נקה פילטרים
