@@ -210,21 +210,40 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       return `${s.name} (${s.id}) → D-0 earlyBids=${snap?.earlyBids ?? 'MISSING'}`;
     }));
 
-    const benchmarkByDX: Record<number, { earlyBids: number; uniqueBidders: number; lotsWithBids: number; lotsBidPct: number; guaranteedPrice: number }> = {};
+    type BenchmarkMetrics = {
+      earlyBids?: number;
+      uniqueBidders?: number;
+      lotsWithBids?: number;
+      lotsBidPct?: number;
+      guaranteedPrice?: number;
+    };
+
+    const avgNonZero = (values: Array<number | null | undefined>) => {
+      const valid = values.filter((v): v is number => v !== null && v !== undefined && v > 0);
+      if (!valid.length) return undefined;
+      return Math.round(valid.reduce((a, v) => a + v, 0) / valid.length);
+    };
+
+    // Single source of truth for benchmark values used by BOTH table logic and charts
+    const benchmarkByDX: Record<number, BenchmarkMetrics> = {};
     for (let dx = 30; dx >= 0; dx--) {
       const snaps = sameBrandPast.map(s => getSnapshot(s.id, dx)).filter(Boolean) as SaleSnapshot[];
-      if (snaps.length) {
-        benchmarkByDX[dx] = {
-          earlyBids: Math.round(snaps.reduce((a, s) => a + s.earlyBids, 0) / snaps.length),
-          uniqueBidders: Math.round(snaps.reduce((a, s) => a + s.uniqueBidders, 0) / snaps.length),
-          lotsWithBids: Math.round(snaps.reduce((a, s) => a + s.lotsWithBids, 0) / snaps.length),
-          lotsBidPct: Math.round(snaps.reduce((a, s) => a + s.lotsBidPct, 0) / snaps.length),
-          guaranteedPrice: Math.round(snaps.reduce((a, s) => a + s.guaranteedPrice, 0) / snaps.length),
-        };
+      if (!snaps.length) continue;
+
+      const benchmark: BenchmarkMetrics = {
+        earlyBids: avgNonZero(snaps.map(s => s.earlyBids)),
+        uniqueBidders: avgNonZero(snaps.map(s => s.uniqueBidders)),
+        lotsWithBids: avgNonZero(snaps.map(s => s.lotsWithBids)),
+        lotsBidPct: avgNonZero(snaps.map(s => s.lotsBidPct)),
+        guaranteedPrice: avgNonZero(snaps.map(s => s.guaranteedPrice)),
+      };
+
+      if (Object.values(benchmark).some(v => v !== undefined)) {
+        benchmarkByDX[dx] = benchmark;
       }
     }
 
-    // Chart data: merge sale + benchmark
+    // Chart data: direct mapping from the same benchmarkByDX object (no fallback-to-zero)
     const chartData = saleSnapshots.map(s => {
       const dxKey = Math.round(s.dx);
       const bench = benchmarkByDX[dxKey];
@@ -236,11 +255,11 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
         lotsWithBids: s.lotsWithBids,
         lotsBidPct: s.lotsBidPct,
         guaranteedPrice: s.guaranteedPrice,
-        avgBids: bench?.earlyBids ?? 0,
-        avgBidders: bench?.uniqueBidders ?? 0,
-        avgLots: bench?.lotsWithBids ?? 0,
-        avgPct: bench?.lotsBidPct ?? 0,
-        avgGuaranteed: bench?.guaranteedPrice ?? 0,
+        avgBids: bench?.earlyBids,
+        avgBidders: bench?.uniqueBidders,
+        avgLots: bench?.lotsWithBids,
+        avgPct: bench?.lotsBidPct,
+        avgGuaranteed: bench?.guaranteedPrice,
       };
     });
 
@@ -554,8 +573,8 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
                 <OverviewKPI label="סה״כ הצעות מוקדמות" value={latestSnap.earlyBids} comparison={bench?.earlyBids} />
                 <OverviewKPI label="משתמשים שונים עם הצעות" value={latestSnap.uniqueBidders} comparison={bench?.uniqueBidders} />
                 <OverviewKPI label="מס׳ פריטים עם הצעות" value={latestSnap.lotsWithBids} comparison={bench?.lotsWithBids} />
-                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${latestSnap.lotsBidPct}%`} comparison={bench ? `${bench.lotsBidPct}%` : undefined} />
-                <OverviewKPI label="מחיר מובטח" value={fmtPrice(latestSnap.guaranteedPrice)} comparison={bench ? fmtPrice(bench.guaranteedPrice) : undefined} />
+                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${latestSnap.lotsBidPct}%`} comparison={bench?.lotsBidPct !== undefined ? `${bench.lotsBidPct}%` : undefined} />
+                <OverviewKPI label="מחיר מובטח" value={fmtPrice(latestSnap.guaranteedPrice)} comparison={bench?.guaranteedPrice !== undefined ? fmtPrice(bench.guaranteedPrice) : undefined} />
                 <OverviewKPI label="מס׳ בידרים חדשים" value={latestSnap.newBidders} />
               </div>
             );
