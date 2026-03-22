@@ -35,33 +35,51 @@ export default function Customers() {
   const [brand, setBrand] = useState<Brand>("genazym");
   const [advancedFilters, setAdvancedFilters] = useState<CustomerFilters>(defaultCustomerFilters);
   const [customerMeta, setCustomerMeta] = useState<Record<string, any>>({});
+  const [metaLoading, setMetaLoading] = useState(true);
 
   // Fetch customer metadata (IDs, purchasing_power, continent) for advanced filtering
   useEffect(() => {
     const fetchMeta = async () => {
+      setMetaLoading(true);
       try {
         // First try with continent, fall back without it
         let { data, error } = await supabase
           .from("customers")
           .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
           .limit(50000);
+
         if (error) {
           // continent column may not exist
           const res = await supabase
             .from("customers")
             .select("email, genazym_id, zaidy_id, purchasing_power, country")
             .limit(50000);
-          data = res.data as any;
+          data = (res.data || []) as any;
         }
-        if (data) {
-          const map: Record<string, any> = {};
-          data.forEach((r: any) => { map[r.email] = r; });
-          setCustomerMeta(map);
-        }
+
+        const map: Record<string, any> = {};
+        (data || []).forEach((row: any) => {
+          const email = row?.email || "";
+          if (email) {
+            map[email] = {
+              email,
+              genazym_id: row?.genazym_id ?? null,
+              zaidy_id: row?.zaidy_id ?? null,
+              purchasing_power: row?.purchasing_power ?? "",
+              country: row?.country ?? "",
+              continent: row?.continent ?? "",
+            };
+          }
+        });
+        setCustomerMeta(map);
       } catch (e) {
         console.error("Failed to fetch customer metadata:", e);
+        setCustomerMeta({});
+      } finally {
+        setMetaLoading(false);
       }
     };
+
     fetchMeta();
   }, []);
 
