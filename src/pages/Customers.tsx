@@ -178,9 +178,7 @@ export default function Customers() {
         if (filters.genazymId && !String(c?.genazym_id ?? '').includes(filters.genazymId)) return false;
         if (filters.zaidyId && !String(c?.zaidy_id ?? '').includes(filters.zaidyId)) return false;
         if (filters.minSpend !== '' && (c?.totalSpend ?? 0) < Number(filters.minSpend)) return false;
-        if (filters.maxSpend !== '' && (c?.totalSpend ?? 0) > Number(filters.maxSpend)) return false;
         if (filters.minMaxBid !== '' && (c?.maxBid ?? 0) < Number(filters.minMaxBid)) return false;
-        if (filters.maxMaxBid !== '' && (c?.maxBid ?? 0) > Number(filters.maxMaxBid)) return false;
         if (searchQuery) {
           const q = searchQuery.toLowerCase();
           if (!(c?.name || '').toLowerCase().includes(q) &&
