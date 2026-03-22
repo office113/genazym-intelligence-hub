@@ -252,56 +252,59 @@ export default function Customers() {
 
               {showAdvanced && (
                 <div className="border border-border rounded-lg p-4 mb-4 bg-muted/30">
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מזהה גנזים</label>
-                      <input type="number" value={advancedFilters.genazymId} onChange={e => setAdvancedFilters(f => ({ ...f, genazymId: e.target.value }))}
-                        placeholder="Genazym ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, padding: '12px 0' }}>
+                    <select value={filters.segment} onChange={e => updateFilter('segment', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">סיווג לקוח — הכל</option>
+                      {[...segmentRules].sort((a, b) => b.min_spend - a.min_spend)
+                        .map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
+                    </select>
+                    <select value={filters.country} onChange={e => updateFilter('country', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">מדינה — הכל</option>
+                      {countryOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={filters.continent} onChange={e => updateFilter('continent', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">יבשת — הכל</option>
+                      {continentOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input type="number" placeholder="Genazym ID"
+                      value={filters.genazymId}
+                      onChange={e => updateFilter('genazymId', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <input type="number" placeholder="Zaidy ID"
+                      value={filters.zaidyId}
+                      onChange={e => updateFilter('zaidyId', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="number" placeholder="הוצאה מינ'" style={{ flex: 1 }}
+                        value={filters.minSpend}
+                        onChange={e => updateFilter('minSpend', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      <input type="number" placeholder="הוצאה מקס'" style={{ flex: 1 }}
+                        value={filters.maxSpend}
+                        onChange={e => updateFilter('maxSpend', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מזהה זיידי</label>
-                      <input type="number" value={advancedFilters.zaidyId} onChange={e => setAdvancedFilters(f => ({ ...f, zaidyId: e.target.value }))}
-                        placeholder="Zaidy ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="number" placeholder="ביד מינ'" style={{ flex: 1 }}
+                        value={filters.minMaxBid}
+                        onChange={e => updateFilter('minMaxBid', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      <input type="number" placeholder="ביד מקס'" style={{ flex: 1 }}
+                        value={filters.maxMaxBid}
+                        onChange={e => updateFilter('maxMaxBid', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מינימום סה״כ זכיות ($)</label>
-                      <input type="number" value={advancedFilters.minSpend} onChange={e => setAdvancedFilters(f => ({ ...f, minSpend: e.target.value }))}
-                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום סה״כ זכיות ($)</label>
-                      <input type="number" value={advancedFilters.maxSpend} onChange={e => setAdvancedFilters(f => ({ ...f, maxSpend: e.target.value }))}
-                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מינימום ביד מקסימלי ($)</label>
-                      <input type="number" value={advancedFilters.minMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, minMaxBid: e.target.value }))}
-                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום ביד מקסימלי ($)</label>
-                      <input type="number" value={advancedFilters.maxMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, maxMaxBid: e.target.value }))}
-                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">סיווג לקוח</label>
-                      <select value={advancedFilters.segment} onChange={e => setAdvancedFilters(f => ({ ...f, segment: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
-                        <option value="">הכל</option>
-                        {classOptions.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' })}
-                      className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
-                      נקה הכל
+                    <button onClick={() => setFilters({
+                      segment: '', country: '', continent: '',
+                      genazymId: '', zaidyId: '',
+                      minSpend: '', maxSpend: '',
+                      minMaxBid: '', maxMaxBid: '',
+                    })}
+                      className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
+                      נקה פילטרים
                     </button>
                   </div>
                 </div>
