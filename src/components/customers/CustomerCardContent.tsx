@@ -28,6 +28,7 @@ interface Props {
 }
 
 export default function CustomerCardContent({ email }: Props) {
+  const [view, setView] = useState<'card' | 'taste'>('card');
   const [brandTab, setBrandTab] = useState<BrandTab>("all");
   const [bookTab, setBookTab] = useState<BookTab>("won");
   const [auctionSubTab, setAuctionSubTab] = useState<"Genazym" | "Zaidy">("Genazym");
