@@ -123,7 +123,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       try {
         const { data, error } = await supabase
           .from("fact_customer_auction_activity")
-          .select("full_name, email, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
+          .select("full_name, email, genazym_id, zaidy_id, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
           .eq("auction_name", drillDown.saleId)
           .order("max_bid", { ascending: false });
 
