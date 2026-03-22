@@ -120,8 +120,6 @@ export default function Customers() {
   // Debug: verify data shape
   console.log('segmentRules:', segmentRules);
   console.log('first customer:', customers[0]);
-  console.log('countryOptions:', countryOptions);
-  console.log('continentOptions:', continentOptions);
 
   const countryOptions = useMemo(() => {
     const s = new Set<string>();
