@@ -28,7 +28,6 @@ export default function CustomerCard() {
   const { customerEmail, closeCustomerCard } = useCustomerCard();
   const [brandTab, setBrandTab] = useState<BrandTab>("all");
   const [bookTab, setBookTab] = useState<BookTab>("won");
-  const [auctionSubTab, setAuctionSubTab] = useState<"Genazym" | "Zaidy">("Genazym");
 
   // Data state
   const [header, setHeader] = useState<any>(null);
@@ -43,7 +42,6 @@ export default function CustomerCard() {
     if (!customerEmail) return;
     setBrandTab("all");
     setBookTab("won");
-    setAuctionSubTab("Genazym");
     fetchAll(customerEmail);
   }, [customerEmail]);
 
@@ -156,19 +154,10 @@ export default function CustomerCard() {
     return `${g?.auctions_involved_count || 0}g + ${z?.auctions_involved_count || 0}z`;
   }, [brandTab, brandKpis]);
 
-  // Filtered auction activity — further filtered by auctionSubTab
+  // Filtered auction activity
   const filteredActivity = useMemo(() => {
-    const byBrand = brandTab === "all" ? auctionActivity : auctionActivity.filter(a => a.brand === brandTab);
-    return byBrand.filter(a => a.brand === auctionSubTab);
-  }, [auctionActivity, brandTab, auctionSubTab]);
-
-  // Counts for sub-tab labels
-  const auctionSubCounts = useMemo(() => {
-    const pool = brandTab === "all" ? auctionActivity : auctionActivity.filter(a => a.brand === brandTab);
-    return {
-      Genazym: pool.filter(a => a.brand === "Genazym").length,
-      Zaidy: pool.filter(a => a.brand === "Zaidy").length,
-    };
+    if (brandTab === "all") return auctionActivity;
+    return auctionActivity.filter(a => a.brand === brandTab);
   }, [auctionActivity, brandTab]);
 
   // Chart data - last 6 auctions (only in "all" tab)
@@ -275,7 +264,7 @@ export default function CustomerCard() {
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {header?.genazym_id && (
                     <button
-                      onClick={() => { setBrandTab("Genazym"); setAuctionSubTab("Genazym"); }}
+                      onClick={() => setBrandTab("Genazym")}
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: PURPLE.fill, borderColor: PURPLE.border, color: PURPLE.text }}
                     >
@@ -284,7 +273,7 @@ export default function CustomerCard() {
                   )}
                   {header?.zaidy_id && (
                     <button
-                      onClick={() => { setBrandTab("Zaidy"); setAuctionSubTab("Zaidy"); }}
+                      onClick={() => setBrandTab("Zaidy")}
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: GREEN.fill, borderColor: GREEN.border, color: GREEN.text }}
                     >
@@ -327,7 +316,7 @@ export default function CustomerCard() {
               {(["all", "Genazym", "Zaidy"] as BrandTab[]).map(tab => (
                 <button
                   key={tab}
-                  onClick={() => { setBrandTab(tab); if (tab !== "all") setAuctionSubTab(tab); }}
+                  onClick={() => setBrandTab(tab)}
                   className="px-4 py-2 text-xs font-medium transition-colors"
                   style={{
                     borderBottom: brandTab === tab ? `2px solid ${PURPLE.main}` : "2px solid transparent",
@@ -422,24 +411,6 @@ export default function CustomerCard() {
             {/* ══════ AUCTION TABLE ══════ */}
             <div>
               <div className="text-xs font-medium mb-2" style={{ color: "#1a1a1a" }}>היסטוריית מכירות</div>
-              {/* Sub-tabs for brand filtering */}
-              {brandTab === "all" ? (
-                <div className="flex mb-2 rounded-lg overflow-hidden border" style={{ borderColor: "rgba(0,0,0,0.12)" }}>
-                  {(["Genazym", "Zaidy"] as const).map(sub => (
-                    <button
-                      key={sub}
-                      onClick={() => setAuctionSubTab(sub)}
-                      className="flex-1 py-1.5 text-xs font-medium transition-colors"
-                      style={{
-                        background: auctionSubTab === sub ? PURPLE.fill : "transparent",
-                        color: auctionSubTab === sub ? PURPLE.text : MUTED,
-                      }}
-                    >
-                      {sub} ({auctionSubCounts[sub]})
-                    </button>
-                  ))}
-                </div>
-              ) : null}
               <div className="rounded-lg overflow-hidden border" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
                 <table className="w-full text-xs">
                   <thead>
