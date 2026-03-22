@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
@@ -7,6 +8,15 @@ import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, Chevro
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 import { supabase } from "@/lib/supabaseClient";
+
+function getSegment(totalSpend: number, rules: { name: string; min_spend: number }[]) {
+  if (!rules || rules.length === 0) return 'רשום';
+  const sorted = [...rules].sort((a, b) => b.min_spend - a.min_spend);
+  for (const rule of sorted) {
+    if (totalSpend >= (rule.min_spend ?? 0)) return rule.name;
+  }
+  return sorted[sorted.length - 1]?.name ?? 'רשום';
+}
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
