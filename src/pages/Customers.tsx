@@ -3,7 +3,7 @@ import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import { usePastSales } from "@/hooks/usePastSales";
-import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap } from "lucide-react";
+import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 
