@@ -43,6 +43,7 @@ export default function CustomerCard() {
     if (!customerEmail) return;
     setBrandTab("all");
     setBookTab("won");
+    setAuctionSubTab("Genazym");
     fetchAll(customerEmail);
   }, [customerEmail]);
 
