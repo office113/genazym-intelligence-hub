@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import CustomerTasteProfile from "./CustomerTasteProfile";
 
-type BrandTab = "all" | "Genazym" | "Zaidy";
+type BrandTab = "all" | "Genazym" | "Zaidy" | "taste";
 type BookTab = "won" | "lost" | "active";
 
 const PURPLE = { fill: "#EEEDFE", border: "#AFA9EC", text: "#3C3489", dark: "#26215C", main: "#7F77DD" };
@@ -269,19 +270,25 @@ export default function CustomerCardContent({ email }: Props) {
 
       {/* ══════ BRAND TABS ══════ */}
       <div className="flex border-b" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
-        {(["all", "Genazym", "Zaidy"] as BrandTab[]).map(tab => (
+        {(["all", "Genazym", "Zaidy", "taste"] as BrandTab[]).map(tab => (
           <button key={tab}
-            onClick={() => { setBrandTab(tab); if (tab !== "all") setAuctionSubTab(tab); }}
+            onClick={() => { setBrandTab(tab); if (tab !== "all" && tab !== "taste") setAuctionSubTab(tab); }}
             className="px-4 py-2 text-xs font-medium transition-colors"
             style={{
               borderBottom: brandTab === tab ? `2px solid ${PURPLE.main}` : "2px solid transparent",
               color: brandTab === tab ? PURPLE.text : MUTED,
               background: brandTab === tab ? "white" : "transparent",
             }}>
-            {tab === "all" ? "שני מותגים" : tab}
+            {tab === "all" ? "שני מותגים" : tab === "taste" ? "העדפות וטעם" : tab}
           </button>
         ))}
       </div>
+
+      {/* ══════ TASTE PROFILE TAB ══════ */}
+      {brandTab === "taste" ? (
+        <CustomerTasteProfile email={email} />
+      ) : (
+      <>
 
       {/* ══════ KPI GRID ══════ */}
       <div className="grid grid-cols-3 gap-2">
@@ -451,6 +458,8 @@ export default function CustomerCardContent({ email }: Props) {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
