@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 
 // ─── Condition-based Rules Engine ───
 
-export type RuleParameter = "totalWins" | "winAuctionCount" | "maxBid";
+export type RuleParameter = "totalWins" | "winAuctionCount" | "maxBid" | "totalBids";
 export type RuleOperator = ">" | ">=" | "<" | "<=" | "=";
 export type ConditionConnector = "OR" | "AND";
 
@@ -17,13 +17,14 @@ export interface StatusRule {
   key: string;
   label: string;
   conditions: RuleCondition[];
-  connector: ConditionConnector; // how conditions within this status are combined
+  connector: ConditionConnector;
 }
 
 export const PARAMETER_LABELS: Record<RuleParameter, string> = {
   totalWins: "סך זכיות ($)",
   winAuctionCount: "מס׳ מכירות שזכה בהן",
   maxBid: "ביד מקסימלי ($)",
+  totalBids: "סה״כ בידים (כל הזמנים)",
 };
 
 export const OPERATOR_LABELS: Record<RuleOperator, string> = {
@@ -58,11 +59,11 @@ const DEFAULT_RULES: StatusRule[] = [
     ],
   },
   {
-    key: "beginner",
-    label: "מתחיל",
-    connector: "OR",
+    key: "engagedBeginner",
+    label: "מעורב מתחיל",
+    connector: "AND",
     conditions: [
-      { id: uid(), parameter: "winAuctionCount", operator: ">=", value: 1 },
+      { id: uid(), parameter: "totalBids", operator: ">=", value: 1 },
     ],
   },
 ];
@@ -95,9 +96,10 @@ export function useStatusThresholds() {
 // ─── Customer data shape expected by the engine ───
 
 export interface CustomerMetrics {
-  totalWins: number;       // lifetime sum of win values ($)
-  winAuctionCount: number; // unique auctions where customer won
-  maxBid: number;          // highest single bid ever placed
+  totalWins: number;
+  winAuctionCount: number;
+  maxBid: number;
+  totalBids: number;
 }
 
 // ─── Status output ───
@@ -108,13 +110,13 @@ export interface CustomerStatus {
   color: string;
 }
 
-const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+export const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   vip: { bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" },
   active: { bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" },
-  beginner: { bg: "hsl(220, 40%, 92%)", color: "hsl(220, 45%, 40%)" },
+  engagedBeginner: { bg: "hsl(220, 40%, 92%)", color: "hsl(220, 45%, 40%)" },
 };
 
-const NEW_STATUS: CustomerStatus = { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
+const REGISTERED_STATUS: CustomerStatus = { label: "רשום", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
 
 function evalCondition(c: RuleCondition, metrics: CustomerMetrics): boolean {
   const val = metrics[c.parameter];
@@ -128,7 +130,7 @@ function evalCondition(c: RuleCondition, metrics: CustomerMetrics): boolean {
   }
 }
 
-/** Check rules top-to-bottom, assign first match */
+/** Check rules top-to-bottom, assign first match. Fallback = "רשום" */
 export function getCustomerStatus(
   metrics: CustomerMetrics,
   rules: StatusRule[]
@@ -140,23 +142,9 @@ export function getCustomerStatus(
       ? results.some(Boolean)
       : results.every(Boolean);
     if (match) {
-      const style = STATUS_STYLES[rule.key] || STATUS_STYLES.beginner;
+      const style = STATUS_STYLES[rule.key] || STATUS_STYLES.engagedBeginner;
       return { label: rule.label, ...style };
     }
   }
-  return NEW_STATUS;
-}
-
-// ─── Legacy adapter (keeps old call-sites working during migration) ───
-
-/** @deprecated Use getCustomerStatus(metrics, rules) instead */
-export function getCustomerStatusLegacy(
-  totalSpend: number,
-  auctionCount: number,
-  rules: StatusRule[]
-): CustomerStatus {
-  return getCustomerStatus(
-    { totalWins: totalSpend, winAuctionCount: auctionCount, maxBid: 0 },
-    rules
-  );
+  return REGISTERED_STATUS;
 }

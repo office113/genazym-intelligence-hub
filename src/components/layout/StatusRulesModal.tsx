@@ -13,9 +13,9 @@ import {
   RuleCondition,
   RuleParameter,
   RuleOperator,
-  ConditionConnector,
   PARAMETER_LABELS,
   OPERATOR_LABELS,
+  STATUS_STYLES,
 } from "@/contexts/StatusThresholdsContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Crown, Zap, Sprout, Star, Plus, Trash2, ArrowDown } from "lucide-react";
+import { Crown, Zap, Sprout, UserCheck, Plus, Trash2, ArrowDown } from "lucide-react";
 
 interface StatusRulesModalProps {
   open: boolean;
@@ -35,10 +35,10 @@ interface StatusRulesModalProps {
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 
-const STATUS_META: Record<string, { icon: typeof Crown; color: string; bg: string }> = {
-  vip: { icon: Crown, color: "hsl(var(--gold-dark, 45 80% 40%))", bg: "hsl(var(--accent) / 0.08)" },
-  active: { icon: Zap, color: "hsl(var(--primary))", bg: "hsl(var(--primary) / 0.06)" },
-  beginner: { icon: Sprout, color: "hsl(220, 45%, 40%)", bg: "hsl(220, 40%, 95%)" },
+const STATUS_META: Record<string, { icon: typeof Crown; color: string; bg: string; journey: string }> = {
+  vip: { icon: Crown, color: "hsl(var(--gold-dark, 45 80% 40%))", bg: "hsl(var(--accent) / 0.08)", journey: "שלב 4 — לקוח עילית" },
+  active: { icon: Zap, color: "hsl(var(--primary))", bg: "hsl(var(--primary) / 0.06)", journey: "שלב 3 — לקוח פעיל וזוכה" },
+  engagedBeginner: { icon: Sprout, color: "hsl(220, 45%, 40%)", bg: "hsl(220, 40%, 95%)", journey: "שלב 2 — מציע בידים, טרם זכה" },
 };
 
 export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModalProps) {
@@ -93,15 +93,15 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col" dir="rtl">
         <DialogHeader>
-          <DialogTitle className="text-lg">מנוע כללי סיווג לקוחות</DialogTitle>
+          <DialogTitle className="text-lg">מנוע כללי סיווג — מסע הלקוח</DialogTitle>
           <DialogDescription>
-            הגדר תנאים דינמיים לכל דרג. החישוב מבוסס על פעילות מצטברת בשני המותגים (Genazym + Zaidy). הבדיקה מתבצעת מלמעלה למטה.
+            הגדר תנאים דינמיים לכל שלב במסע הלקוח. החישוב מבוסס על פעילות מצטברת בשני המותגים. הבדיקה מלמעלה למטה.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 overflow-y-auto flex-1 pr-1">
           {draft.map((rule, ruleIdx) => {
-            const meta = STATUS_META[rule.key] || STATUS_META.beginner;
+            const meta = STATUS_META[rule.key] || STATUS_META.engagedBeginner;
             const Icon = meta.icon;
 
             return (
@@ -116,13 +116,13 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                     <span className="font-semibold text-sm" style={{ color: meta.color }}>
                       {rule.label}
                     </span>
+                    <span className="text-[10px] text-muted-foreground mr-auto">{meta.journey}</span>
                   </div>
 
                   {/* Conditions */}
                   <div className="space-y-2">
                     {rule.conditions.map((cond, condIdx) => (
                       <div key={cond.id}>
-                        {/* Connector toggle between conditions */}
                         {condIdx > 0 && (
                           <div className="flex justify-center py-1">
                             <button
@@ -139,14 +139,12 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                           </div>
                         )}
 
-                        {/* Condition row */}
                         <div className="flex items-center gap-2 bg-background/60 rounded-lg border p-2" style={{ borderColor: "hsl(var(--border))" }}>
-                          {/* Parameter */}
                           <Select
                             value={cond.parameter}
                             onValueChange={(v) => updateCondition(ruleIdx, cond.id, { parameter: v as RuleParameter })}
                           >
-                            <SelectTrigger className="h-8 text-xs w-[160px] flex-shrink-0">
+                            <SelectTrigger className="h-8 text-xs w-[170px] flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -156,7 +154,6 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                             </SelectContent>
                           </Select>
 
-                          {/* Operator */}
                           <Select
                             value={cond.operator}
                             onValueChange={(v) => updateCondition(ruleIdx, cond.id, { operator: v as RuleOperator })}
@@ -171,7 +168,6 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                             </SelectContent>
                           </Select>
 
-                          {/* Value */}
                           <Input
                             type="number"
                             value={cond.value}
@@ -179,7 +175,6 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                             className="h-8 text-xs flex-1"
                           />
 
-                          {/* Delete */}
                           <button
                             onClick={() => removeCondition(ruleIdx, cond.id)}
                             className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
@@ -191,7 +186,6 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                     ))}
                   </div>
 
-                  {/* Add condition */}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -204,7 +198,6 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
                   </Button>
                 </div>
 
-                {/* Arrow between tiers */}
                 {ruleIdx < draft.length - 1 && (
                   <div className="flex justify-center py-1">
                     <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
@@ -214,7 +207,7 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
             );
           })}
 
-          {/* New — static */}
+          {/* Registered — static fallback */}
           <div className="flex justify-center py-1">
             <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
           </div>
@@ -223,13 +216,14 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
             style={{ background: "hsl(200, 40%, 95%)", borderColor: "hsl(var(--border))" }}
           >
             <div className="flex items-center gap-2">
-              <Star className="w-5 h-5" style={{ color: "hsl(200, 45%, 35%)" }} />
+              <UserCheck className="w-5 h-5" style={{ color: "hsl(200, 45%, 35%)" }} />
               <span className="font-semibold text-sm" style={{ color: "hsl(200, 45%, 35%)" }}>
-                חדש
+                רשום
               </span>
+              <span className="text-[10px] text-muted-foreground mr-auto">שלב 1 — נרשם בלבד, ללא בידים</span>
             </div>
             <div className="text-xs rounded-lg border p-2 bg-background/60" style={{ borderColor: "hsl(var(--border))" }}>
-              ברירת מחדל — לקוחות שלא עמדו באף תנאי מהדרגות שלמעלה
+              ברירת מחדל — לקוחות שלא עמדו באף תנאי מהשלבים שלמעלה
             </div>
           </div>
         </div>
