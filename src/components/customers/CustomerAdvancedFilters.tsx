@@ -46,19 +46,27 @@ export default function CustomerAdvancedFilters({ filters, onApply, onClear }: P
 
   useEffect(() => {
     const fetchOptions = async () => {
-      const [countriesRes, classRes, continentRes] = await Promise.all([
-        supabase.from("customers").select("country").not("country", "is", null).limit(5000),
-        supabase.from("customers").select("purchasing_power").not("purchasing_power", "is", null).limit(5000),
-        supabase.from("customers").select("continent").not("continent", "is", null).limit(5000),
-      ]);
+      try {
+        const [countriesRes, classRes] = await Promise.all([
+          supabase.from("customers").select("country").not("country", "is", null).limit(5000),
+          supabase.from("customers").select("purchasing_power").not("purchasing_power", "is", null).limit(5000),
+        ]);
 
-      const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r.country).filter(Boolean))].sort();
-      const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r.purchasing_power).filter(Boolean))].sort();
-      const uniqueContinents = [...new Set((continentRes.data || []).map((r: any) => r.continent).filter(Boolean))].sort();
+        const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r.country).filter(Boolean))].sort();
+        const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r.purchasing_power).filter(Boolean))].sort();
 
-      setCountryOptions(uniqueCountries as string[]);
-      setClassificationOptions(uniqueClass as string[]);
-      setContinentOptions(uniqueContinents as string[]);
+        setCountryOptions(uniqueCountries as string[]);
+        setClassificationOptions(uniqueClass as string[]);
+
+        // continent may not exist — fetch separately to avoid crashing
+        const continentRes = await supabase.from("customers").select("continent").not("continent", "is", null).limit(5000);
+        if (continentRes.data) {
+          const uniqueContinents = [...new Set(continentRes.data.map((r: any) => r.continent).filter(Boolean))].sort();
+          setContinentOptions(uniqueContinents as string[]);
+        }
+      } catch (e) {
+        console.error("Failed to fetch filter options:", e);
+      }
     };
     fetchOptions();
   }, []);
