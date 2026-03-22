@@ -31,7 +31,7 @@ export default function CurrentSale() {
   const [missingPage, setMissingPage] = useState(0);
   const [missingTotal, setMissingTotal] = useState(0);
   const [missingSearch, setMissingSearch] = useState("");
-  const [missingBrand, setMissingBrand] = useState<"Genazym" | "Zaidy">("Genazym");
+  
 
   useEffect(() => {
     if (activeTab !== "missing") return;
@@ -47,7 +47,7 @@ export default function CurrentSale() {
         const { data, error: err, count } = await supabase
           .from("view_missing_customers")
           .select("*", { count: "exact" })
-          .eq("brand", missingBrand)
+          .eq("brand", brand === "genazym" ? "Genazym" : "Zaidy")
           .order("total_spend_all_time", { ascending: false })
           .range(from, to);
 
@@ -61,7 +61,7 @@ export default function CurrentSale() {
       }
     };
     fetchMissing();
-  }, [activeTab, missingPage, missingBrand]);
+  }, [activeTab, missingPage, brand]);
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
@@ -104,12 +104,6 @@ export default function CurrentSale() {
 
         {activeTab === "missing" && (
           <>
-            {/* Brand sub-tabs for missing */}
-            <div className="flex items-center gap-1 mb-6 bg-card border border-border rounded-lg p-0.5 w-fit shadow-sm">
-              <button onClick={() => { setMissingBrand("Genazym"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Genazym" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>גנזים</button>
-              <button onClick={() => { setMissingBrand("Zaidy"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Zaidy" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>זיידי</button>
-            </div>
-
             {missingLoading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
             {missingError && <div className="text-center py-20 text-destructive text-sm">שגיאה: {missingError}</div>}
             {!missingLoading && !missingError && (
