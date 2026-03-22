@@ -30,6 +30,7 @@ export default function CurrentSale() {
   const [missingError, setMissingError] = useState<string | null>(null);
   const [missingPage, setMissingPage] = useState(0);
   const [missingTotal, setMissingTotal] = useState(0);
+  const [missingSearch, setMissingSearch] = useState("");
 
   useEffect(() => {
     if (activeTab !== "missing") return;
@@ -63,10 +64,17 @@ export default function CurrentSale() {
 
   const totalPages = Math.ceil(missingTotal / MISSING_PAGE_SIZE);
 
-  // KPIs for missing tab
-  const missingKpis = useMemo(() => ({
-    count: missingTotal,
-  }), [missingTotal]);
+  // Filter missing data by search
+  const filteredMissing = useMemo(() => {
+    if (!missingSearch.trim()) return missingData;
+    const q = missingSearch.trim().toLowerCase();
+    return missingData.filter(c => {
+      const name = (c.full_name || "").toLowerCase();
+      const email = (c.email || "").toLowerCase();
+      const id = (c.genazym_id || c.zaidy_id || "").toString().toLowerCase();
+      return name.includes(q) || email.includes(q) || id.includes(q);
+    });
+  }, [missingData, missingSearch]);
 
   return (
     <div className="min-h-screen">
@@ -97,33 +105,45 @@ export default function CurrentSale() {
             {!missingLoading && !missingError && (
               <>
                 <div className="grid grid-cols-3 gap-4 mb-8">
-                  <KPICard label="לקוחות חסרים" value={missingKpis.count.toString()} />
+                  <KPICard label="לקוחות חסרים" value={missingTotal.toString()} />
                 </div>
                 <div className="chart-card">
-                  <div className="chart-title">לקוחות חסרים — ממוינים לפי סה״כ הוצאות</div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="chart-title mb-0">לקוחות חסרים — ממוינים לפי סה״כ הוצאות</div>
+                    <input
+                      type="text"
+                      placeholder="חיפוש לפי שם, מזהה או אימייל..."
+                      value={missingSearch}
+                      onChange={e => setMissingSearch(e.target.value)}
+                      className="px-3 py-1.5 text-sm rounded-md border border-border bg-card text-foreground placeholder:text-muted-foreground w-64 focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
                   <table className="data-table">
                     <thead>
                       <tr>
                         <th>מזהה</th>
                         <th>שם</th>
+                        <th>חסר מ-</th>
                         <th>מכירה אחרונה</th>
                         <th>רכישות במכירה אחרונה</th>
-                        <th>מס' מכירות</th>
+                        <th>סה״כ הוצאות ($)</th>
+                        <th>מס' מכירות (6 אחרונות)</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {missingData.map((c, i) => (
-                        <tr key={c.customer_email || i} onClick={() => openCustomer({ name: c.customer_name, email: c.customer_email, totalSpend: c.total_spend_all_time, displayId: c.display_id, lastSeen: c.last_seen_in })}>
-                          <td className="text-center text-xs text-muted-foreground">{c.display_id || "—"}</td>
-                          <td className="font-semibold">{c.customer_name || c.customer_email || "—"}</td>
+                      {filteredMissing.map((c, i) => (
+                        <tr key={c.email || i} onClick={() => openCustomer({ name: c.full_name, email: c.email, totalSpend: c.total_spend_all_time, displayId: c.genazym_id || c.zaidy_id })}>
+                          <td className="text-center text-xs text-muted-foreground">{c.genazym_id || c.zaidy_id || "—"}</td>
+                          <td className="font-semibold">{c.full_name || c.email || "—"}</td>
+                          <td>{c.current_auction || "—"}</td>
                           <td>{c.last_seen_in || "—"}</td>
-                          <td>${(c.last_auction_spend ?? 0).toLocaleString()}</td>
-                          <td>{c.total_auctions_participated ?? "—"}</td>
+                          <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
+                          <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
+                          <td>{c.active_auctions_last_6 ?? "—"}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  {/* Pagination */}
                   {totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 mt-4 pb-2">
                       <button disabled={missingPage === 0} onClick={() => setMissingPage(p => p - 1)} className="px-3 py-1 text-sm rounded-md border border-border bg-card disabled:opacity-40 hover:bg-muted transition-colors">הקודם</button>
