@@ -32,7 +32,7 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' });
+  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '' });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
@@ -57,6 +57,7 @@ export default function Customers() {
       const totalWins = rows.reduce((s, r) => s + (r.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
       const totalSpend = rows.reduce((s, r) => r.was_winner ? s + (r.max_bid || 0) : s, 0);
+      const maxBid = Math.max(...rows.map(r => r.max_bid || 0), 0);
       const auctionsInvolved = rows.length;
       const lastActiveDate = rows.reduce((latest, r) => {
         const d = auctionDateMap[r.auction_name] || r.auction_date || "";
@@ -77,6 +78,7 @@ export default function Customers() {
         totalBids,
         totalWins,
         totalSpend,
+        maxBid,
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
@@ -147,6 +149,14 @@ export default function Customers() {
       if (advancedFilters?.maxSpend) {
         const max = Number(advancedFilters.maxSpend);
         if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
+      }
+      if (advancedFilters?.minMaxBid) {
+        const min = Number(advancedFilters.minMaxBid);
+        if (!isNaN(min)) result = result.filter(c => (c?.maxBid || 0) >= min);
+      }
+      if (advancedFilters?.maxMaxBid) {
+        const max = Number(advancedFilters.maxMaxBid);
+        if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
       }
       return result;
     } catch (error) {
@@ -238,8 +248,20 @@ export default function Customers() {
                         placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
                   </div>
+                  <div className="grid grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מינימום ביד מקסימלי ($)</label>
+                      <input type="number" value={advancedFilters.minMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, minMaxBid: e.target.value }))}
+                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום ביד מקסימלי ($)</label>
+                      <input type="number" value={advancedFilters.maxMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, maxMaxBid: e.target.value }))}
+                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                  </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' })}
+                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '' })}
                       className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
                       נקה הכל
                     </button>
