@@ -4,6 +4,7 @@ import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
 import OverviewTab, { type DisplayMode } from "@/components/current-sale/OverviewTab";
 import { usePastSales } from "@/hooks/usePastSales";
 import { supabase } from "@/lib/supabaseClient";
+import CustomerLink from "@/components/customers/CustomerLink";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
