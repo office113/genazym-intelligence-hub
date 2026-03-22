@@ -380,22 +380,18 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     </thead>
                     <tbody>
                       {filteredBidders.map((b, i) => {
-                        // DX > 0 means auction hasn't happened yet — only show "מוקדם" engagement
+                        // Use events-based metrics when available, fallback to fact table
+                        const em = eventsMetrics[b.email];
                         const engType = !auctionInPast && drillDown && drillDown.dx > 0
                           ? "מוקדם"
                           : (b.was_early && b.was_live ? "גם וגם" : b.was_early ? "מוקדם" : "לייב");
-                        // If auction hasn't happened, wins don't exist yet
                         const showWins = auctionInPast && drillDown?.dx === 0;
-                        // Bid count: use early_bids_count when DX > 0 (pre-auction)
-                        const isPreAuction = drillDown && drillDown.dx > 0;
-                        const bidCount = isPreAuction ? (b.early_bids_count || 0) : (b.total_bids || 0);
-                        // Lots cannot exceed bids — cap dynamically
-                        const lotsCount = Math.min(b.lots_involved || 0, bidCount);
-                        // Max bid: when pre-auction, only early bids exist — use max_bid but cap context
-                        // (max_bid from DB reflects final state; for pre-auction, approximate with early context)
-                        const maxBidValue = isPreAuction
-                          ? (bidCount > 0 ? (b.max_bid || 0) : 0)
-                          : (b.max_bid || 0);
+                        
+                        // Dynamic metrics from events table (accurate per DX)
+                        const bidCount = em ? em.bidCount : (drillDown && drillDown.dx > 0 ? (b.early_bids_count || 0) : (b.total_bids || 0));
+                        const lotsCount = em ? em.lotsCount : Math.min(b.lots_involved || 0, bidCount);
+                        const maxBidValue = em ? em.maxBid : (drillDown && drillDown.dx > 0 ? (bidCount > 0 ? (b.max_bid || 0) : 0) : (b.max_bid || 0));
+                        
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
                             <td className="font-semibold">{b.full_name}</td>
