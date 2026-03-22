@@ -203,7 +203,11 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
 
-    console.log(`Calculating benchmark for ${selectedSale.brand} using sales: [${sameBrandPast.map(s => s.name).join(", ")}]`);
+    console.log(`[Mode2] Brand: ${selectedSale.brand}, excludes: ${selectedSale.id}`);
+    console.log(`[Mode2] Past sales used (${sameBrandPast.length}):`, sameBrandPast.map(s => {
+      const snap = getSnapshot(s.id, 0);
+      return `${s.name} (${s.id}) → D-0 earlyBids=${snap?.earlyBids ?? 'MISSING'}`;
+    }));
 
     const benchmarkByDX: Record<number, { earlyBids: number; uniqueBidders: number; lotsWithBids: number; lotsBidPct: number; guaranteedPrice: number }> = {};
     for (let dx = 30; dx >= 0; dx--) {
