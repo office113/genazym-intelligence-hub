@@ -87,32 +87,38 @@ export default function Customers() {
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
-    if (!rawActivityData.length) return [];
+    if (!Array.isArray(rawActivityData) || rawActivityData.length === 0) return [];
 
     const byEmail: Record<string, any[]> = {};
-    rawActivityData.forEach((r: any) => {
-      if (!byEmail[r.email]) byEmail[r.email] = [];
-      byEmail[r.email].push(r);
+    rawActivityData.forEach((row: any) => {
+      const email = row?.email || "";
+      if (!email) return;
+      if (!byEmail[email]) byEmail[email] = [];
+      byEmail[email].push(row);
     });
 
     // Sort auctions by date for "last active" lookup
     const auctionDateMap: Record<string, string> = {};
-    rawAuctionsData.forEach((a: any) => {
-      auctionDateMap[a.auction_name] = a.auction_date;
+    (rawAuctionsData || []).forEach((a: any) => {
+      const auctionName = a?.auction_name || "";
+      if (auctionName) {
+        auctionDateMap[auctionName] = a?.auction_date || "";
+      }
     });
 
     return Object.entries(byEmail).map(([email, rows]) => {
-      const totalBids = rows.reduce((s, r) => s + (r.total_bids || 0), 0);
-      const totalWins = rows.reduce((s, r) => s + (r.total_wins || 0), 0);
+      const head = rows?.[0] ?? {};
+      const totalBids = (rows || []).reduce((s, r) => s + (r?.total_bids || 0), 0);
+      const totalWins = (rows || []).reduce((s, r) => s + (r?.total_wins || 0), 0);
       // totalHistoricalWins: sum max_bid where was_winner is true
-      const totalSpend = rows.reduce((s, r) => r.was_winner ? s + (r.max_bid || 0) : s, 0);
-      const auctionsInvolved = rows.length;
-      const lastActiveDate = rows.reduce((latest, r) => {
-        const d = auctionDateMap[r.auction_name] || r.auction_date || "";
+      const totalSpend = (rows || []).reduce((s, r) => r?.was_winner ? s + (r?.max_bid || 0) : s, 0);
+      const auctionsInvolved = rows?.length || 0;
+      const lastActiveDate = (rows || []).reduce((latest, r) => {
+        const d = auctionDateMap[r?.auction_name || ""] || r?.auction_date || "";
         return d > latest ? d : latest;
       }, "");
-      const name = rows[0].full_name || email;
-      const country = rows[0].country || "—";
+      const name = head?.full_name || email;
+      const country = head?.country || "—";
 
       // Segment by spend
       let segment = "רגיל";
