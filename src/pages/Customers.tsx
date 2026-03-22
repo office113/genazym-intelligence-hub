@@ -117,6 +117,12 @@ export default function Customers() {
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData, segmentRules]);
 
+  // Debug: verify data shape
+  console.log('segmentRules:', segmentRules);
+  console.log('first customer:', customers[0]);
+  console.log('countryOptions:', countryOptions);
+  console.log('continentOptions:', continentOptions);
+
   const countryOptions = useMemo(() => {
     const s = new Set<string>();
     for (const c of customers) { if (c.country && c.country !== "—") s.add(c.country); }
