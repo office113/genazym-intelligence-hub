@@ -82,6 +82,7 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
+        classification: rows[0]?.purchasing_power || '',
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
