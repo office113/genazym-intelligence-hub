@@ -121,13 +121,13 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       setLoading(true);
       setBidders([]);
       try {
-        // Fetch from pre-joined view
+        // Fetch sparse cumulative data: get rows at or after the selected DX
         const { data, error } = await supabase
           .from("view_drilldown_with_names")
           .select("*")
           .eq("auction_name", drillDown.saleId)
-          .eq("days_before", drillDown.dx)
-          .order("max_bid_cumulative", { ascending: false });
+          .gte("days_before", drillDown.dx)
+          .order("days_before", { ascending: true });
 
         if (error) {
           console.error("[DrillDown] fetch error:", error);
@@ -141,11 +141,25 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           return;
         }
 
-        // Map view columns directly
-        const merged = data.map((row: any) => ({
+        // Group by customer_email, keep only the first row (closest to selected DX)
+        const seen = new Set<string>();
+        const deduped: any[] = [];
+        for (const row of data) {
+          const key = (row.customer_email || "").trim().toLowerCase();
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          deduped.push(row);
+        }
+
+        // Map view columns to expected format
+        const merged = deduped.map((row: any) => ({
           ...row,
           full_name: row.customer_name || row.customer_email || "—",
-          email: row.customer_email || row.email || "",
+          email: row.customer_email || "",
+          phone: row.customer_phone || "",
+          total_bids_cumulative: row.total_bids_cum || 0,
+          total_lots_cumulative: row.total_lots_cum || 0,
+          max_bid_cumulative: row.max_bid_cum || 0,
         }));
 
         setBidders(merged);
