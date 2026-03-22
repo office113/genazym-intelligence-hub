@@ -97,29 +97,37 @@ export default function Customers() {
       }, "");
       const name = rows[0].full_name || email;
       const country = rows[0].country || "—";
-
-      // Segment by spend
-      let segment = "רגיל";
-      if (totalSpend >= 100000) segment = "VIP";
-      else if (totalSpend >= 20000) segment = "פעיל";
+      const continent = rows[0].continent || "";
 
       return {
         email,
         name,
         country,
+        continent,
         totalBids,
         totalWins,
         totalSpend,
         maxBid,
         auctionsInvolved,
         lastActive: lastActiveDate,
-        segment,
-        classification: powerMap[email] || '',
+        segment: getSegment(totalSpend, segmentRules),
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData, powerMap]);
+  }, [rawActivityData, rawAuctionsData, segmentRules]);
+
+  const countryOptions = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of customers) { if (c.country && c.country !== "—") s.add(c.country); }
+    return Array.from(s).sort();
+  }, [customers]);
+
+  const continentOptions = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of customers) { if (c.continent) s.add(c.continent); }
+    return Array.from(s).sort();
+  }, [customers]);
 
 
   // Segment data for chart
