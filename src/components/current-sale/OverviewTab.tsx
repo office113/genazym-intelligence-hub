@@ -121,6 +121,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       setLoading(true);
       setBidders([]);
       try {
+        // 1. Fetch drill-down metrics
         const { data, error } = await supabase
           .from("fact_customer_drilldown")
           .select("*")
@@ -134,7 +135,46 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           return;
         }
 
-        setBidders(data || []);
+        if (!data?.length) {
+          setBidders([]);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fetch customer names from customers table using genazym_ids
+        const ids = [...new Set(data.map((r: any) => r.genazym_id).filter(Boolean))];
+        let customerMap: Record<string, any> = {};
+
+        if (ids.length) {
+          // Batch in chunks of 100
+          for (let i = 0; i < ids.length; i += 100) {
+            const chunk = ids.slice(i, i + 100);
+            const { data: custData } = await supabase
+              .from("customers")
+              .select("genazym_id, zaidy_id, full_name, email, phone, country")
+              .in("genazym_id", chunk);
+            if (custData) {
+              for (const c of custData) {
+                if (c.genazym_id) customerMap[c.genazym_id] = c;
+              }
+            }
+          }
+        }
+
+        // 3. Merge customer info into drill-down rows
+        const merged = data.map((row: any) => {
+          const cust = customerMap[row.genazym_id] || {};
+          return {
+            ...row,
+            full_name: cust.full_name || row.genazym_id || "—",
+            email: cust.email || "",
+            zaidy_id: cust.zaidy_id || "",
+            phone: cust.phone || "",
+            country: cust.country || "",
+          };
+        });
+
+        setBidders(merged);
       } catch (err) {
         console.error("[DrillDown] fetch error:", err);
       }
