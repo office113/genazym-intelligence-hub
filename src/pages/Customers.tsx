@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
@@ -7,6 +8,15 @@ import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, Chevro
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 import { supabase } from "@/lib/supabaseClient";
+
+function getSegment(totalSpend: number, rules: { name: string; min_spend: number }[]) {
+  if (!rules || rules.length === 0) return 'רשום';
+  const sorted = [...rules].sort((a, b) => b.min_spend - a.min_spend);
+  for (const rule of sorted) {
+    if (totalSpend >= (rule.min_spend ?? 0)) return rule.name;
+  }
+  return sorted[sorted.length - 1]?.name ?? 'רשום';
+}
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
@@ -33,38 +43,30 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
+  const [filters, setFilters] = useState({
+    segment: '', country: '', continent: '',
+    genazymId: '', zaidyId: '',
+    minSpend: '', maxSpend: '',
+    minMaxBid: '', maxMaxBid: '',
+  });
+  const updateFilter = (key: string, value: string) =>
+    setFilters(prev => ({ ...prev, [key]: value }));
 
-  const [powerMap, setPowerMap] = useState<Record<string, string>>({});
-  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const { data: segmentRules = [] } = useQuery({
+    queryKey: ['customer_segments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_segments')
+        .select('name, min_spend')
+        .order('min_spend', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: Infinity,
+  });
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchClassifications = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('customers')
-          .select('email, purchasing_power')
-          .not('purchasing_power', 'is', null);
-        if (data && !error && isMounted) {
-          const map: Record<string, string> = {};
-          const optionsSet = new Set<string>();
-          data.forEach((row: any) => {
-            if (row?.email) map[row.email] = row.purchasing_power;
-            if (row?.purchasing_power) optionsSet.add(row.purchasing_power);
-          });
-          setPowerMap(map);
-          setClassOptions(Array.from(optionsSet).sort());
-        }
-      } catch (err) {
-        console.error('Failed to fetch classifications', err);
-      }
-    };
-    fetchClassifications();
-    return () => { isMounted = false; };
-  }, []);
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
@@ -95,29 +97,37 @@ export default function Customers() {
       }, "");
       const name = rows[0].full_name || email;
       const country = rows[0].country || "—";
-
-      // Segment by spend
-      let segment = "רגיל";
-      if (totalSpend >= 100000) segment = "VIP";
-      else if (totalSpend >= 20000) segment = "פעיל";
+      const continent = rows[0].continent || "";
 
       return {
         email,
         name,
         country,
+        continent,
         totalBids,
         totalWins,
         totalSpend,
         maxBid,
         auctionsInvolved,
         lastActive: lastActiveDate,
-        segment,
-        classification: powerMap[email] || '',
+        segment: getSegment(totalSpend, segmentRules),
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData, powerMap]);
+  }, [rawActivityData, rawAuctionsData, segmentRules]);
+
+  const countryOptions = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of customers) { if (c.country && c.country !== "—") s.add(c.country); }
+    return Array.from(s).sort();
+  }, [customers]);
+
+  const continentOptions = useMemo(() => {
+    const s = new Set<string>();
+    for (const c of customers) { if (c.continent) s.add(c.continent); }
+    return Array.from(s).sort();
+  }, [customers]);
 
 
   // Segment data for chart
@@ -157,48 +167,29 @@ export default function Customers() {
 
   const filtered = useMemo(() => {
     try {
-      let result = customers || [];
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        result = result.filter(c =>
-          (c?.name || '').toLowerCase().includes(q) ||
-          (c?.email || '').toLowerCase().includes(q) ||
-          (c?.country || '').toLowerCase().includes(q)
-        );
-      }
-      if (advancedFilters?.genazymId) {
-        const id = Number(advancedFilters.genazymId);
-        if (!isNaN(id)) result = result.filter(c => c?.genazym_id === id);
-      }
-      if (advancedFilters?.zaidyId) {
-        const id = Number(advancedFilters.zaidyId);
-        if (!isNaN(id)) result = result.filter(c => c?.zaidy_id === id);
-      }
-      if (advancedFilters?.minSpend) {
-        const min = Number(advancedFilters.minSpend);
-        if (!isNaN(min)) result = result.filter(c => (c?.totalSpend || 0) >= min);
-      }
-      if (advancedFilters?.maxSpend) {
-        const max = Number(advancedFilters.maxSpend);
-        if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
-      }
-      if (advancedFilters?.minMaxBid) {
-        const min = Number(advancedFilters.minMaxBid);
-        if (!isNaN(min)) result = result.filter(c => (c?.maxBid || 0) >= min);
-      }
-      if (advancedFilters?.maxMaxBid) {
-        const max = Number(advancedFilters.maxMaxBid);
-        if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
-      }
-      if (advancedFilters?.segment) {
-        result = result.filter(c => powerMap[c?.email] === advancedFilters.segment);
-      }
-      return result;
-    } catch (error) {
-      console.error('Filtering error:', error);
-      return customers || [];
+      return customers.filter(c => {
+        if (filters.segment && c?.segment !== filters.segment) return false;
+        if (filters.country && c?.country !== filters.country) return false;
+        if (filters.continent && c?.continent !== filters.continent) return false;
+        if (filters.genazymId && !String(c?.genazym_id ?? '').includes(filters.genazymId)) return false;
+        if (filters.zaidyId && !String(c?.zaidy_id ?? '').includes(filters.zaidyId)) return false;
+        if (filters.minSpend !== '' && (c?.totalSpend ?? 0) < Number(filters.minSpend)) return false;
+        if (filters.maxSpend !== '' && (c?.totalSpend ?? 0) > Number(filters.maxSpend)) return false;
+        if (filters.minMaxBid !== '' && (c?.maxBid ?? 0) < Number(filters.minMaxBid)) return false;
+        if (filters.maxMaxBid !== '' && (c?.maxBid ?? 0) > Number(filters.maxMaxBid)) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          if (!(c?.name || '').toLowerCase().includes(q) &&
+              !(c?.email || '').toLowerCase().includes(q) &&
+              !(c?.country || '').toLowerCase().includes(q)) return false;
+        }
+        return true;
+      });
+    } catch (e) {
+      console.error('filter error:', e);
+      return customers;
     }
-  }, [customers, searchQuery, advancedFilters, powerMap]);
+  }, [customers, searchQuery, filters]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
@@ -261,56 +252,59 @@ export default function Customers() {
 
               {showAdvanced && (
                 <div className="border border-border rounded-lg p-4 mb-4 bg-muted/30">
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מזהה גנזים</label>
-                      <input type="number" value={advancedFilters.genazymId} onChange={e => setAdvancedFilters(f => ({ ...f, genazymId: e.target.value }))}
-                        placeholder="Genazym ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, padding: '12px 0' }}>
+                    <select value={filters.segment} onChange={e => updateFilter('segment', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">סיווג לקוח — הכל</option>
+                      {[...segmentRules].sort((a, b) => b.min_spend - a.min_spend)
+                        .map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
+                    </select>
+                    <select value={filters.country} onChange={e => updateFilter('country', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">מדינה — הכל</option>
+                      {countryOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={filters.continent} onChange={e => updateFilter('continent', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
+                      <option value="">יבשת — הכל</option>
+                      {continentOptions.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input type="number" placeholder="Genazym ID"
+                      value={filters.genazymId}
+                      onChange={e => updateFilter('genazymId', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <input type="number" placeholder="Zaidy ID"
+                      value={filters.zaidyId}
+                      onChange={e => updateFilter('zaidyId', e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="number" placeholder="הוצאה מינ'" style={{ flex: 1 }}
+                        value={filters.minSpend}
+                        onChange={e => updateFilter('minSpend', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      <input type="number" placeholder="הוצאה מקס'" style={{ flex: 1 }}
+                        value={filters.maxSpend}
+                        onChange={e => updateFilter('maxSpend', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מזהה זיידי</label>
-                      <input type="number" value={advancedFilters.zaidyId} onChange={e => setAdvancedFilters(f => ({ ...f, zaidyId: e.target.value }))}
-                        placeholder="Zaidy ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input type="number" placeholder="ביד מינ'" style={{ flex: 1 }}
+                        value={filters.minMaxBid}
+                        onChange={e => updateFilter('minMaxBid', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                      <input type="number" placeholder="ביד מקס'" style={{ flex: 1 }}
+                        value={filters.maxMaxBid}
+                        onChange={e => updateFilter('maxMaxBid', e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מינימום סה״כ זכיות ($)</label>
-                      <input type="number" value={advancedFilters.minSpend} onChange={e => setAdvancedFilters(f => ({ ...f, minSpend: e.target.value }))}
-                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום סה״כ זכיות ($)</label>
-                      <input type="number" value={advancedFilters.maxSpend} onChange={e => setAdvancedFilters(f => ({ ...f, maxSpend: e.target.value }))}
-                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מינימום ביד מקסימלי ($)</label>
-                      <input type="number" value={advancedFilters.minMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, minMaxBid: e.target.value }))}
-                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום ביד מקסימלי ($)</label>
-                      <input type="number" value={advancedFilters.maxMaxBid} onChange={e => setAdvancedFilters(f => ({ ...f, maxMaxBid: e.target.value }))}
-                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 gap-4 mb-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">סיווג לקוח</label>
-                      <select value={advancedFilters.segment} onChange={e => setAdvancedFilters(f => ({ ...f, segment: e.target.value }))}
-                        className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30">
-                        <option value="">הכל</option>
-                        {classOptions.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' })}
-                      className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
-                      נקה הכל
+                    <button onClick={() => setFilters({
+                      segment: '', country: '', continent: '',
+                      genazymId: '', zaidyId: '',
+                      minSpend: '', maxSpend: '',
+                      minMaxBid: '', maxMaxBid: '',
+                    })}
+                      className="px-3 py-2 text-sm border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
+                      נקה פילטרים
                     </button>
                   </div>
                 </div>
