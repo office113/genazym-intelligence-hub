@@ -364,26 +364,13 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           {/* ═══ GLOBAL PROFILE VIEW ═══ */}
           {view === "profile" && (
             <>
-              {/* Settings toggle */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setShowSettings(s => !s)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  ⚙️ {showSettings ? "הסתר הגדרות" : "הגדרות סטטוס"}
-                </button>
-                <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
-                  📋 <strong>מקרא:</strong>{" "}
-                  <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
-                  <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeAuctions}+ מכירות ·{" "}
-                  <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = מתחת לסף
-                </div>
+              {/* Legend */}
+              <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
+                📋 <strong>מקרא:</strong>{" "}
+                <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
+                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeAuctions}+ מכירות ·{" "}
+                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = מתחת לסף
               </div>
-
-              {showSettings && (
-                <StatusSettingsPanel thresholds={statusThresholds} onChange={setStatusThresholds} />
-              )}
 
               {loadingGlobal && (
                 <div className="flex items-center justify-center py-12">
