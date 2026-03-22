@@ -422,6 +422,24 @@ export default function CustomerCard() {
             {/* ══════ AUCTION TABLE ══════ */}
             <div>
               <div className="text-xs font-medium mb-2" style={{ color: "#1a1a1a" }}>היסטוריית מכירות</div>
+              {/* Sub-tabs for brand filtering */}
+              {brandTab === "all" ? (
+                <div className="flex mb-2 rounded-lg overflow-hidden border" style={{ borderColor: "rgba(0,0,0,0.12)" }}>
+                  {(["Genazym", "Zaidy"] as const).map(sub => (
+                    <button
+                      key={sub}
+                      onClick={() => setAuctionSubTab(sub)}
+                      className="flex-1 py-1.5 text-xs font-medium transition-colors"
+                      style={{
+                        background: auctionSubTab === sub ? PURPLE.fill : "transparent",
+                        color: auctionSubTab === sub ? PURPLE.text : MUTED,
+                      }}
+                    >
+                      {sub} ({auctionSubCounts[sub]})
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               <div className="rounded-lg overflow-hidden border" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
                 <table className="w-full text-xs">
                   <thead>
