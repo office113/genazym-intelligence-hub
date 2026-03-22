@@ -219,7 +219,10 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   };
 
   const getStatus = (p: typeof globalProfiles[0]) => {
-    return getCustomerStatus(p.totalSpend, p.auctionCount, statusThresholds);
+    return getCustomerStatus(
+      { totalWins: p.totalSpend, winAuctionCount: p.auctionCount, maxBid: p.maxBid || 0 },
+      statusRules
+    );
   };
 
   return (
