@@ -42,7 +42,6 @@ export default function Customers() {
   useEffect(() => {
     const fetchPowers = async () => {
       try {
-        const { default: supabase } = await import("@/lib/supabaseClient");
         const { data, error } = await supabase
           .from('customers')
           .select('email, purchasing_power')
