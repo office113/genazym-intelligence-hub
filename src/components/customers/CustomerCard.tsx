@@ -69,39 +69,40 @@ export default function CustomerCard() {
         .from("fact_customer_auction_activity")
         .select("*")
         .eq("email", email)
-        .order("auction_date", { ascending: false });
+        .order("auction_date", { ascending: false })
+        .limit(1000);
       setAuctionActivity(activity || []);
 
-      // Books WON - using RPC or raw query via supabase
+      // Books WON - fetch winners then enrich with book names
       const { data: won } = await supabase
         .from("winners")
         .select("book_id_bidspirit, auction_name, sold_price, win_time")
         .eq("customer_email", email)
         .order("win_time", { ascending: false })
-        .limit(200);
+        .limit(1000);
 
-      // Enrich won books with names
       if (won && won.length > 0) {
-        const bookKeys = won.map(w => `${w.book_id_bidspirit}|${w.auction_name}`);
-        const uniqueKeys = [...new Set(bookKeys)];
-        // Fetch book names in batches
+        // Batch fetch book names using .or() for pairwise matching
         const bookNames: Record<string, string> = {};
-        for (let i = 0; i < uniqueKeys.length; i += 50) {
-          const batch = uniqueKeys.slice(i, i + 50);
-          const ids = batch.map(k => k.split("|")[0]);
-          const auctions = batch.map(k => k.split("|")[1]);
+        for (let i = 0; i < won.length; i += 50) {
+          const batch = won.slice(i, i + 50);
+          const orFilter = batch.map(w =>
+            `and(book_id_bidspirit.eq.${w.book_id_bidspirit},auction_name.eq.${w.auction_name})`
+          ).join(",");
           const { data: books } = await supabase
             .from("books")
             .select("book_id_bidspirit, auction_name, book_name")
-            .in("book_id_bidspirit", ids)
-            .in("auction_name", auctions);
+            .or(orFilter);
           (books || []).forEach(b => {
             bookNames[`${b.book_id_bidspirit}|${b.auction_name}`] = b.book_name;
           });
         }
         setBooksWon(won.map(w => ({
-          ...w,
+          book_id_bidspirit: w.book_id_bidspirit,
+          auction_name: w.auction_name,
+          sold_price: w.sold_price,
           book_name: bookNames[`${w.book_id_bidspirit}|${w.auction_name}`] || w.book_id_bidspirit,
+          brand: (w.auction_name || "").toLowerCase().includes("zaidy") ? "Zaidy" : "Genazym",
         })));
       } else {
         setBooksWon([]);
@@ -193,8 +194,10 @@ export default function CustomerCard() {
   // Filter books by brand tab
   const filterBooksByBrand = (books: any[]) => {
     if (brandTab === "all") return books;
-    // We don't have brand on individual books easily, so show all for now
-    return books;
+    return books.filter(b => {
+      if (b.brand) return b.brand === brandTab;
+      return (b.auction_name || "").toLowerCase().includes(brandTab.toLowerCase());
+    });
   };
 
   const filteredBooksWon = filterBooksByBrand(booksWon);
