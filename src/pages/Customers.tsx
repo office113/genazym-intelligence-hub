@@ -151,49 +151,62 @@ export default function Customers() {
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
   const filtered = useMemo(() => {
-    let result = customers.filter(c =>
-      !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    let result = customers.filter(c => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (c.name || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q) || (c.country || "").toLowerCase().includes(q);
+    });
 
     const f = advancedFilters;
     if (f.genazymId) {
       const id = Number(f.genazymId);
-      result = result.filter(c => customerMeta[c.email]?.genazym_id === id);
+      result = result.filter(c => (customerMeta[c.email]?.genazym_id ?? null) === id);
     }
     if (f.zaidyId) {
       const id = Number(f.zaidyId);
-      result = result.filter(c => customerMeta[c.email]?.zaidy_id === id);
+      result = result.filter(c => (customerMeta[c.email]?.zaidy_id ?? null) === id);
     }
     if (f.maxBidMin) {
       const min = Number(f.maxBidMin);
       result = result.filter(c => {
-        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        const bids = rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0);
+        const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
         return maxBid >= min;
       });
     }
     if (f.maxBidMax) {
       const max = Number(f.maxBidMax);
       result = result.filter(c => {
-        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        const bids = rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0);
+        const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
         return maxBid <= max;
       });
     }
     if (f.totalWinsMin) {
       const min = Number(f.totalWinsMin);
-      result = result.filter(c => c.totalSpend >= min);
+      result = result.filter(c => (c.totalSpend || 0) >= min);
     }
     if (f.totalWinsMax) {
       const max = Number(f.totalWinsMax);
-      result = result.filter(c => c.totalSpend <= max);
+      result = result.filter(c => (c.totalSpend || 0) <= max);
     }
     if (f.classifications.length > 0) {
-      result = result.filter(c => f.classifications.includes(customerMeta[c.email]?.purchasing_power));
+      result = result.filter(c => {
+        const pp = customerMeta[c.email]?.purchasing_power;
+        return pp && f.classifications.includes(pp);
+      });
     }
     if (f.countries.length > 0) {
-      result = result.filter(c => f.countries.includes(customerMeta[c.email]?.country || c.country));
+      result = result.filter(c => {
+        const co = customerMeta[c.email]?.country || c.country || "";
+        return f.countries.includes(co);
+      });
     }
     if (f.continents.length > 0) {
-      result = result.filter(c => f.continents.includes(customerMeta[c.email]?.continent));
+      result = result.filter(c => {
+        const ct = customerMeta[c.email]?.continent;
+        return ct && f.continents.includes(ct);
+      });
     }
 
     return result;
