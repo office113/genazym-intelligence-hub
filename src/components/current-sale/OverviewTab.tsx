@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Search, ChevronDown, CalendarClock, Loader2, Users, UserCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
+import { useStatusThresholds, getCustomerStatus } from "@/contexts/StatusThresholdsContext";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
@@ -88,55 +89,7 @@ interface DrillDownState {
 
 type DrillDownView = "sale" | "profile";
 
-// ─── STATUS THRESHOLDS (configurable) ───
-interface StatusThresholds {
-  vipSpend: number;
-  vipAuctions: number;
-  activeAuctions: number;
-}
-
-const DEFAULT_THRESHOLDS: StatusThresholds = { vipSpend: 50000, vipAuctions: 5, activeAuctions: 2 };
-
-function StatusSettingsPanel({ thresholds, onChange }: { thresholds: StatusThresholds; onChange: (t: StatusThresholds) => void }) {
-  return (
-    <div className="rounded-lg border border-border p-4 space-y-4" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
-      <h4 className="text-sm font-bold text-foreground">⚙️ הגדרות סטטוס לקוח</h4>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">VIP — סף הוצאות ($)</label>
-          <input
-            type="number"
-            value={thresholds.vipSpend}
-            onChange={e => onChange({ ...thresholds, vipSpend: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">VIP — סף מכירות</label>
-          <input
-            type="number"
-            value={thresholds.vipAuctions}
-            onChange={e => onChange({ ...thresholds, vipAuctions: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">פעיל — סף מכירות</label>
-          <input
-            type="number"
-            value={thresholds.activeAuctions}
-            onChange={e => onChange({ ...thresholds, activeAuctions: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-      </div>
-      <div className="text-xs text-muted-foreground mt-2 p-2 rounded border border-border" style={{ background: "hsl(var(--card))" }}>
-        📋 <strong>מקרא:</strong> VIP = ${thresholds.vipSpend.toLocaleString()}+ הוצאות או {thresholds.vipAuctions}+ מכירות · פעיל = {thresholds.activeAuctions}+ מכירות · חדש = מתחת לסף
-      </div>
-    </div>
-  );
-}
-
+// StatusThresholds now provided by global context (StatusThresholdsContext)
 function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, selectedBrand }: {
   drillDown: DrillDownState | null;
   onClose: () => void;
@@ -150,8 +103,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<DrillDownView>("sale");
-  const [showSettings, setShowSettings] = useState(false);
-  const [statusThresholds, setStatusThresholds] = useState<StatusThresholds>(DEFAULT_THRESHOLDS);
+  const { thresholds: statusThresholds } = useStatusThresholds();
 
   // Determine if auction is in the past
   const auctionInPast = useMemo(() => {
@@ -267,9 +219,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   };
 
   const getStatus = (p: typeof globalProfiles[0]) => {
-    if (p.totalSpend >= statusThresholds.vipSpend || p.auctionCount >= statusThresholds.vipAuctions) return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
-    if (p.auctionCount >= statusThresholds.activeAuctions) return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
-    return { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
+    return getCustomerStatus(p.totalSpend, p.auctionCount, statusThresholds);
   };
 
   return (
@@ -414,26 +364,13 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           {/* ═══ GLOBAL PROFILE VIEW ═══ */}
           {view === "profile" && (
             <>
-              {/* Settings toggle */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => setShowSettings(s => !s)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                  style={{ color: "hsl(var(--muted-foreground))" }}
-                >
-                  ⚙️ {showSettings ? "הסתר הגדרות" : "הגדרות סטטוס"}
-                </button>
-                <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
-                  📋 <strong>מקרא:</strong>{" "}
-                  <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
-                  <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeAuctions}+ מכירות ·{" "}
-                  <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = מתחת לסף
-                </div>
+              {/* Legend */}
+              <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
+                📋 <strong>מקרא:</strong>{" "}
+                <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
+                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeAuctions}+ מכירות ·{" "}
+                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = מתחת לסף
               </div>
-
-              {showSettings && (
-                <StatusSettingsPanel thresholds={statusThresholds} onChange={setStatusThresholds} />
-              )}
 
               {loadingGlobal && (
                 <div className="flex items-center justify-center py-12">
