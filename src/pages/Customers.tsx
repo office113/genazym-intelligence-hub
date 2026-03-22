@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import SubNav from "@/components/layout/SubNav";
 import KPICard from "@/components/dashboard/KPICard";
 import DrillDownDrawer from "@/components/dashboard/DrillDownDrawer";
@@ -6,6 +6,7 @@ import { usePastSales } from "@/hooks/usePastSales";
 import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
+import { supabase } from "@/lib/supabaseClient";
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
@@ -34,7 +35,30 @@ export default function Customers() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
 
+  const [powerMap, setPowerMap] = useState<Record<string, string>>({});
+
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
+
+  useEffect(() => {
+    const fetchPowers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('email, purchasing_power')
+          .limit(50000);
+        if (data && !error) {
+          const map: Record<string, string> = {};
+          data.forEach((row: any) => {
+            if (row?.email) map[row.email] = row.purchasing_power || '';
+          });
+          setPowerMap(map);
+        }
+      } catch (err) {
+        console.error('Failed to fetch purchasing powers', err);
+      }
+    };
+    fetchPowers();
+  }, []);
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
@@ -82,12 +106,12 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
-        classification: rows[0]?.purchasing_power || '',
+        classification: powerMap[email] || '',
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData]);
+  }, [rawActivityData, rawAuctionsData, powerMap]);
 
   const uniqueClassifications = useMemo(() => {
     const options = new Set((customers || []).map(c => c?.classification).filter(Boolean));
