@@ -8,6 +8,7 @@ import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, Chevro
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
 import CustomerCardContent from "@/components/customers/CustomerCardContent";
+import CustomerTasteProfile from "@/components/customers/CustomerTasteProfile";
 import { supabase } from "@/lib/supabaseClient";
 
 function getSegment(totalSpend: number, rules: { name: string; min_spend: number }[]) {
