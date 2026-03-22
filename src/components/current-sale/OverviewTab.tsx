@@ -263,7 +263,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       };
     });
 
-    return { selectedSale, saleSnapshots, chartData, benchmarkByDX };
+    return { selectedSale, saleSnapshots, chartData: [...chartData].sort((a, b) => b.dxNum - a.dxNum), benchmarkByDX };
   }, [selectedSaleId, selectedBrand, salesList, allSaleSnapshots]);
 
   const openDrillDown = (type: string, title: string, subtitle: string, saleName?: string, saleId?: string, dx?: number) => {
