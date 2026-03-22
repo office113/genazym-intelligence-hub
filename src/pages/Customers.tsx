@@ -247,6 +247,12 @@ export default function Customers() {
               </div>
             </div>
 
+            <CustomerAdvancedFilters
+              filters={advancedFilters}
+              onApply={setAdvancedFilters}
+              onClear={() => setAdvancedFilters(defaultCustomerFilters)}
+            />
+
             <div className="flex items-center justify-between mb-4">
               <div className="text-sm text-muted-foreground">{filtered.length} לקוחות</div>
             </div>
