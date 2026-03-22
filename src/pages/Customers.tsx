@@ -114,7 +114,7 @@ export default function Customers() {
       }, "");
       const name = rows[0].full_name || email;
       const country = rows[0].country || "—";
-      const continent = rows[0].continent || "";
+      const continent = continentMap[email] || rows[0].continent || "";
 
       return {
         email,
