@@ -123,7 +123,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
       try {
         const { data, error } = await supabase
           .from("fact_customer_auction_activity")
-          .select("full_name, email, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
+          .select("full_name, email, genazym_id, zaidy_id, total_bids, early_bids_count, live_bids_count, lots_involved, max_bid, was_early, was_live, was_winner, total_wins, total_win_value, first_bid_at, auction_date")
           .eq("auction_name", drillDown.saleId)
           .order("max_bid", { ascending: false });
 
@@ -325,6 +325,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                     <thead>
                       <tr style={{ background: "hsl(var(--secondary) / 0.5)" }}>
                         <th>שם לקוח</th>
+                        <th>{selectedBrand === "גנזים" ? "מזהה גנזים" : "מזהה זיידי"}</th>
                         <th>סוג מעורבות</th>
                         <th>בידים במכירה</th>
                         <th>מס׳ לוטים</th>
@@ -353,6 +354,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
                             <td className="font-semibold">{b.full_name}</td>
+                            <td className="text-center text-xs text-muted-foreground">{(selectedBrand === "גנזים" ? b.genazym_id : b.zaidy_id) || "—"}</td>
                             <td>
                               <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
                                 style={{
