@@ -162,7 +162,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           max_bid_cumulative: row.max_bid_cum || 0,
         }));
 
-        setBidders(merged);
+        setBidders(merged.sort((a: any, b: any) => (b.max_bid_cumulative || 0) - (a.max_bid_cumulative || 0)));
       } catch (err) {
         console.error("[DrillDown] fetch error:", err);
       }
