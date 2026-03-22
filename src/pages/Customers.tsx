@@ -106,12 +106,12 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
-        classification: rows[0]?.purchasing_power || '',
+        classification: powerMap[email] || '',
         genazym_id: rows[0]?.genazym_id,
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData]);
+  }, [rawActivityData, rawAuctionsData, powerMap]);
 
   const uniqueClassifications = useMemo(() => {
     const options = new Set((customers || []).map(c => c?.classification).filter(Boolean));
