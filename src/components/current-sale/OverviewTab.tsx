@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
-import { drillDownCustomers, SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { useState, useMemo, useEffect } from "react";
+import { SaleSnapshot } from "@/data/currentSaleOverviewData";
+import { supabase } from "@/lib/supabaseClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
