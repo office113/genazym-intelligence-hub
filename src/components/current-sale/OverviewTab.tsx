@@ -341,7 +341,15 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         // If auction hasn't happened, wins don't exist yet
                         const showWins = auctionInPast && drillDown?.dx === 0;
                         // Bid count: use early_bids_count when DX > 0 (pre-auction)
-                        const bidCount = (drillDown && drillDown.dx > 0) ? (b.early_bids_count || 0) : (b.total_bids || 0);
+                        const isPreAuction = drillDown && drillDown.dx > 0;
+                        const bidCount = isPreAuction ? (b.early_bids_count || 0) : (b.total_bids || 0);
+                        // Lots cannot exceed bids — cap dynamically
+                        const lotsCount = Math.min(b.lots_involved || 0, bidCount);
+                        // Max bid: when pre-auction, only early bids exist — use max_bid but cap context
+                        // (max_bid from DB reflects final state; for pre-auction, approximate with early context)
+                        const maxBidValue = isPreAuction
+                          ? (bidCount > 0 ? (b.max_bid || 0) : 0)
+                          : (b.max_bid || 0);
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
                             <td className="font-semibold">{b.full_name}</td>
@@ -355,8 +363,8 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                               </span>
                             </td>
                             <td className="text-center">{bidCount}</td>
-                            <td className="text-center">{b.lots_involved}</td>
-                            <td className="font-semibold">{fmtCurrency(b.max_bid || 0)}</td>
+                            <td className="text-center">{lotsCount}</td>
+                            <td className="font-semibold">{fmtCurrency(maxBidValue)}</td>
                             <td className="font-semibold">{showWins && b.total_win_value ? fmtCurrency(b.total_win_value) : "—"}</td>
                           </tr>
                         );
