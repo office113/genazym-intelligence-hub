@@ -279,7 +279,7 @@ export default function CustomerCard() {
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: PURPLE.fill, borderColor: PURPLE.border, color: PURPLE.text }}
                     >
-                      Genazym #{header.genazym_id}
+                      Genazym #{header?.genazym_id}
                     </button>
                   )}
                   {header?.zaidy_id && (
@@ -288,7 +288,7 @@ export default function CustomerCard() {
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: GREEN.fill, borderColor: GREEN.border, color: GREEN.text }}
                     >
-                      Zaidy #{header.zaidy_id}
+                      Zaidy #{header?.zaidy_id}
                     </button>
                   )}
                   {totalWinValue > 10000 && (

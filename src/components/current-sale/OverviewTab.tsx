@@ -181,8 +181,8 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
     const fetchGlobal = async () => {
       setLoadingGlobal(true);
       try {
-        const emails = [...new Set(bidders.map(b => b.email).filter(Boolean))];
-        const gIds = [...new Set(bidders.map(b => b.genazym_id).filter(Boolean))];
+        const emails = [...new Set(bidders.map((b) => b?.email).filter(Boolean))];
+        const gIds = [...new Set(bidders.map((b) => b?.genazym_id).filter(Boolean))];
         if (!emails.length && !gIds.length) { setLoadingGlobal(false); return; }
 
         const brandFilter = selectedBrand === "גנזים" ? "Genazym" : "Zaidy";
@@ -374,7 +374,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
                             <td className="font-semibold"><CustomerLink email={b.email}>{b.full_name}</CustomerLink></td>
-                            <td className="text-center text-xs text-muted-foreground">{b.genazym_id || b.zaidy_id || "—"}</td>
+                            <td className="text-center text-xs text-muted-foreground">{b?.genazym_id || b?.zaidy_id || "—"}</td>
                             <td>
                               <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
                                 style={{
