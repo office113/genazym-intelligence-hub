@@ -252,10 +252,12 @@ export default function Customers() {
     return result;
   }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
 
+  const isSearchLoading = loading || metaLoading;
+
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
     if (!selectedCustomer) return [];
-    const rows = rawActivityData.filter((r: any) => r.email === selectedCustomer.email);
+    const rows = (rawActivityData || []).filter((r: any) => r?.email === selectedCustomer?.email);
     return rows
       .map((r: any) => ({
         date: r.auction_date || "",
