@@ -164,7 +164,7 @@ export default function CustomerCard() {
   const chartData = useMemo(() => {
     const last6 = [...auctionActivity].reverse().slice(-6);
     return last6.map(a => ({
-      name: (a.auction_name || "").replace(/^(Genazym|Zaidy)\s*/i, "").slice(0, 12),
+      name: (a.auction_name || "").replace(/^Genazym[_\s]*/i, "G").replace(/^Zaidy[_\s]*/i, "Z"),
       bids: a.total_bids || 0,
       wins: a.total_wins || 0,
     }));
