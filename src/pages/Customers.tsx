@@ -137,9 +137,54 @@ export default function Customers() {
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
-  const filtered = customers.filter(c =>
-    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    let result = customers.filter(c =>
+      !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const f = advancedFilters;
+    if (f.genazymId) {
+      const id = Number(f.genazymId);
+      result = result.filter(c => customerMeta[c.email]?.genazym_id === id);
+    }
+    if (f.zaidyId) {
+      const id = Number(f.zaidyId);
+      result = result.filter(c => customerMeta[c.email]?.zaidy_id === id);
+    }
+    if (f.maxBidMin) {
+      const min = Number(f.maxBidMin);
+      result = result.filter(c => {
+        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        return maxBid >= min;
+      });
+    }
+    if (f.maxBidMax) {
+      const max = Number(f.maxBidMax);
+      result = result.filter(c => {
+        const maxBid = Math.max(...(rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0)));
+        return maxBid <= max;
+      });
+    }
+    if (f.totalWinsMin) {
+      const min = Number(f.totalWinsMin);
+      result = result.filter(c => c.totalSpend >= min);
+    }
+    if (f.totalWinsMax) {
+      const max = Number(f.totalWinsMax);
+      result = result.filter(c => c.totalSpend <= max);
+    }
+    if (f.classifications.length > 0) {
+      result = result.filter(c => f.classifications.includes(customerMeta[c.email]?.purchasing_power));
+    }
+    if (f.countries.length > 0) {
+      result = result.filter(c => f.countries.includes(customerMeta[c.email]?.country || c.country));
+    }
+    if (f.continents.length > 0) {
+      result = result.filter(c => f.continents.includes(customerMeta[c.email]?.continent));
+    }
+
+    return result;
+  }, [customers, searchQuery, advancedFilters, customerMeta, rawActivityData]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
