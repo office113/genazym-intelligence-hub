@@ -89,55 +89,7 @@ interface DrillDownState {
 
 type DrillDownView = "sale" | "profile";
 
-// ─── STATUS THRESHOLDS (configurable) ───
-interface StatusThresholds {
-  vipSpend: number;
-  vipAuctions: number;
-  activeAuctions: number;
-}
-
-const DEFAULT_THRESHOLDS: StatusThresholds = { vipSpend: 50000, vipAuctions: 5, activeAuctions: 2 };
-
-function StatusSettingsPanel({ thresholds, onChange }: { thresholds: StatusThresholds; onChange: (t: StatusThresholds) => void }) {
-  return (
-    <div className="rounded-lg border border-border p-4 space-y-4" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
-      <h4 className="text-sm font-bold text-foreground">⚙️ הגדרות סטטוס לקוח</h4>
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">VIP — סף הוצאות ($)</label>
-          <input
-            type="number"
-            value={thresholds.vipSpend}
-            onChange={e => onChange({ ...thresholds, vipSpend: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">VIP — סף מכירות</label>
-          <input
-            type="number"
-            value={thresholds.vipAuctions}
-            onChange={e => onChange({ ...thresholds, vipAuctions: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground block mb-1">פעיל — סף מכירות</label>
-          <input
-            type="number"
-            value={thresholds.activeAuctions}
-            onChange={e => onChange({ ...thresholds, activeAuctions: Number(e.target.value) || 0 })}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30"
-          />
-        </div>
-      </div>
-      <div className="text-xs text-muted-foreground mt-2 p-2 rounded border border-border" style={{ background: "hsl(var(--card))" }}>
-        📋 <strong>מקרא:</strong> VIP = ${thresholds.vipSpend.toLocaleString()}+ הוצאות או {thresholds.vipAuctions}+ מכירות · פעיל = {thresholds.activeAuctions}+ מכירות · חדש = מתחת לסף
-      </div>
-    </div>
-  );
-}
-
+// StatusThresholds now provided by global context (StatusThresholdsContext)
 function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, selectedBrand }: {
   drillDown: DrillDownState | null;
   onClose: () => void;
