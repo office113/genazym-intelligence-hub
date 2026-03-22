@@ -132,7 +132,7 @@ export default function Customers() {
         zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
-  }, [rawActivityData, rawAuctionsData, segmentRules]);
+  }, [rawActivityData, rawAuctionsData, segmentRules, continentMap]);
 
   // Debug: verify data shape
   console.log('segmentRules:', segmentRules);
