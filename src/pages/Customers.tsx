@@ -6,6 +6,7 @@ import { usePastSales } from "@/hooks/usePastSales";
 import { Search, X, Plus, Filter, Star, TrendingUp, BookOpen, Clock, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import CustomerLink from "@/components/customers/CustomerLink";
+import { supabase } from "@/lib/supabaseClient";
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
