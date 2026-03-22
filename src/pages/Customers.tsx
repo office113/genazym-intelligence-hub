@@ -89,6 +89,11 @@ export default function Customers() {
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData]);
 
+  const uniqueClassifications = useMemo(() => {
+    const options = new Set((customers || []).map(c => c?.classification).filter(Boolean));
+    return Array.from(options).sort();
+  }, [customers]);
+
   // Segment data for chart
   const segmentData = useMemo(() => {
     const counts: Record<string, number> = { "VIP": 0, "פעיל": 0, "רגיל": 0 };
