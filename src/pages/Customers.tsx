@@ -150,6 +150,15 @@ export default function Customers() {
     return Array.from(s).sort();
   }, [customers]);
 
+  const profileResults = useMemo(() => {
+    if (profileSearch.length < 2) return [];
+    const q = profileSearch.toLowerCase();
+    return customers.filter(c =>
+      (c?.name || '').toLowerCase().includes(q) ||
+      (c?.email || '').toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [customers, profileSearch]);
+
 
   // Segment data for chart
   const segmentData = useMemo(() => {
