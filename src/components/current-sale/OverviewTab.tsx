@@ -574,12 +574,12 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
             console.log(`[KPI Cards] Brand=${selectedBrand}, Sale=${mode2Data.selectedSale.name}, DX=${dxKey}, hasBench=${!!bench}`);
             return (
               <div className="grid grid-cols-6 gap-3">
-                <OverviewKPI label="סה״כ הצעות מוקדמות" value={latestSnap.earlyBids} comparison={bench?.earlyBids} />
-                <OverviewKPI label="משתמשים שונים עם הצעות" value={latestSnap.uniqueBidders} comparison={bench?.uniqueBidders} />
-                <OverviewKPI label="מס׳ פריטים עם הצעות" value={latestSnap.lotsWithBids} comparison={bench?.lotsWithBids} />
-                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${latestSnap.lotsBidPct}%`} comparison={bench?.lotsBidPct !== undefined ? `${bench.lotsBidPct}%` : undefined} />
-                <OverviewKPI label="מחיר מובטח" value={fmtPrice(latestSnap.guaranteedPrice)} comparison={bench?.guaranteedPrice !== undefined ? fmtPrice(bench.guaranteedPrice) : undefined} />
-                <OverviewKPI label="מס׳ בידרים חדשים" value={latestSnap.newBidders} />
+                <OverviewKPI label="סה״כ הצעות מוקדמות" value={displaySnap.earlyBids} comparison={bench?.earlyBids} />
+                <OverviewKPI label="משתמשים שונים עם הצעות" value={displaySnap.uniqueBidders} comparison={bench?.uniqueBidders} />
+                <OverviewKPI label="מס׳ פריטים עם הצעות" value={displaySnap.lotsWithBids} comparison={bench?.lotsWithBids} />
+                <OverviewKPI label="אחוז פריטים עם הצעות" value={`${displaySnap.lotsBidPct}%`} comparison={bench?.lotsBidPct !== undefined ? `${bench.lotsBidPct}%` : undefined} />
+                <OverviewKPI label="מחיר מובטח" value={fmtPrice(displaySnap.guaranteedPrice)} comparison={bench?.guaranteedPrice !== undefined ? fmtPrice(bench.guaranteedPrice) : undefined} />
+                <OverviewKPI label="מס׳ בידרים חדשים" value={displaySnap.newBidders} />
               </div>
             );
           })()}
