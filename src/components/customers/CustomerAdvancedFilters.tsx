@@ -34,8 +34,8 @@ interface Props {
   onClear: () => void;
 }
 
-export default function CustomerAdvancedFilters({ filters, onApply, onClear }: Props) {
-  const [local, setLocal] = useState<CustomerFilters>(filters);
+export default function CustomerAdvancedFilters({ filters = defaultCustomerFilters, onApply, onClear }: Props) {
+  const [local, setLocal] = useState<CustomerFilters>(filters ?? defaultCustomerFilters);
   const [expanded, setExpanded] = useState(false);
   const [countryOptions, setCountryOptions] = useState<string[]>([]);
   const [classificationOptions, setClassificationOptions] = useState<string[]>([]);
@@ -52,8 +52,8 @@ export default function CustomerAdvancedFilters({ filters, onApply, onClear }: P
           supabase.from("customers").select("purchasing_power").not("purchasing_power", "is", null).limit(5000),
         ]);
 
-        const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r.country).filter(Boolean))].sort();
-        const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r.purchasing_power).filter(Boolean))].sort();
+        const uniqueCountries = [...new Set((countriesRes.data || []).map((r: any) => r?.country).filter(Boolean))].sort();
+        const uniqueClass = [...new Set((classRes.data || []).map((r: any) => r?.purchasing_power).filter(Boolean))].sort();
 
         setCountryOptions(uniqueCountries as string[]);
         setClassificationOptions(uniqueClass as string[]);
@@ -61,7 +61,7 @@ export default function CustomerAdvancedFilters({ filters, onApply, onClear }: P
         // continent may not exist — fetch separately to avoid crashing
         const continentRes = await supabase.from("customers").select("continent").not("continent", "is", null).limit(5000);
         if (continentRes.data) {
-          const uniqueContinents = [...new Set(continentRes.data.map((r: any) => r.continent).filter(Boolean))].sort();
+          const uniqueContinents = [...new Set(continentRes.data.map((r: any) => r?.continent).filter(Boolean))].sort();
           setContinentOptions(uniqueContinents as string[]);
         }
       } catch (e) {
@@ -72,28 +72,30 @@ export default function CustomerAdvancedFilters({ filters, onApply, onClear }: P
   }, []);
 
   useEffect(() => {
-    setLocal(filters);
+    setLocal(filters ?? defaultCustomerFilters);
   }, [filters]);
 
   const set = (key: keyof CustomerFilters, val: any) => setLocal(prev => ({ ...prev, [key]: val }));
 
   const toggleMulti = (key: "classifications" | "countries" | "continents", val: string) => {
     setLocal(prev => {
-      const arr = prev[key] as string[];
+      const arr = (prev?.[key] || []) as string[];
       return { ...prev, [key]: arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val] };
     });
   };
 
-  const hasActiveFilters = local.genazymId || local.zaidyId || local.maxBidMin || local.maxBidMax ||
-    local.totalWinsMin || local.totalWinsMax || local.classifications.length > 0 ||
-    local.countries.length > 0 || local.continents.length > 0;
+  const hasActiveFilters = !!(local?.genazymId || local?.zaidyId || local?.maxBidMin || local?.maxBidMax ||
+    local?.totalWinsMin || local?.totalWinsMax || (local?.classifications || []).length > 0 ||
+    (local?.countries || []).length > 0 || (local?.continents || []).length > 0);
 
   const activeCount = [
-    local.genazymId, local.zaidyId, local.maxBidMin || local.maxBidMax,
-    local.totalWinsMin || local.totalWinsMax,
-    local.classifications.length > 0 ? "x" : "",
-    local.countries.length > 0 ? "x" : "",
-    local.continents.length > 0 ? "x" : "",
+    local?.genazymId || "",
+    local?.zaidyId || "",
+    local?.maxBidMin || local?.maxBidMax || "",
+    local?.totalWinsMin || local?.totalWinsMax || "",
+    (local?.classifications || []).length > 0 ? "x" : "",
+    (local?.countries || []).length > 0 ? "x" : "",
+    (local?.continents || []).length > 0 ? "x" : "",
   ].filter(Boolean).length;
 
   return (
