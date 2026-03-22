@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { X, Search, ChevronDown, CalendarClock, Loader2, Users, UserCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { differenceInDays, parseISO } from "date-fns";
+import { useStatusThresholds, getCustomerStatus } from "@/contexts/StatusThresholdsContext";
 
 export type DisplayMode = "overview" | "byDX" | "bySale";
 
