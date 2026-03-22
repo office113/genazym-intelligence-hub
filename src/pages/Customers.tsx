@@ -175,61 +175,77 @@ export default function Customers() {
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
   const filtered = useMemo(() => {
-    let result = customers.filter(c => {
+    const safeFilters = advancedFilters ?? defaultCustomerFilters;
+
+    let result = (customers || []).filter((customer: any) => {
+      if (!customer) return false;
       if (!searchQuery) return true;
-      const q = searchQuery.toLowerCase();
-      return (c.name || "").toLowerCase().includes(q) || (c.email || "").toLowerCase().includes(q) || (c.country || "").toLowerCase().includes(q);
+      const q = (searchQuery || "").toLowerCase();
+      return (customer?.name || "").toLowerCase().includes(q)
+        || (customer?.email || "").toLowerCase().includes(q)
+        || (customer?.country || "").toLowerCase().includes(q);
     });
 
-    const f = advancedFilters;
-    if (f.genazymId) {
-      const id = Number(f.genazymId);
-      result = result.filter(c => (customerMeta[c.email]?.genazym_id ?? null) === id);
+    if (safeFilters.genazymId) {
+      const id = Number(safeFilters.genazymId || 0);
+      result = result.filter((customer: any) => (customerMeta[customer?.email || ""]?.genazym_id ?? null) === id);
     }
-    if (f.zaidyId) {
-      const id = Number(f.zaidyId);
-      result = result.filter(c => (customerMeta[c.email]?.zaidy_id ?? null) === id);
+
+    if (safeFilters.zaidyId) {
+      const id = Number(safeFilters.zaidyId || 0);
+      result = result.filter((customer: any) => (customerMeta[customer?.email || ""]?.zaidy_id ?? null) === id);
     }
-    if (f.maxBidMin) {
-      const min = Number(f.maxBidMin);
-      result = result.filter(c => {
-        const bids = rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0);
+
+    if (safeFilters.maxBidMin) {
+      const min = Number(safeFilters.maxBidMin || 0);
+      result = result.filter((customer: any) => {
+        const bids = (rawActivityData || [])
+          .filter((row: any) => row?.email === customer?.email)
+          .map((row: any) => row?.max_bid || 0);
         const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
         return maxBid >= min;
       });
     }
-    if (f.maxBidMax) {
-      const max = Number(f.maxBidMax);
-      result = result.filter(c => {
-        const bids = rawActivityData.filter((r: any) => r.email === c.email).map((r: any) => r.max_bid || 0);
+
+    if (safeFilters.maxBidMax) {
+      const max = Number(safeFilters.maxBidMax || 0);
+      result = result.filter((customer: any) => {
+        const bids = (rawActivityData || [])
+          .filter((row: any) => row?.email === customer?.email)
+          .map((row: any) => row?.max_bid || 0);
         const maxBid = bids.length > 0 ? Math.max(...bids) : 0;
         return maxBid <= max;
       });
     }
-    if (f.totalWinsMin) {
-      const min = Number(f.totalWinsMin);
-      result = result.filter(c => (c.totalSpend || 0) >= min);
+
+    if (safeFilters.totalWinsMin) {
+      const min = Number(safeFilters.totalWinsMin || 0);
+      result = result.filter((customer: any) => (customer?.totalSpend || 0) >= min);
     }
-    if (f.totalWinsMax) {
-      const max = Number(f.totalWinsMax);
-      result = result.filter(c => (c.totalSpend || 0) <= max);
+
+    if (safeFilters.totalWinsMax) {
+      const max = Number(safeFilters.totalWinsMax || 0);
+      result = result.filter((customer: any) => (customer?.totalSpend || 0) <= max);
     }
-    if (f.classifications.length > 0) {
-      result = result.filter(c => {
-        const pp = customerMeta[c.email]?.purchasing_power;
-        return pp && f.classifications.includes(pp);
+
+    if ((safeFilters.classifications || []).length > 0) {
+      result = result.filter((customer: any) => {
+        const purchasingPower = customerMeta[customer?.email || ""]?.purchasing_power || "";
+        return (safeFilters.classifications || []).includes(purchasingPower);
       });
     }
-    if (f.countries.length > 0) {
-      result = result.filter(c => {
-        const co = customerMeta[c.email]?.country || c.country || "";
-        return f.countries.includes(co);
+
+    if ((safeFilters.countries || []).length > 0) {
+      result = result.filter((customer: any) => {
+        const country = customerMeta[customer?.email || ""]?.country || customer?.country || "";
+        return (safeFilters.countries || []).includes(country);
       });
     }
-    if (f.continents.length > 0) {
-      result = result.filter(c => {
-        const ct = customerMeta[c.email]?.continent;
-        return ct && f.continents.includes(ct);
+
+    if ((safeFilters.continents || []).length > 0) {
+      result = result.filter((customer: any) => {
+        const continent = customerMeta[customer?.email || ""]?.continent || "";
+        return (safeFilters.continents || []).includes(continent);
       });
     }
 
