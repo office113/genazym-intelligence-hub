@@ -165,7 +165,7 @@ export default function Customers() {
         if (!isNaN(max)) result = result.filter(c => (c?.maxBid || 0) <= max);
       }
       if (advancedFilters?.segment && advancedFilters.segment !== '') {
-        result = result.filter(c => c?.segment === advancedFilters.segment);
+        result = result.filter(c => c?.classification === advancedFilters.segment);
       }
       return result;
     } catch (error) {
