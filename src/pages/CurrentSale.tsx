@@ -104,12 +104,6 @@ export default function CurrentSale() {
 
         {activeTab === "missing" && (
           <>
-            {/* Brand sub-tabs for missing */}
-            <div className="flex items-center gap-1 mb-6 bg-card border border-border rounded-lg p-0.5 w-fit shadow-sm">
-              <button onClick={() => { setMissingBrand("Genazym"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Genazym" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>גנזים</button>
-              <button onClick={() => { setMissingBrand("Zaidy"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Zaidy" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>זיידי</button>
-            </div>
-
             {missingLoading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
             {missingError && <div className="text-center py-20 text-destructive text-sm">שגיאה: {missingError}</div>}
             {!missingLoading && !missingError && (
