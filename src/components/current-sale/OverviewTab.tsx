@@ -451,7 +451,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
                         const status = getStatus(p);
                         return (
                           <tr key={i} className="hover:bg-secondary/20 transition-colors" style={i % 2 === 0 ? { background: "hsl(var(--secondary) / 0.15)" } : undefined}>
-                            <td className="font-semibold">{p.full_name}</td>
+                            <td className="font-semibold"><CustomerLink email={p.email}>{p.full_name}</CustomerLink></td>
                             <td className="text-center">{p.totalBids}</td>
                             <td className="text-center">{p.auctionCount}</td>
                             <td className="text-xs text-muted-foreground">{p.firstSeen?.slice(0, 10) || "—"}</td>
