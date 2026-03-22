@@ -33,6 +33,24 @@ export default function Customers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [brand, setBrand] = useState<Brand>("genazym");
+  const [advancedFilters, setAdvancedFilters] = useState<CustomerFilters>(defaultCustomerFilters);
+  const [customerMeta, setCustomerMeta] = useState<Record<string, any>>({});
+
+  // Fetch customer metadata (IDs, purchasing_power, continent) for advanced filtering
+  useEffect(() => {
+    const fetchMeta = async () => {
+      const { data } = await supabase
+        .from("customers")
+        .select("email, genazym_id, zaidy_id, purchasing_power, country, continent")
+        .limit(50000);
+      if (data) {
+        const map: Record<string, any> = {};
+        data.forEach((r: any) => { map[r.email] = r; });
+        setCustomerMeta(map);
+      }
+    };
+    fetchMeta();
+  }, []);
 
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
 
