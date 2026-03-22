@@ -3,19 +3,19 @@ import { createContext, useContext, useState, ReactNode } from "react";
 export interface StatusThresholds {
   vipSpend: number;
   vipAuctions: number;
-  activeMin: number;
-  activeMax: number;
-  beginnerMin: number;
-  beginnerMax: number;
+  activeSpend: number;
+  activeAuctions: number;
+  beginnerSpend: number;
+  beginnerAuctions: number;
 }
 
 const DEFAULT_THRESHOLDS: StatusThresholds = {
   vipSpend: 50000,
-  vipAuctions: 5,
-  activeMin: 3,
-  activeMax: 999,
-  beginnerMin: 1,
-  beginnerMax: 2,
+  vipAuctions: 10,
+  activeSpend: 10000,
+  activeAuctions: 5,
+  beginnerSpend: 0,
+  beginnerAuctions: 1,
 };
 
 interface StatusThresholdsContextType {
@@ -47,16 +47,21 @@ export interface CustomerStatus {
   color: string;
 }
 
+/** Check thresholds in descending order: VIP → Active → Beginner → New */
 export function getCustomerStatus(
   totalSpend: number,
   auctionCount: number,
   thresholds: StatusThresholds
 ): CustomerStatus {
+  // VIP: highest tier
   if (totalSpend >= thresholds.vipSpend || auctionCount >= thresholds.vipAuctions)
     return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
-  if (auctionCount >= thresholds.activeMin)
+  // Active: mid tier
+  if (totalSpend >= thresholds.activeSpend || auctionCount >= thresholds.activeAuctions)
     return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
-  if (auctionCount >= thresholds.beginnerMin)
+  // Beginner: entry tier (any participation)
+  if (totalSpend > thresholds.beginnerSpend || auctionCount >= thresholds.beginnerAuctions)
     return { label: "מתחיל", bg: "hsl(220, 40%, 92%)", color: "hsl(220, 45%, 40%)" };
+  // New: no participation
   return { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
 }

@@ -10,7 +10,7 @@ import {
 import { useStatusThresholds, StatusThresholds } from "@/contexts/StatusThresholdsContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Crown, Zap, Sprout, Star } from "lucide-react";
+import { Crown, Zap, Sprout, Star, ArrowDown } from "lucide-react";
 
 interface StatusRulesModalProps {
   open: boolean;
@@ -34,54 +34,45 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
     onOpenChange(false);
   };
 
-  const cards: {
+  const tiers: {
     title: string;
     icon: typeof Crown;
     color: string;
     bg: string;
-    fields: { label: string; key: keyof StatusThresholds; prefix?: string; suffix?: string }[];
+    spendKey: keyof StatusThresholds;
+    auctionsKey: keyof StatusThresholds;
     description: string;
+    editable: boolean;
   }[] = [
     {
       title: "VIP",
       icon: Crown,
       color: "hsl(var(--gold-dark, 45 80% 40%))",
       bg: "hsl(var(--accent) / 0.08)",
-      description: "לקוחות עם הוצאות גבוהות או השתתפות רבה במכירות",
-      fields: [
-        { label: "סף הוצאות ($)", key: "vipSpend", prefix: "$" },
-        { label: "או מספר מכירות ≥", key: "vipAuctions" },
-      ],
+      spendKey: "vipSpend",
+      auctionsKey: "vipAuctions",
+      description: "דרג עליון — לקוחות עם הוצאות גבוהות או השתתפות רבה",
+      editable: true,
     },
     {
       title: "פעיל",
       icon: Zap,
       color: "hsl(var(--primary))",
       bg: "hsl(var(--primary) / 0.06)",
-      description: "לקוחות עם פעילות סדירה במכירות",
-      fields: [
-        { label: "מספר מכירות מינימלי", key: "activeMin" },
-        { label: "מספר מכירות מקסימלי", key: "activeMax" },
-      ],
+      spendKey: "activeSpend",
+      auctionsKey: "activeAuctions",
+      description: "דרג ביניים — לקוחות עם פעילות סדירה",
+      editable: true,
     },
     {
       title: "מתחיל",
       icon: Sprout,
       color: "hsl(220, 45%, 40%)",
       bg: "hsl(220, 40%, 95%)",
-      description: "לקוחות חדשים עם מעט היסטוריה",
-      fields: [
-        { label: "מספר מכירות מינימלי", key: "beginnerMin" },
-        { label: "מספר מכירות מקסימלי", key: "beginnerMax" },
-      ],
-    },
-    {
-      title: "חדש",
-      icon: Star,
-      color: "hsl(200, 45%, 35%)",
-      bg: "hsl(200, 40%, 95%)",
-      description: "לקוחות ללא היסטוריית רכישות (0 מכירות)",
-      fields: [],
+      spendKey: "beginnerSpend",
+      auctionsKey: "beginnerAuctions",
+      description: "דרג כניסה — כל לקוח שהשתתף לפחות פעם אחת",
+      editable: true,
     },
   ];
 
@@ -90,54 +81,99 @@ export default function StatusRulesModal({ open, onOpenChange }: StatusRulesModa
       <DialogContent className="max-w-xl" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-lg">כללי סיווג לקוחות</DialogTitle>
-          <DialogDescription>הגדר את התנאים לכל סטטוס. השינויים יחולו מיידית בכל הדוחות.</DialogDescription>
+          <DialogDescription>
+            הסיווג מבוסס על פעילות מצטברת בשני המותגים (Genazym + Zaidy). הבדיקה מתבצעת מלמעלה למטה — הלקוח מקבל את הדרג הגבוה ביותר שהוא עומד בו.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-          {cards.map((card) => (
-            <div
-              key={card.title}
-              className="rounded-xl border p-4 space-y-3"
-              style={{ background: card.bg, borderColor: "hsl(var(--border))" }}
-            >
-              <div className="flex items-center gap-2">
-                <card.icon className="w-5 h-5" style={{ color: card.color }} />
-                <span className="font-semibold text-sm" style={{ color: card.color }}>
-                  {card.title}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">{card.description}</p>
+        {/* Header row */}
+        <div className="grid grid-cols-[1fr_1fr] gap-3 px-14 text-[11px] font-medium text-muted-foreground">
+          <span>סף הוצאות מצטבר ($)</span>
+          <span>מספר מכירות שהשתתף בהן</span>
+        </div>
 
-              {card.fields.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {card.fields.map((f) => (
-                    <div key={f.key}>
-                      <label className="text-[11px] text-muted-foreground block mb-1">{f.label}</label>
-                      <div className="relative">
-                        {f.prefix && (
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                            {f.prefix}
-                          </span>
-                        )}
-                        <Input
-                          type="number"
-                          value={draft[f.key]}
-                          onChange={(e) => update(f.key, e.target.value)}
-                          className={`h-8 text-xs ${f.prefix ? "pr-7" : ""}`}
-                        />
-                      </div>
-                    </div>
-                  ))}
+        <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+          {tiers.map((tier, idx) => (
+            <div key={tier.title}>
+              <div
+                className="rounded-xl border p-4 space-y-3"
+                style={{ background: tier.bg, borderColor: "hsl(var(--border))" }}
+              >
+                <div className="flex items-center gap-2">
+                  <tier.icon className="w-5 h-5" style={{ color: tier.color }} />
+                  <span className="font-semibold text-sm" style={{ color: tier.color }}>
+                    {tier.title}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mr-auto">
+                    {tier.description}
+                  </span>
                 </div>
-              )}
 
-              {card.fields.length === 0 && (
-                <div className="text-xs rounded-lg border p-2 bg-background/60" style={{ borderColor: "hsl(var(--border))" }}>
-                  לקוחות עם 0 מכירות מסווגים אוטומטית כ"חדש"
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Spend */}
+                  <div>
+                    <label className="text-[11px] text-muted-foreground block mb-1">
+                      סף הוצאות מצטבר ($)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                      <Input
+                        type="number"
+                        value={draft[tier.spendKey]}
+                        onChange={(e) => update(tier.spendKey, e.target.value)}
+                        className="h-8 text-xs pr-7"
+                      />
+                    </div>
+                  </div>
+                  {/* Auctions */}
+                  <div>
+                    <label className="text-[11px] text-muted-foreground block mb-1">
+                      מספר מכירות שהשתתף בהן
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">≥</span>
+                      <Input
+                        type="number"
+                        value={draft[tier.auctionsKey]}
+                        onChange={(e) => update(tier.auctionsKey, e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-muted-foreground/70">
+                  תנאי: הוצאות ≥ ${draft[tier.spendKey].toLocaleString()} <strong>או</strong> מכירות ≥ {draft[tier.auctionsKey]}
+                </div>
+              </div>
+
+              {/* Arrow between tiers */}
+              {idx < tiers.length - 1 && (
+                <div className="flex justify-center py-1">
+                  <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
                 </div>
               )}
             </div>
           ))}
+
+          {/* New — static */}
+          <div className="flex justify-center py-1">
+            <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
+          </div>
+          <div
+            className="rounded-xl border p-4 space-y-2"
+            style={{ background: "hsl(200, 40%, 95%)", borderColor: "hsl(var(--border))" }}
+          >
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5" style={{ color: "hsl(200, 45%, 35%)" }} />
+              <span className="font-semibold text-sm" style={{ color: "hsl(200, 45%, 35%)" }}>
+                חדש
+              </span>
+            </div>
+            <div className="text-xs rounded-lg border p-2 bg-background/60" style={{ borderColor: "hsl(var(--border))" }}>
+              ברירת מחדל — לקוחות עם 0 מכירות ו-$0 הוצאות
+            </div>
+          </div>
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
