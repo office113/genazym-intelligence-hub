@@ -197,9 +197,10 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
       .filter(s => s.saleId === selectedSale.id && s.dx <= 30)
       .sort((a, b) => b.dx - a.dx); // D-30 first
 
-    // Get last 5 completed same-brand sales for benchmark (excluding selected)
+    // Get last 5 completed same-brand sales for benchmark (excluding selected AND current active sale)
+    const excludeIds = new Set([selectedSale.id, currentSaleId]);
     const sameBrandPast = salesList
-      .filter(s => s.id !== selectedSale.id && s.brand === selectedSale.brand)
+      .filter(s => !excludeIds.has(s.id) && s.brand === selectedSale.brand)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 5);
 
