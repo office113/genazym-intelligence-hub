@@ -80,6 +80,8 @@ export default function Customers() {
         auctionsInvolved,
         lastActive: lastActiveDate,
         segment,
+        genazym_id: rows[0]?.genazym_id,
+        zaidy_id: rows[0]?.zaidy_id,
       };
     }).sort((a, b) => b.totalSpend - a.totalSpend);
   }, [rawActivityData, rawAuctionsData]);
