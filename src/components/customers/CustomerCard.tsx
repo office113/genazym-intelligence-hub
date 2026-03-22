@@ -76,12 +76,12 @@ export default function CustomerCard() {
       // Books WON - fetch from view
       const { data: won } = await supabase
         .from("view_customer_won_books")
-        .select("book_name, auction_name, sold_price, brand")
+        .select("book_name, head_hebrew, auction_name, sold_price, brand")
         .eq("customer_email", email)
         .order("auction_date", { ascending: false })
         .limit(1000);
       setBooksWon((won || []).map(w => ({
-        book_name: w.book_name || "—",
+        book_name: w.head_hebrew || w.book_name || "—",
         auction_name: w.auction_name,
         sold_price: w.sold_price,
         brand: w.brand,
