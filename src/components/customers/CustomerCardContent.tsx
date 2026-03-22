@@ -269,6 +269,30 @@ export default function CustomerCardContent({ email }: Props) {
         </div>
       </div>
 
+      {/* ══════ VIEW SWITCHER ══════ */}
+      <div style={{ display: 'flex', border: '0.5px solid rgba(0,0,0,0.12)', borderRadius: 12, overflow: 'hidden', margin: '0 0 1rem' }}>
+        {(['card', 'taste'] as const).map(v => (
+          <button key={v} onClick={() => setView(v)}
+            style={{
+              flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 500,
+              textAlign: 'center', border: 'none', cursor: 'pointer',
+              background: view === v ? PURPLE.fill : GRAY_BG,
+              color: view === v ? PURPLE.text : MUTED,
+            }}>
+            {v === 'card' ? 'כרטיס לקוח' : 'העדפות וטעם'}
+          </button>
+        ))}
+      </div>
+
+      {/* ══════ TASTE VIEW ══════ */}
+      {view === 'taste' && (
+        <CustomerTasteProfile email={email} />
+      )}
+
+      {/* ══════ CARD VIEW ══════ */}
+      {view === 'card' && (
+      <>
+
       {/* ══════ BRAND TABS ══════ */}
       <div className="flex border-b" style={{ borderColor: "rgba(0,0,0,0.1)" }}>
         {(["all", "Genazym", "Zaidy", "taste"] as BrandTab[]).map(tab => (
