@@ -195,7 +195,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
     const selectedSale = salesList.find(s => s.id === selectedSaleId) || salesList.find(s => s.brand === selectedBrand) || salesList[0] || fallbackSale;
     const saleSnapshots = allSaleSnapshots
       .filter(s => s.saleId === selectedSale.id && s.dx <= 30)
-      .sort((a, b) => b.dx - a.dx); // D-30 first
+      .sort((a, b) => a.dx - b.dx); // D-0 first
 
     // Get last 5 completed same-brand sales for benchmark (excluding selected AND current active sale)
     const excludeIds = new Set([selectedSale.id, currentSaleId]);
