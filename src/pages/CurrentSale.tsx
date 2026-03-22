@@ -31,9 +31,12 @@ export default function CurrentSale() {
   const [missingPage, setMissingPage] = useState(0);
   const [missingTotal, setMissingTotal] = useState(0);
   const [missingSearch, setMissingSearch] = useState("");
+  const [missingBrand, setMissingBrand] = useState<"Genazym" | "Zaidy">("Genazym");
 
   useEffect(() => {
     if (activeTab !== "missing") return;
+    setMissingData([]);
+    setMissingTotal(0);
     const fetchMissing = async () => {
       setMissingLoading(true);
       setMissingError(null);
@@ -44,12 +47,13 @@ export default function CurrentSale() {
         const { data, error: err, count } = await supabase
           .from("view_missing_customers")
           .select("*", { count: "exact" })
+          .eq("brand", missingBrand)
           .order("total_spend_all_time", { ascending: false })
           .range(from, to);
 
         if (err) throw new Error(err.message);
-        console.log('Missing Customers Data:', data);
         setMissingData(data ?? []);
+        setMissingTotal(count ?? 0);
       } catch (e: any) {
         setMissingError(e.message);
       } finally {
@@ -57,7 +61,7 @@ export default function CurrentSale() {
       }
     };
     fetchMissing();
-  }, [activeTab, missingPage]);
+  }, [activeTab, missingPage, missingBrand]);
 
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); };
   const selectedBrand = brand === "genazym" ? "גנזים" as const : "זיידי" as const;
@@ -100,6 +104,12 @@ export default function CurrentSale() {
 
         {activeTab === "missing" && (
           <>
+            {/* Brand sub-tabs for missing */}
+            <div className="flex items-center gap-1 mb-6 bg-card border border-border rounded-lg p-0.5 w-fit shadow-sm">
+              <button onClick={() => { setMissingBrand("Genazym"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Genazym" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>גנזים</button>
+              <button onClick={() => { setMissingBrand("Zaidy"); setMissingPage(0); }} className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${missingBrand === "Zaidy" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>זיידי</button>
+            </div>
+
             {missingLoading && <div className="text-center py-20 text-muted-foreground text-sm">טוען נתונים...</div>}
             {missingError && <div className="text-center py-20 text-destructive text-sm">שגיאה: {missingError}</div>}
             {!missingLoading && !missingError && (
@@ -123,10 +133,9 @@ export default function CurrentSale() {
                       <tr>
                         <th>מזהה</th>
                         <th>שם</th>
-                        <th>מכירה נוכחית</th>
-                        <th>רכישות היסטוריות ($)</th>
+                        <th>סה״כ הוצאות ($)</th>
                         <th>ביד מקסימלי בעבר ($)</th>
-                        <th>השתתפות ב-6 אחרונות</th>
+                        <th>מס' מכירות (6 אחרונות)</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -134,7 +143,6 @@ export default function CurrentSale() {
                         <tr key={c.email || i} onClick={() => openCustomer({ name: c.full_name, email: c.email, totalSpend: c.total_spend_all_time, displayId: c.genazym_id || c.zaidy_id })}>
                           <td className="text-center text-xs text-muted-foreground">{c.genazym_id || c.zaidy_id || "—"}</td>
                           <td className="font-semibold">{c.full_name || c.email || "—"}</td>
-                          <td>{c.current_auction || "—"}</td>
                           <td>${(c.total_spend_all_time ?? 0).toLocaleString()}</td>
                           <td>${(c.max_bid_hist ?? 0).toLocaleString()}</td>
                           <td>{c.active_auctions_last_6 ?? "—"}</td>
