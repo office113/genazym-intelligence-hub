@@ -119,9 +119,39 @@ export default function Customers() {
   const removeFilter = (f: string) => setActiveFilters(activeFilters.filter(x => x !== f));
   const openCustomer = (c: any) => { setSelectedCustomer(c); setDrawerOpen(true); setActiveTab("profile"); };
 
-  const filtered = customers.filter(c =>
-    !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()) || c.country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    try {
+      let result = customers || [];
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        result = result.filter(c =>
+          (c?.name || '').toLowerCase().includes(q) ||
+          (c?.email || '').toLowerCase().includes(q) ||
+          (c?.country || '').toLowerCase().includes(q)
+        );
+      }
+      if (advancedFilters?.genazymId) {
+        const id = Number(advancedFilters.genazymId);
+        if (!isNaN(id)) result = result.filter(c => c?.genazym_id === id);
+      }
+      if (advancedFilters?.zaidyId) {
+        const id = Number(advancedFilters.zaidyId);
+        if (!isNaN(id)) result = result.filter(c => c?.zaidy_id === id);
+      }
+      if (advancedFilters?.minSpend) {
+        const min = Number(advancedFilters.minSpend);
+        if (!isNaN(min)) result = result.filter(c => (c?.totalSpend || 0) >= min);
+      }
+      if (advancedFilters?.maxSpend) {
+        const max = Number(advancedFilters.maxSpend);
+        if (!isNaN(max)) result = result.filter(c => (c?.totalSpend || 0) <= max);
+      }
+      return result;
+    } catch (error) {
+      console.error('Filtering error:', error);
+      return customers || [];
+    }
+  }, [customers, searchQuery, advancedFilters]);
 
   // Build customer timeline from raw activity
   const customerTimeline = useMemo(() => {
