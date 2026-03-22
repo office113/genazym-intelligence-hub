@@ -640,7 +640,14 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
                         key={snap.dx}
                         className={`cursor-pointer ${snap.dx % 5 === 0 ? "font-medium" : ""}`}
                         style={snap.dx <= 2 ? { background: "hsl(var(--accent) / 0.04)" } : undefined}
-                        onClick={() => openDrillDown("uniqueBidders", `D-${snap.dx} Snapshot`, `${mode2Data.selectedSale.name}`)}
+                        onClick={() => openDrillDown(
+                          "uniqueBidders",
+                          `נתוני משתמשים עבור ${mode2Data.selectedSale.name} ביום D-${snap.dx}`,
+                          `${snap.uniqueBidders} משתמשים שונים · ${snap.earlyBids} הצעות · ${snap.lotsWithBids} פריטים`,
+                          mode2Data.selectedSale.name,
+                          mode2Data.selectedSale.id,
+                          snap.dx
+                        )}
                       >
                         <td className="sticky right-0 bg-card z-10">
                           <span className="font-bold font-display" style={snap.dx <= 2 ? { color: "hsl(var(--accent))" } : undefined}>D-{snap.dx}</span>
