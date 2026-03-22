@@ -561,7 +561,7 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
                     <XAxis
                       dataKey="dx"
                       tick={{ fontSize: 10 }}
-                      interval={4}
+                      interval={5}
                       reversed
                     />
                     <YAxis tick={{ fontSize: 10 }} width={45} tickFormatter={chart.key === "guaranteedPrice" ? (v: number) => fmtPrice(v) : undefined} />
