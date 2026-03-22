@@ -224,7 +224,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
 
   const getStatus = (p: typeof globalProfiles[0]) => {
     return getCustomerStatus(
-      { totalWins: p.totalSpend, winAuctionCount: p.auctionCount, maxBid: p.maxBid || 0 },
+      { totalWins: p.totalSpend, winAuctionCount: p.winAuctionCount || 0, maxBid: p.maxBid || 0, totalBids: p.totalBids || 0 },
       statusRules
     );
   };
