@@ -564,10 +564,14 @@ export default function OverviewTab({ selectedBrand, mode, dailySnapshots = [], 
 
           {/* KPI Row - latest available snapshot */}
           {(() => {
-            const latestSnap = mode2Data.saleSnapshots[mode2Data.saleSnapshots.length - 1]; // D-0
-            const latestAvail = mode2Data.saleSnapshots.find(s => s.earlyBids > 0) ? mode2Data.saleSnapshots[mode2Data.saleSnapshots.length - 1] : mode2Data.saleSnapshots[0];
-            if (!latestSnap) return null;
-            const bench = mode2Data.benchmarkByDX[latestSnap.dx];
+            // saleSnapshots sorted D-0 first, so [0] = D-0 (most recent data)
+            const latestSnap = mode2Data.saleSnapshots[0]; // D-0
+            // For future sales with no bids yet, find first snapshot with data, else fall back to D-0
+            const displaySnap = mode2Data.saleSnapshots.find(s => s.earlyBids > 0) || latestSnap;
+            if (!displaySnap) return null;
+            const dxKey = Math.round(displaySnap.dx);
+            const bench = mode2Data.benchmarkByDX[dxKey];
+            console.log(`[KPI Cards] Brand=${selectedBrand}, Sale=${mode2Data.selectedSale.name}, DX=${dxKey}, hasBench=${!!bench}`);
             return (
               <div className="grid grid-cols-6 gap-3">
                 <OverviewKPI label="סה״כ הצעות מוקדמות" value={latestSnap.earlyBids} comparison={bench?.earlyBids} />
