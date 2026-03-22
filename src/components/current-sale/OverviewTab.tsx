@@ -219,9 +219,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   };
 
   const getStatus = (p: typeof globalProfiles[0]) => {
-    if (p.totalSpend >= statusThresholds.vipSpend || p.auctionCount >= statusThresholds.vipAuctions) return { label: "VIP", bg: "hsl(var(--accent) / 0.12)", color: "hsl(var(--gold-dark))" };
-    if (p.auctionCount >= statusThresholds.activeAuctions) return { label: "פעיל", bg: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" };
-    return { label: "חדש", bg: "hsl(200, 40%, 92%)", color: "hsl(200, 45%, 35%)" };
+    return getCustomerStatus(p.totalSpend, p.auctionCount, statusThresholds);
   };
 
   return (
