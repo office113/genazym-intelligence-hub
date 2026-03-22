@@ -103,7 +103,7 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   const [loadingGlobal, setLoadingGlobal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState<DrillDownView>("sale");
-  const { thresholds: statusThresholds } = useStatusThresholds();
+  const { rules: statusRules } = useStatusThresholds();
 
   // Determine if auction is in the past
   const auctionInPast = useMemo(() => {
@@ -171,15 +171,19 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
 
         if (error || !data?.length) { setLoadingGlobal(false); return; }
 
-        const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; firstSeen: string; lastSeen: string }> = {};
+        const byEmail: Record<string, { full_name: string; email: string; totalBids: number; totalSpend: number; auctionCount: number; maxBid: number; winAuctionCount: number; firstSeen: string; lastSeen: string }> = {};
         for (const row of data) {
           if (!row.email) continue;
           if (!byEmail[row.email]) {
-            byEmail[row.email] = { full_name: row.full_name, email: row.email, totalBids: 0, totalSpend: 0, auctionCount: 0, firstSeen: row.first_bid_at || "", lastSeen: row.first_bid_at || "" };
+            byEmail[row.email] = { full_name: row.full_name, email: row.email, totalBids: 0, totalSpend: 0, auctionCount: 0, maxBid: 0, winAuctionCount: 0, firstSeen: row.first_bid_at || "", lastSeen: row.first_bid_at || "" };
           }
           const p = byEmail[row.email];
           p.totalBids += row.total_bids || 0;
-          if (row.was_winner) p.totalSpend += row.total_win_value || 0;
+          if (row.max_bid && row.max_bid > p.maxBid) p.maxBid = row.max_bid;
+          if (row.was_winner) {
+            p.totalSpend += row.total_win_value || 0;
+            p.winAuctionCount += 1;
+          }
           p.auctionCount += 1;
           if (row.first_bid_at && row.first_bid_at < p.firstSeen) p.firstSeen = row.first_bid_at;
           if (row.first_bid_at && row.first_bid_at > p.lastSeen) p.lastSeen = row.first_bid_at;
@@ -219,7 +223,10 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
   };
 
   const getStatus = (p: typeof globalProfiles[0]) => {
-    return getCustomerStatus(p.totalSpend, p.auctionCount, statusThresholds);
+    return getCustomerStatus(
+      { totalWins: p.totalSpend, winAuctionCount: p.auctionCount, maxBid: p.maxBid || 0 },
+      statusRules
+    );
   };
 
   return (
@@ -364,13 +371,25 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
           {/* ═══ GLOBAL PROFILE VIEW ═══ */}
           {view === "profile" && (
             <>
-              {/* Legend */}
+              {/* Legend — dynamic from rules */}
               <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
                 📋 <strong>מקרא:</strong>{" "}
-                <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = ${statusThresholds.activeSpend.toLocaleString()}+ או {statusThresholds.activeAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(220, 45%, 40%)" }}>מתחיל</span> = {statusThresholds.beginnerAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = 0 מכירות
+                {statusRules.map((rule, i) => {
+                  const colors: Record<string, string> = { vip: "hsl(var(--gold-dark))", active: "hsl(var(--primary))", beginner: "hsl(220, 45%, 40%)" };
+                  const summary = rule.conditions.map(c => {
+                    const pLabel = c.parameter === "totalWins" ? "$" : c.parameter === "maxBid" ? "ביד $" : "מכירות";
+                    const val = c.parameter === "totalWins" || c.parameter === "maxBid" ? `$${c.value.toLocaleString()}` : String(c.value);
+                    return `${pLabel} ${c.operator} ${val}`;
+                  }).join(rule.connector === "OR" ? " או " : " וגם ");
+                  return (
+                    <span key={rule.key}>
+                      <span style={{ color: colors[rule.key] || "hsl(200, 45%, 35%)" }}>{rule.label}</span> = {summary}
+                      {i < statusRules.length - 1 ? " · " : ""}
+                    </span>
+                  );
+                })}
+                {" · "}
+                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = ברירת מחדל
               </div>
 
               {loadingGlobal && (
