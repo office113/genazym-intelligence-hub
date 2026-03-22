@@ -380,27 +380,33 @@ export default function Customers() {
           </>
         )}
 
-        {!loading && !error && activeTab === "profile" && selectedCustomer && (
-          <div className="max-w-4xl">
-            <div className="flex items-center justify-between mb-4">
+        {!loading && !error && activeTab === "profile" && profileCustomer && (
+          <div className="w-full">
+            <div className="flex items-center gap-3 mb-4">
               <button
-                onClick={() => { setSelectedCustomer(null); }}
+                onClick={() => { setProfileCustomer(null); setProfileSearch(""); }}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 ← חזרה לחיפוש
               </button>
+              <span className="text-sm font-medium">{profileCustomer.name}</span>
             </div>
-            <div className="chart-card p-6">
-              <CustomerCardContent email={selectedCustomer.email} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="chart-card p-5 overflow-y-auto" style={{ maxHeight: "80vh" }}>
+                <CustomerCardContent email={profileCustomer.email} />
+              </div>
+              <div className="chart-card p-5 overflow-y-auto" style={{ maxHeight: "80vh" }}>
+                <CustomerTasteProfile email={profileCustomer.email} />
+              </div>
             </div>
           </div>
         )}
 
-        {!loading && !error && activeTab === "profile" && !selectedCustomer && (
-          <div className="max-w-2xl mx-auto py-12">
+        {!loading && !error && activeTab === "profile" && !profileCustomer && (
+          <div className="max-w-2xl mx-auto py-12" dir="rtl">
             <div className="text-center mb-6">
-              <div className="text-lg font-display font-semibold mb-2">בחר לקוח</div>
-              <div className="text-sm text-muted-foreground">חפש לקוח כדי לראות את הכרטיס המלא</div>
+              <div className="text-lg font-display font-semibold mb-2">פרופיל לקוח</div>
+              <div className="text-sm text-muted-foreground">חפש לקוח כדי לראות את הפרופיל המלא והעדפותיו</div>
             </div>
             <div className="relative mb-4">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -420,7 +426,7 @@ export default function Customers() {
                 {profileResults.map(c => (
                   <button
                     key={c.email}
-                    onClick={() => { setSelectedCustomer(c); setProfileSearch(""); }}
+                    onClick={() => { setProfileCustomer(c); setProfileSearch(""); }}
                     className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-right"
                   >
                     <div>
