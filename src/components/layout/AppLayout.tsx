@@ -1,5 +1,6 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import {
   History,
   Gavel,
@@ -9,6 +10,7 @@ import {
   UserPlus,
   BookOpen,
   Activity,
+  RefreshCw,
 } from "lucide-react";
 
 const navItems = [
@@ -25,6 +27,18 @@ const navItems = [
 export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const isFetching = useIsFetching({ queryKey: ["brandData"] });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["brandData"] });
+    // Wait a bit for the refetch to start, then track via isFetching
+    setTimeout(() => setIsRefreshing(false), 1500);
+  };
+
+  const spinning = isRefreshing || isFetching > 0;
 
   return (
     <div className="flex min-h-screen w-full">
@@ -56,6 +70,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+
+        {/* Refresh Button */}
+        <div className="px-3 pb-2">
+          <button
+            onClick={handleRefresh}
+            disabled={spinning}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-90"
+            style={{
+              borderColor: "hsl(var(--sidebar-border))",
+              color: "hsl(var(--sidebar-foreground))",
+              background: "hsl(var(--sidebar-accent))",
+            }}
+          >
+            <RefreshCw className={`w-4 h-4 flex-shrink-0 ${spinning ? "animate-spin" : ""}`} />
+            <span>{spinning ? "מרענן..." : "רענון נתונים"}</span>
+          </button>
+        </div>
 
         {/* Footer */}
         <div className="px-4 py-3 border-t text-xs"
