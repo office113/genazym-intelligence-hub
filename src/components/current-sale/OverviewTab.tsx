@@ -368,8 +368,9 @@ function DrillDownPanel({ drillDown, onClose, getSnapshot, benchmarkByDX, select
               <div className="text-xs text-muted-foreground px-3 py-1.5 rounded border border-border" style={{ background: "hsl(var(--secondary) / 0.2)" }}>
                 📋 <strong>מקרא:</strong>{" "}
                 <span style={{ color: "hsl(var(--gold-dark))" }}>VIP</span> = ${statusThresholds.vipSpend.toLocaleString()}+ או {statusThresholds.vipAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeAuctions}+ מכירות ·{" "}
-                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = מתחת לסף
+                <span style={{ color: "hsl(var(--primary))" }}>פעיל</span> = {statusThresholds.activeMin}+ מכירות ·{" "}
+                <span style={{ color: "hsl(220, 45%, 40%)" }}>מתחיל</span> = {statusThresholds.beginnerMin}-{statusThresholds.beginnerMax} מכירות ·{" "}
+                <span style={{ color: "hsl(200, 45%, 35%)" }}>חדש</span> = 0 מכירות
               </div>
 
               {loadingGlobal && (
