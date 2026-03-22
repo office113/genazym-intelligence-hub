@@ -34,7 +34,31 @@ export default function Customers() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '', minMaxBid: '', maxMaxBid: '', segment: '' });
 
+  const [powerMap, setPowerMap] = useState<Record<string, string>>({});
+
   const { rawActivityData, rawAuctionsData, loading, error } = usePastSales(brand);
+
+  useEffect(() => {
+    const fetchPowers = async () => {
+      try {
+        const { default: supabase } = await import("@/lib/supabaseClient");
+        const { data, error } = await supabase
+          .from('customers')
+          .select('email, purchasing_power')
+          .limit(50000);
+        if (data && !error) {
+          const map: Record<string, string> = {};
+          data.forEach((row: any) => {
+            if (row?.email) map[row.email] = row.purchasing_power || '';
+          });
+          setPowerMap(map);
+        }
+      } catch (err) {
+        console.error('Failed to fetch purchasing powers', err);
+      }
+    };
+    fetchPowers();
+  }, []);
 
   // Aggregate activity data into customer profiles
   const customers = useMemo(() => {
