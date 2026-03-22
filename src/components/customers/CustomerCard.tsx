@@ -194,8 +194,11 @@ export default function CustomerCard() {
   // Filter books by brand tab
   const filterBooksByBrand = (books: any[]) => {
     if (brandTab === "all") return books;
-    // We don't have brand on individual books easily, so show all for now
-    return books;
+    const target = brandTab === "genazym" ? "Genazym" : "Zaidy";
+    return books.filter(b => {
+      if (b.brand) return b.brand === target;
+      return (b.auction_name || "").toLowerCase().includes(brandTab);
+    });
   };
 
   const filteredBooksWon = filterBooksByBrand(booksWon);
