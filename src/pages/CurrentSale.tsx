@@ -48,8 +48,8 @@ export default function CurrentSale() {
           .range(from, to);
 
         if (err) throw new Error(err.message);
+        console.log('Missing Customers Data:', data);
         setMissingData(data ?? []);
-        setMissingTotal(count ?? 0);
       } catch (e: any) {
         setMissingError(e.message);
       } finally {
