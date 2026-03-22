@@ -275,7 +275,7 @@ export default function CustomerCard() {
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {header?.genazym_id && (
                     <button
-                      onClick={() => setBrandTab("Genazym")}
+                      onClick={() => { setBrandTab("Genazym"); setAuctionSubTab("Genazym"); }}
                       className="px-2 py-0.5 rounded-full text-xs font-medium border cursor-pointer transition-opacity hover:opacity-80"
                       style={{ background: PURPLE.fill, borderColor: PURPLE.border, color: PURPLE.text }}
                     >
