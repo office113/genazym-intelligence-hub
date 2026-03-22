@@ -202,7 +202,49 @@ export default function Customers() {
                     placeholder="חיפוש לפי שם, אימייל, או מדינה..."
                     className="w-full pr-10 pl-4 py-3 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-all" />
                 </div>
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="flex items-center gap-1.5 px-4 py-3 text-sm border border-border rounded-lg bg-background hover:bg-muted transition-all text-muted-foreground"
+                >
+                  <Filter className="w-4 h-4" />
+                  חיפוש מתקדם
+                  {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
               </div>
+
+              {showAdvanced && (
+                <div className="border border-border rounded-lg p-4 mb-4 bg-muted/30">
+                  <div className="grid grid-cols-4 gap-4 mb-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מזהה גנזים</label>
+                      <input type="number" value={advancedFilters.genazymId} onChange={e => setAdvancedFilters(f => ({ ...f, genazymId: e.target.value }))}
+                        placeholder="Genazym ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מזהה זיידי</label>
+                      <input type="number" value={advancedFilters.zaidyId} onChange={e => setAdvancedFilters(f => ({ ...f, zaidyId: e.target.value }))}
+                        placeholder="Zaidy ID" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מינימום סה״כ זכיות ($)</label>
+                      <input type="number" value={advancedFilters.minSpend} onChange={e => setAdvancedFilters(f => ({ ...f, minSpend: e.target.value }))}
+                        placeholder="0" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">מקסימום סה״כ זכיות ($)</label>
+                      <input type="number" value={advancedFilters.maxSpend} onChange={e => setAdvancedFilters(f => ({ ...f, maxSpend: e.target.value }))}
+                        placeholder="∞" className="w-full px-3 py-2 text-sm border border-border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-accent/30" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setAdvancedFilters({ genazymId: '', zaidyId: '', minSpend: '', maxSpend: '' })}
+                      className="px-3 py-1.5 text-xs border border-border rounded-md hover:bg-muted transition-all text-muted-foreground">
+                      נקה הכל
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {activeFilters.length > 0 && (
                 <div className="flex gap-2 flex-wrap mb-4">
                   {activeFilters.map((f) => (<span key={f} className="filter-chip filter-chip-active">{f}<X className="w-3 h-3 cursor-pointer" onClick={() => removeFilter(f)} /></span>))}
