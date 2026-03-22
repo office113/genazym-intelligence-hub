@@ -461,3 +461,5 @@ export default function CustomerCardContent({ email }: Props) {
       </>
       )}
     </div>
+  );
+}
