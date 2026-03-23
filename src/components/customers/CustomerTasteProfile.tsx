@@ -120,8 +120,10 @@ export default function CustomerTasteProfile({ email }: Props) {
       const entries: TagEntry[] = [];
       map.forEach((counts, value) => {
         const weight = counts.won + counts.lost;
+        const wonBooks = counts.won / 2;
+        const lostBooks = counts.lost;
         const source = counts.won > 0 && counts.lost > 0 ? "both" : counts.won > 0 ? "won" : "lost";
-        entries.push({ value, weight, source });
+        entries.push({ value, weight, wonCount: wonBooks, lostCount: lostBooks, source });
       });
       entries.sort((a, b) => b.weight - a.weight);
       result[f.key] = entries.slice(0, 8);
