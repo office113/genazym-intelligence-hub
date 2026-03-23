@@ -185,8 +185,8 @@ export default function CustomerTasteProfile({ email }: Props) {
     return <div className="flex items-center justify-center h-32 text-xs" style={{ color: MUTED }}>טוען פרופיל טעם...</div>;
   }
 
-  const wonCount = wonTags.length;
-  const lostCount = lostTags.length;
+  const wonCount = new Set(wonTags.map(r => (r?.book_id_bidspirit ?? '') + '||' + (r?.auction_name ?? ''))).size;
+  const lostCount = new Set(lostTags.map(r => (r?.book_id_bidspirit ?? '') + '||' + (r?.auction_name ?? ''))).size;
 
   if (wonCount === 0 && lostCount === 0) {
     return <div className="text-center py-8 text-xs" style={{ color: MUTED }}>אין מספיק נתונים לבניית פרופיל טעם</div>;
