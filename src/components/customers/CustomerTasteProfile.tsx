@@ -35,6 +35,7 @@ export default function CustomerTasteProfile({ email }: Props) {
   const [loading, setLoading] = useState(true);
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<{ field: string; value: string } | null>(null);
 
   useEffect(() => {
     if (!email) return;
