@@ -195,13 +195,16 @@ export default function CustomerTasteProfile({ email }: Props) {
                   {entries.map(e => {
                     const style = getPillStyle(e, maxW);
                     const fontSize = e.weight >= maxW * 0.7 ? 11 : e.weight >= maxW * 0.4 ? 10 : 9;
+                    const isSelected = selectedTag?.field === f.key && selectedTag?.value === e.value;
                     return (
                       <span key={e.value}
-                        className="px-2 py-0.5 rounded-full border font-medium"
+                        className="px-2 py-0.5 rounded-full font-medium cursor-pointer transition-all"
+                        onClick={() => setSelectedTag(isSelected ? null : { field: f.key, value: e.value })}
                         style={{
                           ...style,
                           fontSize,
-                          borderWidth: 0.5,
+                          border: isSelected ? '1.5px solid #7F77DD' : `0.5px solid ${style.borderColor}`,
+                          boxShadow: isSelected ? '0 0 0 2px rgba(127,119,221,0.2)' : 'none',
                         }}>
                         {e.value}
                         <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.weight})</span>
