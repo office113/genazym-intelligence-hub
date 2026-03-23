@@ -217,8 +217,7 @@ export default function CustomerTasteProfile({ email }: Props) {
                         style={{
                           ...style,
                           fontSize,
-                          border: isSelected ? '1.5px solid #7F77DD' : `0.5px solid ${style.borderColor}`,
-                          boxShadow: isSelected ? '0 0 0 2px rgba(127,119,221,0.2)' : 'none',
+                          ...(isSelected ? { border: '1.5px solid #7F77DD', boxShadow: '0 0 0 2px rgba(127,119,221,0.2)' } : { boxShadow: 'none' }),
                         }}>
                         {e.value}
                         <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.weight})</span>
