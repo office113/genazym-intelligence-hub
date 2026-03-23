@@ -21,6 +21,8 @@ type TagField = typeof TAG_FIELDS[number]["key"];
 interface TagEntry {
   value: string;
   weight: number;
+  wonCount: number;
+  lostCount: number;
   source: "won" | "lost" | "both";
 }
 
