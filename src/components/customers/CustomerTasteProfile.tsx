@@ -48,11 +48,11 @@ export default function CustomerTasteProfile({ email }: Props) {
         const [wonRes, lostRes, actRes] = await Promise.all([
           supabase
             .from("view_customer_won_books")
-            .select("tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+            .select("book_id_bidspirit, auction_name, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
             .eq("customer_email", email),
           supabase
             .from("fact_customer_lost_bids")
-            .select("tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness, max_bid")
+            .select("book_id_bidspirit, auction_name, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness, max_bid")
             .eq("customer_email", email),
           supabase
             .from("fact_customer_brand_activity")
