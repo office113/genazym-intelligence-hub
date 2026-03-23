@@ -188,10 +188,13 @@ export default function CustomerTasteProfile({ email }: Props) {
         <div className="text-xs font-medium mb-3" style={{ color: "#1a1a1a" }}>פרופיל טעם</div>
         <div className="flex items-center gap-3 mb-3">
           <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
-            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.border }} />זכה (×2)
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.fill, border: `1px solid ${GREEN.border}` }} />זכה בלבד
           </span>
           <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
-            <span className="inline-block w-2 h-2 rounded-full" style={{ background: PURPLE.border }} />ניסה (×1)
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: PURPLE.fill, border: `1px solid ${PURPLE.border}` }} />ניסה בלבד
+          </span>
+          <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.fill, border: `1px solid ${GREEN.border}`, borderRight: `2px solid #7F77DD` }} />זכה וגם ניסה
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
