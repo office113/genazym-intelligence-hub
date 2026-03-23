@@ -20,8 +20,8 @@ import NotFound from "@/pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,
-      gcTime: 0,
+      staleTime: 600000,
+      gcTime: 600000,
     },
   },
 });
