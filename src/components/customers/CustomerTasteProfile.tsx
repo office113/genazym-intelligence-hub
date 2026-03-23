@@ -21,6 +21,8 @@ type TagField = typeof TAG_FIELDS[number]["key"];
 interface TagEntry {
   value: string;
   weight: number;
+  wonCount: number;
+  lostCount: number;
   source: "won" | "lost" | "both";
 }
 
@@ -118,8 +120,10 @@ export default function CustomerTasteProfile({ email }: Props) {
       const entries: TagEntry[] = [];
       map.forEach((counts, value) => {
         const weight = counts.won + counts.lost;
+        const wonBooks = counts.won / 2;
+        const lostBooks = counts.lost;
         const source = counts.won > 0 && counts.lost > 0 ? "both" : counts.won > 0 ? "won" : "lost";
-        entries.push({ value, weight, source });
+        entries.push({ value, weight, wonCount: wonBooks, lostCount: lostBooks, source });
       });
       entries.sort((a, b) => b.weight - a.weight);
       result[f.key] = entries.slice(0, 8);
@@ -231,7 +235,7 @@ export default function CustomerTasteProfile({ email }: Props) {
                           ...(isSelected ? { border: '1.5px solid #7F77DD', boxShadow: '0 0 0 2px rgba(127,119,221,0.2)' } : { boxShadow: 'none' }),
                         }}>
                         {e.value}
-                        <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.weight})</span>
+                        <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.wonCount + e.lostCount})</span>
                       </span>
                     );
                   })}
