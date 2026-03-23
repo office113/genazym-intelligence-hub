@@ -143,18 +143,29 @@ export default function CustomerTasteProfile({ email }: Props) {
   // Pill styling
   const getPillStyle = (entry: TagEntry, maxWeight: number) => {
     const opacity = Math.max(0.5, Math.min(1, entry.weight / Math.max(maxWeight, 1)));
-    if (entry.source === "won" || entry.source === "both") {
+    if (entry.source === "both") {
       return {
         background: GREEN.fill,
         color: GREEN.text,
-        borderColor: GREEN.border,
+        borderRight: `3px solid #7F77DD`,
+        borderTop: `0.5px solid ${GREEN.border}`,
+        borderBottom: `0.5px solid ${GREEN.border}`,
+        borderLeft: `0.5px solid ${GREEN.border}`,
+        opacity,
+      };
+    }
+    if (entry.source === "won") {
+      return {
+        background: GREEN.fill,
+        color: GREEN.text,
+        border: `0.5px solid ${GREEN.border}`,
         opacity,
       };
     }
     return {
       background: PURPLE.fill,
       color: PURPLE.text,
-      borderColor: PURPLE.border,
+      border: `0.5px solid ${PURPLE.border}`,
       opacity,
     };
   };
