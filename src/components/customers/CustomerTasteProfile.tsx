@@ -48,11 +48,11 @@ export default function CustomerTasteProfile({ email }: Props) {
         const [wonRes, lostRes, actRes] = await Promise.all([
           supabase
             .from("view_customer_won_books")
-            .select("tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+            .select("book_id_bidspirit, auction_name, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
             .eq("customer_email", email),
           supabase
             .from("fact_customer_lost_bids")
-            .select("tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness, max_bid")
+            .select("book_id_bidspirit, auction_name, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness, max_bid")
             .eq("customer_email", email),
           supabase
             .from("fact_customer_brand_activity")
@@ -74,7 +74,18 @@ export default function CustomerTasteProfile({ email }: Props) {
     return () => { mounted = false; };
   }, [email]);
 
-  // Build tag frequency maps per field
+  // Deduplicate rows by book_id_bidspirit + auction_name
+  const dedup = (rows: any[]) => {
+    const seen = new Set<string>();
+    return rows.filter(r => {
+      const key = (r?.book_id_bidspirit ?? '') + '||' + (r?.auction_name ?? '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
+  // Build tag frequency maps per field (distinct books only)
   const tagMaps = useMemo(() => {
     const result: Record<TagField, Map<string, { won: number; lost: number }>> = {} as any;
     for (const f of TAG_FIELDS) {
@@ -82,7 +93,7 @@ export default function CustomerTasteProfile({ email }: Props) {
     }
 
     const addRows = (rows: any[], source: "won" | "lost", weight: number) => {
-      for (const row of rows) {
+      for (const row of dedup(rows)) {
         for (const f of TAG_FIELDS) {
           const val = row?.[f.key];
           if (!val || val === "" || val === "null") continue;
@@ -174,8 +185,8 @@ export default function CustomerTasteProfile({ email }: Props) {
     return <div className="flex items-center justify-center h-32 text-xs" style={{ color: MUTED }}>טוען פרופיל טעם...</div>;
   }
 
-  const wonCount = wonTags.length;
-  const lostCount = lostTags.length;
+  const wonCount = new Set(wonTags.map(r => (r?.book_id_bidspirit ?? '') + '||' + (r?.auction_name ?? ''))).size;
+  const lostCount = new Set(lostTags.map(r => (r?.book_id_bidspirit ?? '') + '||' + (r?.auction_name ?? ''))).size;
 
   if (wonCount === 0 && lostCount === 0) {
     return <div className="text-center py-8 text-xs" style={{ color: MUTED }}>אין מספיק נתונים לבניית פרופיל טעם</div>;
