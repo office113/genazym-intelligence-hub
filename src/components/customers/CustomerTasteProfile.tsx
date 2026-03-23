@@ -218,6 +218,16 @@ export default function CustomerTasteProfile({ email }: Props) {
         </div>
       </div>
 
+      {/* ══════ TAG BOOK PANEL ══════ */}
+      {selectedTag && (
+        <TagBookPanel
+          field={selectedTag.field}
+          value={selectedTag.value}
+          email={email}
+          onClose={() => setSelectedTag(null)}
+        />
+      )}
+
       {/* ══════ SECTION B — DETECTED PATTERNS ══════ */}
       <div>
         <div className="text-xs font-medium mb-2" style={{ color: "#1a1a1a" }}>דפוסים שזוהו</div>
