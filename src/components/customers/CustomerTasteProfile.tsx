@@ -143,18 +143,29 @@ export default function CustomerTasteProfile({ email }: Props) {
   // Pill styling
   const getPillStyle = (entry: TagEntry, maxWeight: number) => {
     const opacity = Math.max(0.5, Math.min(1, entry.weight / Math.max(maxWeight, 1)));
-    if (entry.source === "won" || entry.source === "both") {
+    if (entry.source === "both") {
       return {
         background: GREEN.fill,
         color: GREEN.text,
-        borderColor: GREEN.border,
+        borderRight: `3px solid #7F77DD`,
+        borderTop: `0.5px solid ${GREEN.border}`,
+        borderBottom: `0.5px solid ${GREEN.border}`,
+        borderLeft: `0.5px solid ${GREEN.border}`,
+        opacity,
+      };
+    }
+    if (entry.source === "won") {
+      return {
+        background: GREEN.fill,
+        color: GREEN.text,
+        border: `0.5px solid ${GREEN.border}`,
         opacity,
       };
     }
     return {
       background: PURPLE.fill,
       color: PURPLE.text,
-      borderColor: PURPLE.border,
+      border: `0.5px solid ${PURPLE.border}`,
       opacity,
     };
   };
@@ -177,10 +188,13 @@ export default function CustomerTasteProfile({ email }: Props) {
         <div className="text-xs font-medium mb-3" style={{ color: "#1a1a1a" }}>פרופיל טעם</div>
         <div className="flex items-center gap-3 mb-3">
           <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
-            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.border }} />זכה (×2)
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.fill, border: `1px solid ${GREEN.border}` }} />זכה בלבד
           </span>
           <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
-            <span className="inline-block w-2 h-2 rounded-full" style={{ background: PURPLE.border }} />ניסה (×1)
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: PURPLE.fill, border: `1px solid ${PURPLE.border}` }} />ניסה בלבד
+          </span>
+          <span className="flex items-center gap-1 text-[10px]" style={{ color: MUTED }}>
+            <span className="inline-block w-2 h-2 rounded-full" style={{ background: GREEN.fill, border: `1px solid ${GREEN.border}`, borderRight: `2px solid #7F77DD` }} />זכה וגם ניסה
           </span>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -203,8 +217,7 @@ export default function CustomerTasteProfile({ email }: Props) {
                         style={{
                           ...style,
                           fontSize,
-                          border: isSelected ? '1.5px solid #7F77DD' : `0.5px solid ${style.borderColor}`,
-                          boxShadow: isSelected ? '0 0 0 2px rgba(127,119,221,0.2)' : 'none',
+                          ...(isSelected ? { border: '1.5px solid #7F77DD', boxShadow: '0 0 0 2px rgba(127,119,221,0.2)' } : { boxShadow: 'none' }),
                         }}>
                         {e.value}
                         <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.weight})</span>
