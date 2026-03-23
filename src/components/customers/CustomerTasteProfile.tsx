@@ -35,6 +35,7 @@ export default function CustomerTasteProfile({ email }: Props) {
   const [loading, setLoading] = useState(true);
   const [insight, setInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
+  const [selectedTag, setSelectedTag] = useState<{ field: string; value: string } | null>(null);
 
   useEffect(() => {
     if (!email) return;
@@ -194,13 +195,16 @@ export default function CustomerTasteProfile({ email }: Props) {
                   {entries.map(e => {
                     const style = getPillStyle(e, maxW);
                     const fontSize = e.weight >= maxW * 0.7 ? 11 : e.weight >= maxW * 0.4 ? 10 : 9;
+                    const isSelected = selectedTag?.field === f.key && selectedTag?.value === e.value;
                     return (
                       <span key={e.value}
-                        className="px-2 py-0.5 rounded-full border font-medium"
+                        className="px-2 py-0.5 rounded-full font-medium cursor-pointer transition-all"
+                        onClick={() => setSelectedTag(isSelected ? null : { field: f.key, value: e.value })}
                         style={{
                           ...style,
                           fontSize,
-                          borderWidth: 0.5,
+                          border: isSelected ? '1.5px solid #7F77DD' : `0.5px solid ${style.borderColor}`,
+                          boxShadow: isSelected ? '0 0 0 2px rgba(127,119,221,0.2)' : 'none',
                         }}>
                         {e.value}
                         <span className="mr-0.5" style={{ opacity: 0.6 }}>({e.weight})</span>
@@ -213,6 +217,16 @@ export default function CustomerTasteProfile({ email }: Props) {
           })}
         </div>
       </div>
+
+      {/* ══════ TAG BOOK PANEL ══════ */}
+      {selectedTag && (
+        <TagBookPanel
+          field={selectedTag.field}
+          value={selectedTag.value}
+          email={email}
+          onClose={() => setSelectedTag(null)}
+        />
+      )}
 
       {/* ══════ SECTION B — DETECTED PATTERNS ══════ */}
       <div>
@@ -271,6 +285,104 @@ function PatternCard({ label, value, sub }: { label: string; value: string; sub:
       <div className="text-[10px]" style={{ color: MUTED }}>{label}</div>
       <div className="text-sm font-bold mt-0.5" style={{ color: "#1a1a1a" }}>{value}</div>
       <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>{sub}</div>
+    </div>
+  );
+}
+
+function TagBookPanel({ field, value, email, onClose }: {
+  field: string; value: string; email: string; onClose: () => void;
+}) {
+  const [wonBooks, setWonBooks] = useState<any[]>([]);
+  const [lostBooks, setLostBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'won' | 'lost'>('won');
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    Promise.all([
+      supabase
+        .from("view_customer_won_books")
+        .select("book_name, head_hebrew, auction_name, sold_price, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+        .eq("customer_email", email)
+        .eq(field, value),
+      supabase
+        .from("fact_customer_lost_bids")
+        .select("book_name, head_hebrew, auction_name, max_bid, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+        .eq("customer_email", email)
+        .eq(field, value),
+    ]).then(([wonRes, lostRes]) => {
+      if (mounted) {
+        const w = wonRes.data || [];
+        const l = lostRes.data || [];
+        setWonBooks(w);
+        setLostBooks(l);
+        setActiveTab(l.length > w.length ? 'lost' : 'won');
+        setLoading(false);
+      }
+    }).catch(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, [field, value, email]);
+
+  const items = activeTab === 'won' ? wonBooks : lostBooks;
+
+  return (
+    <div style={{ background: '#fff', border: `0.5px solid ${PURPLE.border}`, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1rem' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-xs font-bold" style={{ color: PURPLE.text }}>{value}</div>
+        <button onClick={onClose} className="text-xs px-2 py-0.5 rounded" style={{ color: MUTED, background: GRAY_BG }}>✕</button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-0 mb-3" style={{ borderRadius: 8, overflow: 'hidden', border: `0.5px solid rgba(0,0,0,0.1)` }}>
+        <button onClick={() => setActiveTab('won')}
+          style={{
+            flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 500, border: 'none', cursor: 'pointer',
+            background: activeTab === 'won' ? GREEN.fill : GRAY_BG,
+            color: activeTab === 'won' ? GREEN.text : MUTED,
+          }}>
+          זכה ({wonBooks.length})
+        </button>
+        <button onClick={() => setActiveTab('lost')}
+          style={{
+            flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 500, border: 'none', cursor: 'pointer',
+            background: activeTab === 'lost' ? PURPLE.fill : GRAY_BG,
+            color: activeTab === 'lost' ? PURPLE.text : MUTED,
+          }}>
+          ניסה ולא זכה ({lostBooks.length})
+        </button>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="text-center py-4 text-[10px]" style={{ color: MUTED }}>טוען...</div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-4 text-[10px]" style={{ color: MUTED }}>אין נתונים</div>
+      ) : (
+        <div className="space-y-1.5" style={{ maxHeight: 240, overflowY: 'auto' }}>
+          {items.map((book, i) => {
+            const isWon = activeTab === 'won';
+            const color = isWon ? GREEN : PURPLE;
+            const title = book.head_hebrew || book.book_name || '—';
+            const amount = isWon ? book.sold_price : book.max_bid;
+            const label = isWon ? 'מחיר זכייה' : 'ביד אחרון';
+            return (
+              <div key={i} className="flex items-center justify-between rounded-lg px-3 py-2"
+                style={{ background: color.fill, borderRight: `3px solid ${color.border}` }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="text-xs font-medium truncate" style={{ color: '#1a1a1a' }}>{title}</div>
+                  {book.auction_name && <div className="text-[10px] truncate" style={{ color: MUTED }}>{book.auction_name}</div>}
+                </div>
+                <div className="flex items-center gap-1.5 mr-2 shrink-0">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: color.border + '33', color: color.text }}>{label}</span>
+                  <span className="text-xs font-bold" style={{ color: color.text }}>${(amount || 0).toLocaleString()}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
