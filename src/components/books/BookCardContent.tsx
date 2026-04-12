@@ -489,7 +489,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                             </span>
                           </td>
                         </tr>
-                      )}
+                      ))}
                     </>
                   )}
                 </tbody>
