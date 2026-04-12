@@ -400,7 +400,15 @@ function TagBookPanel({ field, value, email, onClose }: {
               <div key={i} className="flex items-center justify-between rounded-lg px-3 py-2"
                 style={{ background: color.fill, borderRight: `3px solid ${color.border}` }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="text-xs font-medium truncate" style={{ color: '#1a1a1a' }}>{title}</div>
+                  <div className="text-xs font-medium truncate">
+                    {book.book_id_bidspirit ? (
+                      <ClickableBookName bookId={book.book_id_bidspirit} auctionName={book.auction_name}>
+                        {title}
+                      </ClickableBookName>
+                    ) : (
+                      <span style={{ color: '#1a1a1a' }}>{title}</span>
+                    )}
+                  </div>
                   {book.auction_name && <div className="text-[10px] truncate" style={{ color: MUTED }}>{book.auction_name}</div>}
                 </div>
                 <div className="flex items-center gap-1.5 mr-2 shrink-0">
