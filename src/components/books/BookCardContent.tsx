@@ -347,30 +347,31 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
             ))}
           </div>
 
-          {winner !== null && (
-            <div className="rounded-xl p-4" style={{ background: "#FFFBEB", border: `2px solid ${AMBER.border}`, boxShadow: "0 2px 12px rgba(250,199,117,0.25)" }}>
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="text-base">👑</span>
-                <span className="text-xs font-bold" style={{ color: AMBER.text }}>זוכה</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="text-sm font-bold">
-                    <CustomerLink email={winner.customer_email}>{winner.full_name}</CustomerLink>
-                  </div>
-                  <div className="text-xs mt-1" style={{ color: MUTED }}>
-                    {winnerTypeHe[winner.winner_type] || winner.winner_type || "—"}
+          {winner && (
+            <div style={{
+              margin: "16px 0",
+              padding: "12px 16px",
+              background: "#fffbeb",
+              border: "2px solid #f59e0b",
+              borderRadius: "10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 22 }}>👑</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#92400e" }}>זוכה</div>
+                  <CustomerLink email={winner.customer_email}>{winner.full_name}</CustomerLink>
+                  <div style={{ fontSize: 11, color: "#78716c", marginTop: 2 }}>
+                    {winnerTypeHe[winner.winner_type] || winner.winner_type}
                     {winnerLotsInvolved != null && ` · ${winnerLotsInvolved} לוטים במכירה`}
+                    {winner.win_time && ` · ${formatDate(winner.win_time)}`}
                   </div>
-                  {winner.win_time && (
-                    <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>
-                      {formatDate(winner.win_time)}
-                    </div>
-                  )}
                 </div>
-                <div className="text-xl font-bold" style={{ color: GREEN.text }}>
-                  {fmt$(winner.sold_price)}
-                </div>
+              </div>
+              <div style={{ fontWeight: 800, fontSize: 18, color: "#16a34a" }}>
+                {fmt$(winner.sold_price)}
               </div>
             </div>
           )}
@@ -436,9 +437,9 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                         </tr>
                       ))}
                       {showWinnerInTab && winner !== null && (
-                        <tr style={{ background: "#d1fae5", borderTop: "1px solid #6ee7b7" }}>
+                        <tr style={{ background: "#d1fae5" }}>
                           <td className="py-1.5 px-2 font-medium">
-                            <span className="flex items-center gap-1">
+                            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                               <span>👑</span>
                               <CustomerLink email={winner.customer_email}>
                                 {winner.full_name}
@@ -455,8 +456,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                             {formatDate(winner.win_time)}
                           </td>
                           <td className="text-center py-1.5 px-1">
-                            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                              style={{ background: "#065f46", color: "white" }}>
+                            <span style={{ background: "#16a34a", color: "white", borderRadius: 4, padding: "2px 6px", fontWeight: 700, fontSize: 10 }}>
                               👑 זוכה
                             </span>
                           </td>
