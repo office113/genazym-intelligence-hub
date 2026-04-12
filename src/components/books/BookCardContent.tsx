@@ -28,6 +28,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   const [bookDetails, setBookDetails] = useState<any>(null);
   const [bids, setBids] = useState<any[]>([]);
   const [winner, setWinner] = useState<any>(null);
+  const [winnerLotsInvolved, setWinnerLotsInvolved] = useState<number | null>(null);
   const [winnerTotalWinValue, setWinnerTotalWinValue] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [bidTab, setBidTab] = useState<"all" | "early" | "live">("all");
