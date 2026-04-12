@@ -206,14 +206,10 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   const showWinnerInTab = bidTab === "all" || bidTab === "live";
 
   const filteredBids = useMemo(() => {
-    let result = bids;
-    if (bidTab === "early") result = bids.filter(b => b.bid_type === "early_bid");
-    if (bidTab === "live") result = bids.filter(b => b.bid_type === "live_bid");
-    if (showWinnerInTab && winner) {
-      result = result.filter(b => b.customer_email !== winner.customer_email);
-    }
-    return result;
-  }, [bids, bidTab, winner, showWinnerInTab]);
+    if (bidTab === "early") return bids.filter(b => b.bid_type === "early_bid");
+    if (bidTab === "live") return bids.filter(b => b.bid_type === "live_bid");
+    return bids;
+  }, [bids, bidTab]);
 
   const formatDate = (ts: string) => {
     if (!ts) return "—";
