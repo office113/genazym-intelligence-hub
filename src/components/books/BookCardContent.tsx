@@ -112,9 +112,26 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
       setSummary(sum);
       setBookDetails(details);
 
-      const winnerData = Array.isArray(winnerRows) ? winnerRows[0] ?? null : winnerRows ?? null;
+      let winnerData = Array.isArray(winnerRows) ? winnerRows[0] ?? null : winnerRows ?? null;
       if (Array.isArray(winnerRows) && winnerRows.length > 1) {
         console.warn("[BookDrawer] multiple winner rows returned", winnerRows);
+      }
+
+      // Fallback: if winners table returned nothing, use fact_book_auction_summary
+      if (!winnerData && sum?.winner_email && sum?.sold_flag) {
+        console.log("[BookDrawer] winners table empty, falling back to summary data", {
+          winner_email: sum.winner_email,
+          winner_name: sum.winner_name,
+          sold_price: sum.sold_price,
+          winner_type: sum.winner_type,
+        });
+        winnerData = {
+          customer_email: sum.winner_email,
+          sold_price: sum.sold_price,
+          win_time: sum.auction_date,
+          winner_type: sum.winner_type,
+          winner_name: sum.winner_name,
+        };
       }
 
       const allEmails = [
