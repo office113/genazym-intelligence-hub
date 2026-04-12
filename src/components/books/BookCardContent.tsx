@@ -203,15 +203,17 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
     return row.genazym_id || row.zaidy_id;
   };
 
-  const filteredBids = useMemo(() => {
-    const winnerEmail = winner?.customer_email;
-    let filtered = winnerEmail ? bids.filter((b) => b.customer_email !== winnerEmail) : bids;
-    if (bidTab === "early") return filtered.filter((b) => b.bid_type === "early_bid");
-    if (bidTab === "live") return filtered.filter((b) => b.bid_type === "live_bid");
-    return filtered;
-  }, [bids, bidTab, winner]);
-
   const showWinnerInTab = bidTab === "all" || bidTab === "live";
+
+  const filteredBids = useMemo(() => {
+    let result = bids;
+    if (bidTab === "early") result = bids.filter(b => b.bid_type === "early_bid");
+    if (bidTab === "live") result = bids.filter(b => b.bid_type === "live_bid");
+    if (showWinnerInTab && winner) {
+      result = result.filter(b => b.customer_email !== winner.customer_email);
+    }
+    return result;
+  }, [bids, bidTab, winner, showWinnerInTab]);
 
   const formatDate = (ts: string) => {
     if (!ts) return "—";
