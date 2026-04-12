@@ -12,6 +12,7 @@ export default function CustomerCard() {
   if (!customerEmail) return null;
 
   const bookDrawerOpen = !!bookId;
+  console.log("[CustomerCard] bookDrawerOpen:", bookDrawerOpen, "bookId:", bookId);
 
   return (
     <>
@@ -22,9 +23,18 @@ export default function CustomerCard() {
           onClick={closeCustomerCard}
         />
       )}
-      {/* Drawer */}
+      {/* Drawer — z-60 so it's always above any overlay */}
       <div
-        className="fixed top-0 right-0 h-screen z-50 bg-white overflow-y-auto"
+        className="fixed top-0 right-0 h-screen bg-white overflow-y-auto"
+        style={{
+          width: 560,
+          zIndex: 60,
+          borderLeft: "0.5px solid rgba(0,0,0,0.15)",
+          borderRadius: "12px 0 0 12px",
+          boxShadow: "-8px 0 30px rgba(0,0,0,0.12)",
+        }}
+        dir="rtl"
+      >
         style={{
           width: 560,
           borderLeft: "0.5px solid rgba(0,0,0,0.15)",
