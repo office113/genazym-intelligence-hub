@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { X, Search } from "lucide-react";
+import CustomerLink from "@/components/customers/CustomerLink";
 
 const tabs = [
   { key: "overview", label: "סקירה" },
@@ -363,7 +364,7 @@ function RetentionDrillDownTable({ customers, kpiIndex, brand }: { customers: Re
         <tbody>
           {customers.map((c, idx) => (
             <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
-              <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+              <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>}
               <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">${c.maxHistoricalBid.toLocaleString()}</td>
               {isDetailedKpi && <td className="px-5 py-3 text-[13px] tabular-nums">{c.totalHistoricalWins > 0 ? `$${c.totalHistoricalWins.toLocaleString()}` : "—"}</td>}
@@ -734,7 +735,7 @@ function RetentionTab({ brand, brandLabel, rawActivityData, rawAuctionsData, raw
             <tbody>
               {filtered.map((c, idx) => (
                 <tr key={c.id} className={`cursor-pointer transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`} onClick={() => handleRowClick(c)}>
-                  <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                   <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap"><CustomerLink email={c.email}>{c.name}</CustomerLink></td>
                   <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{renderIdCell(c)}</td>
                   <td className="px-5 py-3 text-[13px] tabular-nums text-center">
                     <span className={c.salesWithoutInvolvement >= 3 ? "text-destructive font-semibold" : ""}>{c.salesWithoutInvolvement}</span>
@@ -1324,7 +1325,7 @@ function TrendsTab({ yearlyTrendsData, rawActivityData, rawRegsData, rawAuctions
             <tbody>
               {drillDownCustomers.map((c, idx) => (
                 <tr key={c.id} className={`transition-colors hover:bg-accent/8 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
-                  <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{c.name}</td>
+                  <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{(c as any).email ? <CustomerLink email={(c as any).email}>{c.name}</CustomerLink> : c.name}</td>
                   {drillDownType === "registrants" && (
                     <>
                       <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{c.email || "—"}</td>
@@ -1687,7 +1688,7 @@ export default function PastSales() {
                   <tbody>
                     {filtered.map((customer, idx) => (
                       <tr key={idx} className={`cursor-pointer transition-colors hover:bg-accent/30 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
-                        <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{customer.name}</td>
+                         <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap"><CustomerLink email={customer.email}>{customer.name}</CustomerLink></td>
                         <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</td>
                         <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.bidsInPrev}</td>
                         <td className="px-5 py-3">
@@ -1840,7 +1841,7 @@ export default function PastSales() {
                     <tbody>
                       {filtered.map((customer, idx) => (
                         <tr key={idx} className={`cursor-pointer transition-colors hover:bg-accent/30 ${idx % 2 === 1 ? "bg-secondary/15" : ""}`}>
-                          <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap">{customer.name}</td>
+                           <td className="px-5 py-3 font-medium text-[13px] whitespace-nowrap"><CustomerLink email={customer.email}>{customer.name}</CustomerLink></td>
                           <td className="px-5 py-3 text-[13px] text-muted-foreground whitespace-nowrap">{customer.email}</td>
                           <td className="px-5 py-3 text-[13px] tabular-nums text-center">{customer.lotsWon ?? "—"}</td>
                           <td className="px-5 py-3 text-[13px] tabular-nums font-semibold">{customer.totalWinAmount ?? "—"}</td>
