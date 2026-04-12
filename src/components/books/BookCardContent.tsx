@@ -29,6 +29,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   const [bids, setBids] = useState<any[]>([]);
   const [winner, setWinner] = useState<any>(null);
   const [winnerLotsInvolved, setWinnerLotsInvolved] = useState<number | null>(null);
+  const [winnerTotalWinValue, setWinnerTotalWinValue] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [bidTab, setBidTab] = useState<"all" | "early" | "live">("all");
 
@@ -46,6 +47,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
     setBids([]);
     setWinner(null);
     setWinnerLotsInvolved(null);
+    setWinnerTotalWinValue(null);
 
     const winnerSql = [
       "SELECT w.customer_email, w.sold_price, w.win_time, w.winner_type, w.winner_name",
@@ -176,7 +178,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
 
         const { data: winnerActivity, error: winnerActivityError } = await supabase
           .from("fact_customer_auction_activity")
-          .select("lots_involved")
+          .select("lots_involved, total_win_value")
           .eq("email", winnerData.customer_email)
           .eq("auction_name", auctionName)
           .maybeSingle();
@@ -185,6 +187,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
           console.error("[BookDrawer] winner activity query error", winnerActivityError);
         }
         setWinnerLotsInvolved(winnerActivity?.lots_involved ?? null);
+        setWinnerTotalWinValue(winnerActivity?.total_win_value ?? null);
       }
     } catch (err) {
       console.error("BookCardContent fetch error:", err);
@@ -367,28 +370,34 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
           {winner && (
             <div style={{
               margin: "16px 0",
-              padding: "12px 16px",
+              padding: "14px 16px",
               background: "#fffbeb",
               border: "2px solid #f59e0b",
               borderRadius: "10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between"
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 22 }}>👑</span>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#92400e" }}>זוכה</div>
-                  <CustomerLink email={winner.customer_email}>{winner.full_name}</CustomerLink>
-                  <div style={{ fontSize: 11, color: "#78716c", marginTop: 2 }}>
-                    {winnerTypeHe[winner.winner_type] || winner.winner_type}
-                    {winnerLotsInvolved != null && ` · ${winnerLotsInvolved} לוטים במכירה`}
-                    {winner.win_time && ` · ${formatDate(winner.win_time)}`}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 20 }}>👑</span>
+                <span style={{ fontWeight: 700, fontSize: 13, color: "#92400e" }}>זוכה</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ background: "#fef3c7", borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 10, color: "#78716c", marginBottom: 2 }}>שם הזוכה</div>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>
+                    <CustomerLink email={winner.customer_email}>{winner.full_name}</CustomerLink>
                   </div>
                 </div>
-              </div>
-              <div style={{ fontWeight: 800, fontSize: 18, color: "#16a34a" }}>
-                {fmt$(winner.sold_price)}
+                <div style={{ background: "#fef3c7", borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 10, color: "#78716c", marginBottom: 2 }}>מחיר זכייה</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#16a34a" }}>{fmt$(winner.sold_price)}</div>
+                </div>
+                <div style={{ background: "#fef3c7", borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 10, color: "#78716c", marginBottom: 2 }}>לוטים במכירה</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{winnerLotsInvolved ?? "—"}</div>
+                </div>
+                <div style={{ background: "#fef3c7", borderRadius: 8, padding: "8px 10px" }}>
+                  <div style={{ fontSize: 10, color: "#78716c", marginBottom: 2 }}>סך זכיות במכירה</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{winnerTotalWinValue != null ? fmt$(winnerTotalWinValue) : "—"}</div>
+                </div>
               </div>
             </div>
           )}
