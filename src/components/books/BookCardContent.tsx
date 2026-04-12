@@ -204,10 +204,12 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   };
 
   const filteredBids = useMemo(() => {
-    if (bidTab === "early") return bids.filter((b) => b.bid_type === "early_bid");
-    if (bidTab === "live") return bids.filter((b) => b.bid_type === "live_bid");
-    return bids;
-  }, [bids, bidTab]);
+    const winnerEmail = winner?.customer_email;
+    let filtered = winnerEmail ? bids.filter((b) => b.customer_email !== winnerEmail) : bids;
+    if (bidTab === "early") return filtered.filter((b) => b.bid_type === "early_bid");
+    if (bidTab === "live") return filtered.filter((b) => b.bid_type === "live_bid");
+    return filtered;
+  }, [bids, bidTab, winner]);
 
   const showWinnerInTab = bidTab === "all" || bidTab === "live";
 
@@ -439,6 +441,32 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                     </tr>
                   ) : (
                     <>
+                      {showWinnerInTab && winner !== null && (
+                        <tr style={{ background: "#d1fae5" }}>
+                          <td className="py-1.5 px-2 font-medium">
+                            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span>👑</span>
+                              <CustomerLink email={winner.customer_email}>
+                                {winner.full_name}
+                              </CustomerLink>
+                            </span>
+                          </td>
+                          <td className="text-center py-1.5 px-1" style={{ color: MUTED }}>
+                            {getCustomerId(winner) || "—"}
+                          </td>
+                          <td className="text-center py-1.5 px-1 font-bold" style={{ color: "#065f46" }}>
+                            {fmt$(winner.sold_price)}
+                          </td>
+                          <td className="text-center py-1.5 px-1" style={{ color: MUTED }}>
+                            {formatDate(winner.win_time)}
+                          </td>
+                          <td className="text-center py-1.5 px-1">
+                            <span style={{ background: "#16a34a", color: "white", borderRadius: 4, padding: "2px 6px", fontWeight: 700, fontSize: 10 }}>
+                              👑 זוכה
+                            </span>
+                          </td>
+                        </tr>
+                      )}
                       {filteredBids.map((bid, i) => (
                         <tr key={i} className="border-t" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
                           <td className="py-1.5 px-2 font-medium" style={{ color: "#1a1a1a" }}>
