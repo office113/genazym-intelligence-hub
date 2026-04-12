@@ -217,6 +217,8 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   const authorEn = bookDetails?.author_english || summary?.author_english || "";
   const siteLink = bookDetails?.site_link || summary?.site_link;
 
+  console.log("[BookDrawer] winner state:", winner);
+
   return (
     <div className="space-y-5" dir="rtl">
       <div>
