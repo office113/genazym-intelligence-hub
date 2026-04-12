@@ -468,8 +468,14 @@ export default function CustomerCardContent({ email }: Props) {
                   className="flex items-center justify-between rounded-lg p-2.5"
                   style={{ background: GRAY_BG, border: `0.5px solid ${color.border}` }}>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium truncate" style={{ color: "#1a1a1a" }}>
-                      {book.book_name || book.book_id_bidspirit}
+                    <div className="text-xs font-medium truncate">
+                      {book.book_id_bidspirit ? (
+                        <ClickableBookName bookId={book.book_id_bidspirit} auctionName={book.auction_name}>
+                          {book.book_name || book.book_id_bidspirit}
+                        </ClickableBookName>
+                      ) : (
+                        <span style={{ color: "#1a1a1a" }}>{book.book_name || book.book_id_bidspirit}</span>
+                      )}
                     </div>
                     <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>{book.auction_name}</div>
                   </div>
