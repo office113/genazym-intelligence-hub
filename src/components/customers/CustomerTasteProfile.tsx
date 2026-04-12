@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import ClickableBookName from "@/components/books/ClickableBookName";
 
 const PURPLE = { fill: "#EEEDFE", border: "#AFA9EC", text: "#3C3489" };
 const GREEN = { fill: "#E1F5EE", border: "#9FE1CB", text: "#085041" };
@@ -331,12 +332,12 @@ function TagBookPanel({ field, value, email, onClose }: {
     Promise.all([
       supabase
         .from("view_customer_won_books")
-        .select("book_name, head_hebrew, auction_name, sold_price, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+        .select("book_name, head_hebrew, auction_name, sold_price, book_id_bidspirit, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
         .eq("customer_email", email)
         .eq(field, value),
       supabase
         .from("fact_customer_lost_bids")
-        .select("book_name, head_hebrew, auction_name, max_bid, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
+        .select("book_name, head_hebrew, auction_name, max_bid, book_id_bidspirit, tag_category, tag_community, tag_origin, tag_year, tag_print_house, tag_uniqueness")
         .eq("customer_email", email)
         .eq(field, value),
     ]).then(([wonRes, lostRes]) => {
