@@ -41,27 +41,36 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
 
   async function fetchAll() {
     setLoading(true);
+    setSummary(null);
+    setBookDetails(null);
+    setBids([]);
+    setWinner(null);
+    setWinnerLotsInvolved(null);
+
+    const winnerSql = [
+      "SELECT w.customer_email, w.sold_price, w.win_time, w.winner_type, w.winner_name",
+      "FROM winners w",
+      `WHERE w.book_id_bidspirit = '${bookId}'`,
+      `  AND w.auction_name = '${auctionName}'`,
+      "  AND w.customer_email != 'floor_crowd@aa.co'",
+    ].join("\n");
+
     try {
-      // 1. Summary from fact_book_auction_summary
-      const { data: sum } = await supabase
+      const summaryPromise = supabase
         .from("fact_book_auction_summary")
         .select("*")
         .eq("book_id_bidspirit", bookId)
         .eq("auction_name", auctionName)
         .maybeSingle();
-      setSummary(sum);
 
-      // 2. Full book details from books table
-      const { data: details } = await supabase
+      const detailsPromise = supabase
         .from("books")
         .select("*")
         .eq("book_id_bidspirit", bookId)
         .eq("auction_name", auctionName)
         .maybeSingle();
-      setBookDetails(details);
 
-      // 3. Bids from events
-      const { data: eventsData } = await supabase
+      const eventsPromise = supabase
         .from("events")
         .select("customer_email, bid_price, bid_time, bid_type")
         .eq("book_id_bidspirit", bookId)
@@ -69,62 +78,95 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
         .neq("customer_email", "floor_crowd@aa.co")
         .order("bid_price", { ascending: false });
 
-      // 4. Winner from winners
-      const { data: winnerData } = await supabase
+      const winnerRequest = supabase
         .from("winners")
         .select("customer_email, sold_price, win_time, winner_type, winner_name")
         .eq("book_id_bidspirit", bookId)
         .eq("auction_name", auctionName)
-        .neq("customer_email", "floor_crowd@aa.co")
-        .maybeSingle();
-      setWinner(winnerData);
+        .neq("customer_email", "floor_crowd@aa.co");
 
-      // 5. Get customer names for bids
+      const winnerRequestUrl = (winnerRequest as any).url?.toString?.() ?? "";
+      const winnerPromise = winnerRequest.then((response) => {
+        console.log("[BookDrawer] winners query raw response", {
+          bookId,
+          auctionName,
+          sql: winnerSql,
+          url: winnerRequestUrl,
+          response,
+        });
+        return response;
+      });
+
+      const [
+        { data: sum, error: summaryError },
+        { data: details, error: detailsError },
+        { data: eventsData, error: eventsError },
+        { data: winnerRows, error: winnerError },
+      ] = await Promise.all([summaryPromise, detailsPromise, eventsPromise, winnerPromise]);
+
+      if (summaryError) console.error("[BookDrawer] summary query error", summaryError);
+      if (detailsError) console.error("[BookDrawer] details query error", detailsError);
+      if (eventsError) console.error("[BookDrawer] events query error", eventsError);
+      if (winnerError) console.error("[BookDrawer] winners query error", winnerError);
+
+      setSummary(sum);
+      setBookDetails(details);
+
+      const winnerData = Array.isArray(winnerRows) ? winnerRows[0] ?? null : winnerRows ?? null;
+      if (Array.isArray(winnerRows) && winnerRows.length > 1) {
+        console.warn("[BookDrawer] multiple winner rows returned", winnerRows);
+      }
+
       const allEmails = [
-        ...new Set([
-          ...(eventsData || []).map((e: any) => e.customer_email),
-          ...(winnerData ? [winnerData.customer_email] : []),
-        ].filter(Boolean)),
+        ...new Set(
+          [
+            ...(eventsData || []).map((e: any) => e.customer_email),
+            ...(winnerData?.customer_email ? [winnerData.customer_email] : []),
+          ].filter(Boolean),
+        ),
       ];
 
-      let customerMap: Record<string, any> = {};
+      const customerMap: Record<string, any> = {};
       if (allEmails.length > 0) {
-        const { data: customers } = await supabase
+        const { data: customers, error: customersError } = await supabase
           .from("customers")
           .select("email, full_name, genazym_id, zaidy_id")
           .in("email", allEmails);
+
+        if (customersError) console.error("[BookDrawer] customers query error", customersError);
         (customers || []).forEach((c: any) => {
           customerMap[c.email] = c;
         });
       }
 
-      // Map bids with customer info
       setBids(
         (eventsData || []).map((e: any) => ({
           ...e,
           full_name: customerMap[e.customer_email]?.full_name || e.customer_email,
           genazym_id: customerMap[e.customer_email]?.genazym_id,
           zaidy_id: customerMap[e.customer_email]?.zaidy_id,
-        }))
+        })),
       );
 
-      // Update winner with customer info
-      if (winnerData) {
-        const wCust = customerMap[winnerData.customer_email];
+      if (winnerData !== null) {
+        const winnerCustomer = customerMap[winnerData.customer_email];
         setWinner({
           ...winnerData,
-          full_name: wCust?.full_name || winnerData.winner_name || winnerData.customer_email,
-          genazym_id: wCust?.genazym_id,
-          zaidy_id: wCust?.zaidy_id,
+          full_name: winnerCustomer?.full_name || winnerData.winner_name || winnerData.customer_email,
+          genazym_id: winnerCustomer?.genazym_id,
+          zaidy_id: winnerCustomer?.zaidy_id,
         });
 
-        // 6. Winner lots involved
-        const { data: winnerActivity } = await supabase
+        const { data: winnerActivity, error: winnerActivityError } = await supabase
           .from("fact_customer_auction_activity")
           .select("lots_involved")
           .eq("email", winnerData.customer_email)
           .eq("auction_name", auctionName)
           .maybeSingle();
+
+        if (winnerActivityError) {
+          console.error("[BookDrawer] winner activity query error", winnerActivityError);
+        }
         setWinnerLotsInvolved(winnerActivity?.lots_involved ?? null);
       }
     } catch (err) {
@@ -177,7 +219,6 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
 
   return (
     <div className="space-y-5" dir="rtl">
-      {/* ══════ HEADER ══════ */}
       <div>
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -196,7 +237,6 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
             </a>
           )}
         </div>
-        {/* Auction badge */}
         <div className="flex flex-wrap gap-1.5 mt-2">
           <span className="px-2.5 py-1 rounded-full text-xs font-medium border"
             style={{ background: ORANGE.fill, borderColor: ORANGE.border, color: ORANGE.text }}>
@@ -219,7 +259,6 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
         </div>
       </div>
 
-      {/* ══════ VIEW SWITCHER ══════ */}
       <div style={{ display: "flex", border: "0.5px solid rgba(0,0,0,0.12)", borderRadius: 12, overflow: "hidden" }}>
         {(["card", "profile"] as const).map((v) => (
           <button key={v} onClick={() => setView(v)}
@@ -234,7 +273,6 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
         ))}
       </div>
 
-      {/* ══════ PROFILE TAB ══════ */}
       {view === "profile" && (
         <div className="space-y-4">
           {bookDetails?.text_hebrew && (
@@ -255,7 +293,6 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
               <p className="text-xs leading-relaxed" style={{ color: PURPLE.text }}>{bookDetails.llm_explanation}</p>
             </div>
           )}
-          {/* GPT Tags */}
           <div>
             <div className="text-xs font-bold mb-2" style={{ color: "#1a1a1a" }}>תגיות</div>
             <div className="flex flex-wrap gap-1.5">
@@ -279,10 +316,8 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
         </div>
       )}
 
-      {/* ══════ CARD TAB ══════ */}
       {view === "card" && (
         <>
-          {/* KPI Grid */}
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "מעורבים", value: summary.unique_bidders_count || 0 },
@@ -310,8 +345,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
             ))}
           </div>
 
-          {/* Winner Summary */}
-          {winner && (
+          {winner !== null && (
             <div className="rounded-xl p-4" style={{ background: "#FFFBEB", border: `2px solid ${AMBER.border}`, boxShadow: "0 2px 12px rgba(250,199,117,0.25)" }}>
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-base">👑</span>
@@ -339,10 +373,8 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
             </div>
           )}
 
-          {/* Competition Table */}
           <div>
             <div className="text-xs font-bold mb-2" style={{ color: "#1a1a1a" }}>התחרות על הספר</div>
-            {/* Sub-tabs */}
             <div className="flex gap-0 mb-3" style={{ borderRadius: 8, overflow: "hidden", border: "0.5px solid rgba(0,0,0,0.1)" }}>
               {([
                 { key: "all" as const, label: "הכל" },
@@ -401,8 +433,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                           </td>
                         </tr>
                       ))}
-                      {/* Winner row */}
-                      {showWinnerInTab && winner && (
+                      {showWinnerInTab && winner !== null && (
                         <tr style={{ background: GREEN.fill, borderTop: `1px solid ${GREEN.border}` }}>
                           <td className="py-1.5 px-2 font-medium">
                             <span className="flex items-center gap-1">
