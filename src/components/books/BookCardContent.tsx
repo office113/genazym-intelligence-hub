@@ -203,18 +203,17 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
     return row.genazym_id || row.zaidy_id;
   };
 
+  const showWinnerInTab = bidTab === "all" || bidTab === "live";
+
   const filteredBids = useMemo(() => {
     let result = bids;
     if (bidTab === "early") result = bids.filter(b => b.bid_type === "early_bid");
     if (bidTab === "live") result = bids.filter(b => b.bid_type === "live_bid");
-    // Remove winner's rows only when winner green row is shown (all + live tabs)
     if (showWinnerInTab && winner) {
       result = result.filter(b => b.customer_email !== winner.customer_email);
     }
     return result;
   }, [bids, bidTab, winner, showWinnerInTab]);
-
-  const showWinnerInTab = bidTab === "all" || bidTab === "live";
 
   const formatDate = (ts: string) => {
     if (!ts) return "—";
