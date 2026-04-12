@@ -5,6 +5,7 @@ import BookDrillDown from "@/components/books/BookDrillDown";
 import { useBookSearch } from "@/hooks/useBookSearch";
 import { type BookRecord } from "@/hooks/useBookSearch";
 import { Tag, Award, DollarSign, ArrowUpDown, BookOpen, Eye } from "lucide-react";
+import ClickableBookName from "@/components/books/ClickableBookName";
 
 const tabs = [
   { key: "search", label: "חיפוש חכם" },
@@ -107,7 +108,11 @@ export default function Books() {
                   sorted.map((book) => (
                     <tr key={book.id} onClick={() => openBook(book)}>
                       <td className="font-semibold max-w-[220px]">
-                        <div className="truncate">{book.title}</div>
+                        <div className="truncate">
+                          <ClickableBookName bookId={book.bookIdBidspirit} auctionName={book.saleName}>
+                            {book.title}
+                          </ClickableBookName>
+                        </div>
                       </td>
                       <td className="text-muted-foreground">{book.saleName}</td>
                       <td>
@@ -179,7 +184,11 @@ export default function Books() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3 mb-1.5">
-                      <h3 className="font-display font-bold text-sm leading-snug">{book.title}</h3>
+                      <h3 className="font-display font-bold text-sm leading-snug">
+                        <ClickableBookName bookId={book.bookIdBidspirit} auctionName={book.saleName}>
+                          {book.title}
+                        </ClickableBookName>
+                      </h3>
                       <span
                         className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0`}
                         style={

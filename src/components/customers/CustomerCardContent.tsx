@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import CustomerTasteProfile from "./CustomerTasteProfile";
+import ClickableBookName from "@/components/books/ClickableBookName";
 
 type BrandTab = "all" | "Genazym" | "Zaidy" | "taste";
 type BookTab = "won" | "lost" | "active";
@@ -76,7 +77,7 @@ export default function CustomerCardContent({ email }: Props) {
 
       const { data: won } = await supabase
         .from("view_customer_won_books")
-        .select("book_name, head_hebrew, auction_name, sold_price, brand")
+        .select("book_name, head_hebrew, auction_name, sold_price, brand, book_id_bidspirit")
         .eq("customer_email", email)
         .order("auction_date", { ascending: false })
         .limit(1000);
@@ -85,11 +86,12 @@ export default function CustomerCardContent({ email }: Props) {
         auction_name: w.auction_name,
         sold_price: w.sold_price,
         brand: w.brand,
+        book_id_bidspirit: w.book_id_bidspirit,
       })));
 
       const { data: lostData } = await supabase
         .from("fact_customer_lost_bids")
-        .select("book_name, auction_name, max_bid, brand, auction_date")
+        .select("book_name, head_hebrew, auction_name, max_bid, brand, auction_date, book_id_bidspirit")
         .eq("customer_email", email)
         .order("auction_date", { ascending: false });
 
@@ -101,10 +103,11 @@ export default function CustomerCardContent({ email }: Props) {
       const futureAuctionNames = new Set((futureAuctions || []).map(a => a.auction_name));
 
       const allLost = (lostData || []).map(r => ({
-        book_name: r.book_name || "—",
+        book_name: r.head_hebrew || r.book_name || "—",
         auction_name: r.auction_name,
         max_bid: r.max_bid,
         brand: r.brand,
+        book_id_bidspirit: r.book_id_bidspirit,
       }));
       setBooksActive(allLost.filter(b => futureAuctionNames.has(b.auction_name)));
       setBooksLost(allLost.filter(b => !futureAuctionNames.has(b.auction_name)));
@@ -465,8 +468,14 @@ export default function CustomerCardContent({ email }: Props) {
                   className="flex items-center justify-between rounded-lg p-2.5"
                   style={{ background: GRAY_BG, border: `0.5px solid ${color.border}` }}>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium truncate" style={{ color: "#1a1a1a" }}>
-                      {book.book_name || book.book_id_bidspirit}
+                    <div className="text-xs font-medium truncate">
+                      {book.book_id_bidspirit ? (
+                        <ClickableBookName bookId={book.book_id_bidspirit} auctionName={book.auction_name}>
+                          {book.book_name || book.book_id_bidspirit}
+                        </ClickableBookName>
+                      ) : (
+                        <span style={{ color: "#1a1a1a" }}>{book.book_name || book.book_id_bidspirit}</span>
+                      )}
                     </div>
                     <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>{book.auction_name}</div>
                   </div>
