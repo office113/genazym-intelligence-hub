@@ -217,6 +217,8 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
   const authorEn = bookDetails?.author_english || summary?.author_english || "";
   const siteLink = bookDetails?.site_link || summary?.site_link;
 
+  console.log("[BookDrawer] winner state:", winner);
+
   return (
     <div className="space-y-5" dir="rtl">
       <div>
@@ -434,19 +436,19 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                         </tr>
                       ))}
                       {showWinnerInTab && winner !== null && (
-                        <tr style={{ background: GREEN.fill, borderTop: `1px solid ${GREEN.border}` }}>
+                        <tr style={{ background: "#d1fae5", borderTop: "1px solid #6ee7b7" }}>
                           <td className="py-1.5 px-2 font-medium">
                             <span className="flex items-center gap-1">
-                              <Crown className="w-3 h-3" style={{ color: GREEN.text }} />
+                              <span>👑</span>
                               <CustomerLink email={winner.customer_email}>
-                                <span style={{ color: GREEN.text }}>{winner.full_name}</span>
+                                {winner.full_name}
                               </CustomerLink>
                             </span>
                           </td>
                           <td className="text-center py-1.5 px-1" style={{ color: MUTED }}>
                             {getCustomerId(winner) || "—"}
                           </td>
-                          <td className="text-center py-1.5 px-1 font-bold" style={{ color: GREEN.text }}>
+                          <td className="text-center py-1.5 px-1 font-bold" style={{ color: "#065f46" }}>
                             {fmt$(winner.sold_price)}
                           </td>
                           <td className="text-center py-1.5 px-1" style={{ color: MUTED }}>
@@ -454,7 +456,7 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
                           </td>
                           <td className="text-center py-1.5 px-1">
                             <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
-                              style={{ background: GREEN.text, color: "white" }}>
+                              style={{ background: "#065f46", color: "white" }}>
                               👑 זוכה
                             </span>
                           </td>
