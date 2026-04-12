@@ -312,22 +312,27 @@ export default function BookCardContent({ bookId, auctionName }: Props) {
 
           {/* Winner Summary */}
           {winner && (
-            <div className="rounded-lg p-4" style={{ background: GREEN.fill, border: `0.5px solid ${GREEN.border}` }}>
-              <div className="text-xs font-bold mb-2" style={{ color: GREEN.text }}>
-                <Crown className="w-3.5 h-3.5 inline-block ml-1" />
-                זוכה
+            <div className="rounded-xl p-4" style={{ background: "#FFFBEB", border: `2px solid ${AMBER.border}`, boxShadow: "0 2px 12px rgba(250,199,117,0.25)" }}>
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-base">👑</span>
+                <span className="text-xs font-bold" style={{ color: AMBER.text }}>זוכה</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <div className="text-sm font-medium" style={{ color: GREEN.text }}>
+                  <div className="text-sm font-bold">
                     <CustomerLink email={winner.customer_email}>{winner.full_name}</CustomerLink>
                   </div>
-                  <div className="text-xs mt-0.5" style={{ color: MUTED }}>
+                  <div className="text-xs mt-1" style={{ color: MUTED }}>
                     {winnerTypeHe[winner.winner_type] || winner.winner_type || "—"}
                     {winnerLotsInvolved != null && ` · ${winnerLotsInvolved} לוטים במכירה`}
                   </div>
+                  {winner.win_time && (
+                    <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>
+                      {formatDate(winner.win_time)}
+                    </div>
+                  )}
                 </div>
-                <div className="text-lg font-bold" style={{ color: GREEN.text }}>
+                <div className="text-xl font-bold" style={{ color: GREEN.text }}>
                   {fmt$(winner.sold_price)}
                 </div>
               </div>

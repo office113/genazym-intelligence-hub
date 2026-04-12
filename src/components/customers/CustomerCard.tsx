@@ -1,21 +1,27 @@
 import { X } from "lucide-react";
 import { useCustomerCard } from "@/contexts/CustomerCardContext";
+import { useBookCard } from "@/contexts/BookCardContext";
 import CustomerCardContent from "./CustomerCardContent";
 
 const MUTED = "#888780";
 
 export default function CustomerCard() {
   const { customerEmail, closeCustomerCard } = useCustomerCard();
+  const { bookId } = useBookCard();
 
   if (!customerEmail) return null;
 
+  const bookDrawerOpen = !!bookId;
+
   return (
     <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 z-50 bg-black/40"
-        onClick={closeCustomerCard}
-      />
+      {/* Overlay — only when BookDrawer is NOT open */}
+      {!bookDrawerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40"
+          onClick={closeCustomerCard}
+        />
+      )}
       {/* Drawer */}
       <div
         className="fixed top-0 right-0 h-screen z-50 bg-white overflow-y-auto"
